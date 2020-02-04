@@ -1,41 +1,88 @@
 "use strict";
 
-let cube = [
-    //     F     S      B     
-    [ //U
-        ["ybr", "yr", "ygr"], //R
-        ["yb" , "y" , "yg" ], //M
-        ["ybo", "yo", "ygo"]  //L
-    ],
-    [ //E
-        ["br" , "r" , "gr" ], //R
-        ["b"  , ""  , "g"  ], //M
-        ["bo" , "o" , "go" ]  //L
-    ],
-    [ //D
-        ["wbr", "wr", "wgr"], //R
-        ["wb" , "w" , "wg" ], //M
-        ["wbo", "wo", "wgo"]  //L
-    ]
-]
-
+const cubeSize = 3;
+let cube = constructCube(cubeSize);
 
 window.onload = () => {
-    
+    console.log(cube);
+    turn("U")
 }
 
-function turn(side) {
+
+function constructCube(size) {
+    if (isNaN(size) || size < 2 || size % 1 !== 0)
+        throw "size must be an integer greater than 1";
+    
+    let cube = [];
+    let s = size - 1;
+    
+    for (let x = 0; x < size; x++) {
+        cube.push([]);
+        let plane = cube[x];
+        
+        for (let y = 0; y < size; y++) {
+            plane.push([]);
+            let line = plane[y];
+            
+            for (let z = 0; z < size; z++) {
+                let piece = "";
+                
+                if (x === 0)
+                    piece += "y";
+                else if (x === s)
+                    piece += "w";
+                
+                if (y === 0)
+                    piece += "g";
+                else if (y === s)
+                    piece += "b";
+                
+                if (z === 0)
+                    piece += "o";
+                else if (z === s)
+                    piece += "r";
+                    
+                line.push(piece);
+            }
+        }
+    }
+    return cube;
+}
+
+function turn(side, amount = 1) {
     if (side === "U") {
+        let before = cube[0];
+        let after = [];
+        
+        for (let i = 0; i < before.length; i++) {
+            after.push([]);
+            for (let j = 0; j < before[i].length; j++) {
+                if (amount === 1) {
+                    let index = before.length - 1 - j;
+                    after[i].push(before[index][i]);
+                } else if (amount === -1) {
+                    let index = before.length - 1 - i;
+                    after[i].push(before[j][index]);
+                } else if (amount === 2) {
+                    
+                }
+                
+            }
+        }
+        
         [
             [1,2,3],
             [4,5,6],
             [7,8,9]
         ]
         [
-            [3,6,9],
-            [2,5,8],
-            [1,4,7]
+            [9,8,7],
+            [6,5,4],
+            [3,2,1]
         ]
+        
+        console.table(before)
+        console.table(after)
     }
 }
 
