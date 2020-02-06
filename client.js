@@ -1,24 +1,23 @@
 "use strict";
-
-/* 3x3 cube:
-0: Array(3)
-0: (3) ["ygo", "yg", "ygr"]
-1: (3) ["yo", "y", "yr"]
-2: (3) ["ybo", "yb", "ybr"]
-length: 3
-__proto__: Array(0)
-1: Array(3)
-0: (3) ["go", "g", "gr"]
-1: (3) ["o", "", "r"]
-2: (3) ["bo", "b", "br"]
-length: 3
-__proto__: Array(0)
-2: Array(3)
-0: (3) ["wgo", "wg", "wgr"]
-1: (3) ["wo", "w", "wr"]
-2: (3) ["wbo", "wb", "wbr"]
-length: 3
-__proto__: Array(0)
+// TU resident: column0679dough
+/* 3x3 cube = [
+    //     L     M      R
+    [ //U
+        ["ygo", "yg", "ygr"], //B
+        ["yo" , "y" , "yr" ], //S
+        ["ybo", "yb", "ybr"]  //F
+    ],
+    [ //E
+        ["go" , "g" , "gr" ], //B
+        ["o"  , "  ", "r"  ], //S
+        ["bo" , "b" , "br" ]  //F
+    ],
+    [ //D
+        ["wgo", "wg", "wgr"], //B
+        ["wo" , "w" , "wr" ], //S
+        ["wbo", "wb", "wbr"]  //F
+    ]
+]
 */
 
 const cubeSize = 3;
@@ -26,49 +25,81 @@ let cube = constructCube(cubeSize);
 
 
 window.onload = () => {
-    console.log("cube")
     console.log(deepCopy(cube));
-    
-    console.log("\ncube[0]")
-    console.log(cube[0]);
-    
-    //setTimeout(() => {turn("U")}, 3000);
-    turn("U", 1);
-    
-    console.log("\npost turn")
+    turn("U", -1);
     console.log(cube);
 }
 
-function deepCopy(array) {
-    return JSON.parse(JSON.stringify(array));
-}
+
 
 
 function turn(side, amount = 1) {
-    if (side === "U") {
-        let before = deepCopy(cube)[0];
-        let after = [];
+    // conjugate the direction for opposite sides
+    if (["D", "R", "B"].includes(side) &&
+        (amount === 1 || amount === -1))
+            amount *= -1;
+    
+    const layers = {
+        U: 0,
+        D: cubeSize - 1,
+        L: 0,
+        R: cubeSize - 1,
+        B: 0,
+        F: cubeSize - 1
+    }
+    const layer = layers[side];
+    let after = deepCopy(cube),
+        calcIndexes = (i, j, iPrime) => {
+        const jPrime = cubeSize - 1 - j;
         
+        let indexes;
+        if (amount === 1)
+            indexes = [jPrime, i];
+        else if (amount === -1)
+            indexes = [j, iPrime];
+        else if (amount === 2)
+            indexes = [iPrime, jPrime];
+        else
+            throw "turn amount must be 1, -1, or 2";
+        return indexes;
+    }
+    
+    if (side === "U" || side === "D") {
         for (let i = 0; i < cubeSize; i++) {
-            after.push([]);
+            const iPrime = cubeSize - 1 - i;
             for (let j = 0; j < cubeSize; j++) {
-                let indexes = [i, j];
-                if (amount === 1) {
-                    indexes = [cubeSize - 1 - j, i];
-                } else if (amount === -1) {
-                    indexes[0] = cubeSize - 1 - i;
-                } else if (amount === 2) {
-                    indexes = [cubeSize - 1 - i,
-                               cubeSize - 1 - j];
-                }
-                after[i].push(before[indexes[0]][indexes[1]]);
+
+                let indexes = calcIndexes(i, j, iPrime);
+                let newPiece = cube[layer][indexes[0]][indexes[1]];
+                after[layer][i][j] = newPiece;
             }
         }
-        //cube.splice(0, 1, after);
-        
-        cube[0] = after;
-        //cube = [after, cube[1], cube[2]];
-    }
+    } else if (side === "L" || side === "R") {
+        for (let i = 0; i < cubeSize; i++) {
+            const iPrime = cubeSize - 1 - i;
+            for (let j = 0; j < cubeSize; j++) {
+                const jPrime = cubeSize - 1 - j;
+                
+                let indexes = calcIndexes(i, j, iPrime);
+                let newPiece = cube[indexes[0]][indexes[1]][layer];
+                after[i][j][layer] = newPiece;
+            }
+        }
+    } else if (side === "B" || side === "F") {
+        for (let i = 0; i < cubeSize; i++) {
+            const iPrime = cubeSize - 1 - i;
+            for (let j = 0; j < cubeSize; j++) {
+                const jPrime = cubeSize - 1 - j;
+                
+                let indexes = calcIndexes(i, j, iPrime);
+                let newPiece = cube[indexes[0]][layer][indexes[1]];
+                after[i][layer][j] = newPiece;
+            }
+        }
+    } else
+        throw "side must be U, D, L, R, F, B, En, Sn, or Mn"
+    
+    cube = after;
 }
 
 function constructCube(size) {
@@ -109,6 +140,10 @@ function constructCube(size) {
         }
     }
     return cube;
+}
+
+function deepCopy(array) {
+    return JSON.parse(JSON.stringify(array));
 }
 
 function display() {
