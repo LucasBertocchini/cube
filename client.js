@@ -1,13 +1,75 @@
 "use strict";
 
+/* 3x3 cube:
+0: Array(3)
+0: (3) ["ygo", "yg", "ygr"]
+1: (3) ["yo", "y", "yr"]
+2: (3) ["ybo", "yb", "ybr"]
+length: 3
+__proto__: Array(0)
+1: Array(3)
+0: (3) ["go", "g", "gr"]
+1: (3) ["o", "", "r"]
+2: (3) ["bo", "b", "br"]
+length: 3
+__proto__: Array(0)
+2: Array(3)
+0: (3) ["wgo", "wg", "wgr"]
+1: (3) ["wo", "w", "wr"]
+2: (3) ["wbo", "wb", "wbr"]
+length: 3
+__proto__: Array(0)
+*/
+
 const cubeSize = 3;
 let cube = constructCube(cubeSize);
 
+
 window.onload = () => {
+    console.log("cube")
+    console.log(deepCopy(cube));
+    
+    console.log("\ncube[0]")
+    console.log(cube[0]);
+    
+    //setTimeout(() => {turn("U")}, 3000);
+    turn("U", 1);
+    
+    console.log("\npost turn")
     console.log(cube);
-    turn("U")
 }
 
+function deepCopy(array) {
+    return JSON.parse(JSON.stringify(array));
+}
+
+
+function turn(side, amount = 1) {
+    if (side === "U") {
+        let before = deepCopy(cube)[0];
+        let after = [];
+        
+        for (let i = 0; i < cubeSize; i++) {
+            after.push([]);
+            for (let j = 0; j < cubeSize; j++) {
+                let indexes = [i, j];
+                if (amount === 1) {
+                    indexes = [cubeSize - 1 - j, i];
+                } else if (amount === -1) {
+                    indexes[0] = cubeSize - 1 - i;
+                } else if (amount === 2) {
+                    indexes = [cubeSize - 1 - i,
+                               cubeSize - 1 - j];
+                }
+                after[i].push(before[indexes[0]][indexes[1]]);
+            }
+        }
+        //cube.splice(0, 1, after);
+        
+        cube[0] = after;
+        //cube = [after, cube[1], cube[2]];
+    }
+}
 
 function constructCube(size) {
     if (isNaN(size) || size < 2 || size % 1 !== 0)
@@ -48,44 +110,6 @@ function constructCube(size) {
     }
     return cube;
 }
-
-function turn(side, amount = 1) {
-    if (side === "U") {
-        let before = cube[0];
-        let after = [];
-        
-        for (let i = 0; i < before.length; i++) {
-            after.push([]);
-            for (let j = 0; j < before[i].length; j++) {
-                if (amount === 1) {
-                    let index = before.length - 1 - j;
-                    after[i].push(before[index][i]);
-                } else if (amount === -1) {
-                    let index = before.length - 1 - i;
-                    after[i].push(before[j][index]);
-                } else if (amount === 2) {
-                    
-                }
-                
-            }
-        }
-        
-        [
-            [1,2,3],
-            [4,5,6],
-            [7,8,9]
-        ]
-        [
-            [9,8,7],
-            [6,5,4],
-            [3,2,1]
-        ]
-        
-        console.table(before)
-        console.table(after)
-    }
-}
-
 
 function display() {
     let html = "";
