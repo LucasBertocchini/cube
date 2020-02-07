@@ -1,5 +1,6 @@
 "use strict";
 // TU resident: column0679dough
+// link: file:///C:/Users/User/Desktop/cube/index.html
 /* 3x3 cube = [
     //     L     M      R
     [ //U
@@ -9,7 +10,7 @@
     ],
     [ //E
         ["go" , "g" , "gr" ], //B
-        ["o"  , "  ", "r"  ], //S
+        ["o"  , ""  , "r"  ], //S
         ["bo" , "b" , "br" ]  //F
     ],
     [ //D
@@ -22,12 +23,23 @@
 
 const cubeSize = 3;
 let cube = constructCube(cubeSize);
+const solvedCube = deepCopy(cube);
+const colors = {
+    y: "yellow",
+    w: "white",
+    g: "green",
+    b: "blue",
+    o: "orange",
+    r: "red"
+};
 
 
 window.onload = () => {
-    console.log(deepCopy(cube));
-    turn("U", -1);
-    console.log(cube);
+    let i = 1;
+    console.log(deepCopy(cube)[i]);
+    turn("R", -1);
+    console.log(cube[i]);
+    //display();
 }
 
 
@@ -35,7 +47,7 @@ window.onload = () => {
 
 function turn(side, amount = 1) {
     // conjugate the direction for opposite sides
-    if (["D", "R", "B"].includes(side) &&
+    if (["D", "B", "R"].includes(side) &&
         (amount === 1 || amount === -1))
             amount *= -1;
     
@@ -47,11 +59,11 @@ function turn(side, amount = 1) {
         B: 0,
         F: cubeSize - 1
     }
+    
     const layer = layers[side];
-    let after = deepCopy(cube),
-        calcIndexes = (i, j, iPrime) => {
-        const jPrime = cubeSize - 1 - j;
-        
+    let after = deepCopy(cube);
+    
+    function calcIndexes(i, j, iPrime, jPrime) {
         let indexes;
         if (amount === 1)
             indexes = [jPrime, i];
@@ -64,38 +76,40 @@ function turn(side, amount = 1) {
         return indexes;
     }
     
+    function calcPieces(newPieceFunction) {
+        for (let i = 0; i < cubeSize; i++) {
+            const iPrime = cubeSize - 1 - i;
+            for (let j = 0; j < cubeSize; j++) {
+                const jPrime = cubeSize - 1 - j;
+                let indexes = calcIndexes(i, j, iPrime, jPrime);
+                newPieceFunction(i, j, indexes);
+            }
+        }
+    }
+    
     if (side === "U" || side === "D") {
-        for (let i = 0; i < cubeSize; i++) {
-            const iPrime = cubeSize - 1 - i;
-            for (let j = 0; j < cubeSize; j++) {
-
-                let indexes = calcIndexes(i, j, iPrime);
-                let newPiece = cube[layer][indexes[0]][indexes[1]];
-                after[layer][i][j] = newPiece;
-            }
-        }
+        calcPieces((i, j, indexes) => {
+            let newPiece = cube[layer][indexes[0]][indexes[1]];
+            after[layer][i][j] = newPiece;
+        });
+    } else if (side === "F" || side === "B") {
+        calcPieces((i, j, indexes) => {
+            let newPiece = cube[indexes[0]][layer][indexes[1]];
+            after[i][layer][j] = newPiece;
+        });
     } else if (side === "L" || side === "R") {
-        for (let i = 0; i < cubeSize; i++) {
-            const iPrime = cubeSize - 1 - i;
-            for (let j = 0; j < cubeSize; j++) {
-                const jPrime = cubeSize - 1 - j;
-                
-                let indexes = calcIndexes(i, j, iPrime);
-                let newPiece = cube[indexes[0]][indexes[1]][layer];
-                after[i][j][layer] = newPiece;
+        calcPieces((i, j, indexes) => {
+            let newPiece = cube[indexes[0]][indexes[1]][layer];
+            console.log(newPiece);
+            if (amount !== 2 && newPiece.length === 3) {
+                const firstChar = newPiece[0],
+                      secondChar = newPiece[1],
+                      lastChar = newPiece[2];
+                newPiece = secondChar + firstChar + lastChar;
             }
-        }
-    } else if (side === "B" || side === "F") {
-        for (let i = 0; i < cubeSize; i++) {
-            const iPrime = cubeSize - 1 - i;
-            for (let j = 0; j < cubeSize; j++) {
-                const jPrime = cubeSize - 1 - j;
-                
-                let indexes = calcIndexes(i, j, iPrime);
-                let newPiece = cube[indexes[0]][layer][indexes[1]];
-                after[i][layer][j] = newPiece;
-            }
-        }
+            console.log(newPiece);
+            after[i][j][layer] = newPiece;
+        });
     } else
         throw "side must be U, D, L, R, F, B, En, Sn, or Mn"
     
@@ -146,20 +160,56 @@ function deepCopy(array) {
     return JSON.parse(JSON.stringify(array));
 }
 
+function reorder(string i1, i2, i3 = null) {
+    if (i3) return string[i1] + string[i2] + string[i3];
+    else return string[i1] + string[i2];
+}
+
 function display() {
-    let html = "";
-    for (let x = 0; x < cube.length; x++) {
-        let plane = cube[x];
-        html += "<p>";
-        for (let y = 0; y < plane.length; y++) {
-            let line = plane[y];
-            for (let z = 0; z < line.length; z++) {
-                let piece = line[z];
-                html += (piece + " ");
+    let cubeContainer = document.querySelector("#cube-container");
+    
+    let gridItems = [
+        null, "B", null,
+        null, "U", null,
+        "L" , "F", "R" ,
+        null, "D", null
+    ];
+    
+    for (let gridItem of gridItems) {
+        let face = document.createElement("div");
+        face.className = "face";
+        if (gridItem) {
+            face.id = gridItem;
+            
+            for (let i = 0; i < cubeSize ** 2; i++) {
+                let piece = document.createElement("div");
+                piece.className = "piece";
+                if (i === (cubeSize ** 2 - 1) / 2) piece.innerHTML = gridItem;
+                face.appendChild(piece);
             }
-            html += "&nbsp;".repeat(20);
         }
-        html += "</p>";
+        cubeContainer.appendChild(face);
     }
-    document.body.innerHTML = html;
+    
+    function colorPiece(face, row, col, color) {
+        let faceElement = document.getElementById(face);
+        let piece = faceElement.children[row + cubeSize * col];
+        piece.style.backgroundColor = colors[color];
+    }
+    colorPiece("B", 1, 2, "y")
+    
+    
+    for (let x = 0; x < cubeSize; x++) {
+        const plane = cube[x];
+        for (let y = 0; y < cubeSize; y++) {
+            const line = plane[y];
+            for (let z = 0; z < cubeSize; z++) {
+                const piece = line[z];
+                if (x === 0) { //U
+                    colorPiece("U", y, z, cube[0][y][z][0])
+                    console.log(y,z,cube[0][y][z])
+                }
+            }
+        }
+    }
 }

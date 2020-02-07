@@ -2,3 +2,19 @@
     margin: 0px;
     padding: 0px;
 }
+
+#cube-container {
+    height: 500px;
+    display: grid;
+    grid-template-columns: auto auto auto;
+}
+
+.face {
+    display: grid;
+    grid-template-columns: auto auto auto;
+    padding: 10px;
+}
+
+.piece {
+    border: 1px solid;
+}
