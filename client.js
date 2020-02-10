@@ -35,11 +35,18 @@ const colors = {
 
 
 window.onload = () => {
-    let i = 1;
-    console.log(deepCopy(cube)[i]);
-    turn("R", -1);
-    console.log(cube[i]);
-    //display();
+    let i = 0;
+    let table = true;
+    if (table) 
+        console.table(deepCopy(cube)[i]);
+    else
+        console.log(deepCopy(cube)[i]);
+    turn("B", -1);
+    if (table) 
+        console.table(deepCopy(cube)[i]);
+    else
+        console.log(deepCopy(cube)[i]);
+    displaySetup(); display();
 }
 
 
@@ -87,27 +94,35 @@ function turn(side, amount = 1) {
         }
     }
     
+    /* loops are inside the if statements to avoid calling if's
+    many times unnecisarily */
     if (side === "U" || side === "D") {
         calcPieces((i, j, indexes) => {
             let newPiece = cube[layer][indexes[0]][indexes[1]];
+            
+            if (newPiece.length === 3 && amount !== 2)
+                newPiece = reorder(newPiece, 0, 2, 1);
+            
             after[layer][i][j] = newPiece;
         });
     } else if (side === "F" || side === "B") {
         calcPieces((i, j, indexes) => {
             let newPiece = cube[indexes[0]][layer][indexes[1]];
+            
+            if (newPiece.length === 3 && amount !== 2)
+                newPiece = reorder(newPiece, 2, 1, 0);
+            else if (newPiece.length === 2 && amount !== 2)
+                newPiece = reorder(newPiece, 1, 0);
+            
             after[i][layer][j] = newPiece;
         });
     } else if (side === "L" || side === "R") {
         calcPieces((i, j, indexes) => {
             let newPiece = cube[indexes[0]][indexes[1]][layer];
-            console.log(newPiece);
-            if (amount !== 2 && newPiece.length === 3) {
-                const firstChar = newPiece[0],
-                      secondChar = newPiece[1],
-                      lastChar = newPiece[2];
-                newPiece = secondChar + firstChar + lastChar;
-            }
-            console.log(newPiece);
+            
+            if (newPiece.length === 3 && amount !== 2)
+                newPiece = reorder(newPiece, 1, 0, 2);
+            
             after[i][j][layer] = newPiece;
         });
     } else
@@ -160,13 +175,16 @@ function deepCopy(array) {
     return JSON.parse(JSON.stringify(array));
 }
 
-function reorder(string i1, i2, i3 = null) {
-    if (i3) return string[i1] + string[i2] + string[i3];
-    else return string[i1] + string[i2];
+function reorder(string, ...indexes) {
+    let newString = "";
+    for (let index of indexes)
+        newString += string[index];
+    return newString;
 }
 
-function display() {
+function displaySetup() {
     let cubeContainer = document.querySelector("#cube-container");
+    cubeContainer.style = "grid-template-columns: auto auto auto;";
     
     let gridItems = [
         null, "B", null,
@@ -188,15 +206,18 @@ function display() {
                 face.appendChild(piece);
             }
         }
+        face.style = `grid-template-columns: ${"auto ".repeat(cubeSize)};`;
         cubeContainer.appendChild(face);
     }
+}
+
+function display() {
     
     function colorPiece(face, row, col, color) {
         let faceElement = document.getElementById(face);
-        let piece = faceElement.children[row + cubeSize * col];
+        let piece = faceElement.children[col + cubeSize * row];
         piece.style.backgroundColor = colors[color];
     }
-    colorPiece("B", 1, 2, "y")
     
     
     for (let x = 0; x < cubeSize; x++) {
@@ -205,9 +226,29 @@ function display() {
             const line = plane[y];
             for (let z = 0; z < cubeSize; z++) {
                 const piece = line[z];
-                if (x === 0) { //U
-                    colorPiece("U", y, z, cube[0][y][z][0])
-                    console.log(y,z,cube[0][y][z])
+                
+                const caseX = (x === 0 || x === cubeSize - 1),
+                      caseY = (y === 0 || y === cubeSize - 1);
+                
+                if (x === 0) //U
+                    colorPiece("U", y, z, piece[0]);
+                else if (x === cubeSize - 1)
+                    colorPiece("D", cubeSize - 1 - y, z, piece[0]);
+                
+                const indexY = (caseX) ? 1 : 0;
+                if (y === 0) {
+                    colorPiece("B", cubeSize - 1 - x, z, piece[indexY])
+                } else if (y === cubeSize - 1) {
+                    colorPiece("F", x, z, piece[indexY])
+                }
+                
+                let indexZ = 0;
+                if (caseX || caseY) indexZ = 1;
+                if (caseX && caseY) indexZ = 2;
+                if (z === 0) {
+                    colorPiece("L", x, y, piece[indexZ])
+                } else if (z === cubeSize - 1) {
+                    colorPiece("R", x, cubeSize - 1 - y, piece[indexZ])
                 }
             }
         }

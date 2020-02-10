@@ -3,15 +3,17 @@
     padding: 0px;
 }
 
+body {
+    padding: 20px;
+}
+
 #cube-container {
     height: 500px;
     display: grid;
-    grid-template-columns: auto auto auto;
 }
 
 .face {
     display: grid;
-    grid-template-columns: auto auto auto;
     padding: 10px;
 }
 
