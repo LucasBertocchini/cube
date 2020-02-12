@@ -22,8 +22,9 @@
 */
 
 const cubeSize = 3;
-let cube = constructCube(cubeSize);
-const solvedCube = deepCopy(cube);
+let mainCube = constructCube(cubeSize);
+const solvedCube = deepCopy(mainCube);
+const stringedCube = JSON.stringify(solvedCube);
 const colors = {
     y: "yellow",
     w: "white",
@@ -32,27 +33,75 @@ const colors = {
     o: "orange",
     r: "red"
 };
+const sides = ["U", "D", "B", "F", "L", "R"],
+      turnAmounts = {"": 1, "'": -1, "2": 2};
 
 
 window.onload = () => {
-    let i = 0;
-    let table = true;
-    if (table) 
-        console.table(deepCopy(cube)[i]);
-    else
-        console.log(deepCopy(cube)[i]);
-    turn("B", -1);
-    if (table) 
-        console.table(deepCopy(cube)[i]);
-    else
-        console.log(deepCopy(cube)[i]);
-    displaySetup(); display();
+    displaySetup();
+    mainCube = turnSide(mainCube, "B", -1);
+    mainCube = turnSide(mainCube, "L");
+    console.log(bruteForce(2));
+    display();
 }
 
+//helper functions
+function deepCopy(array) {
+    return JSON.parse(JSON.stringify(array));
+}
+function reorder(string, ...indexes) {
+    let newString = "";
+    for (let index of indexes)
+        newString += string[index];
+    return newString;
+}
+function keyByValue(object, value) {
+    return Object.keys(object).find(
+        key => (object[key] === value)
+    );
+}
 
-
-
-function turn(side, amount = 1) {
+//cube functions
+function constructCube(size) {
+    if (isNaN(size) || size < 2 || size % 1 !== 0)
+        throw "size must be an integer greater than 1";
+    
+    let cube = [];
+    let s = size - 1;
+    
+    for (let x = 0; x < size; x++) {
+        cube.push([]);
+        let plane = cube[x];
+        
+        for (let y = 0; y < size; y++) {
+            plane.push([]);
+            let line = plane[y];
+            
+            for (let z = 0; z < size; z++) {
+                let piece = "";
+                
+                if (x === 0)
+                    piece += "y";
+                else if (x === s)
+                    piece += "w";
+                
+                if (y === 0)
+                    piece += "g";
+                else if (y === s)
+                    piece += "b";
+                
+                if (z === 0)
+                    piece += "o";
+                else if (z === s)
+                    piece += "r";
+                    
+                line.push(piece);
+            }
+        }
+    }
+    return cube;
+}
+function turnSide(cube, side, amount = 1) {
     // conjugate the direction for opposite sides
     if (["D", "B", "R"].includes(side) &&
         (amount === 1 || amount === -1))
@@ -129,59 +178,55 @@ function turn(side, amount = 1) {
         throw "side must be U, D, L, R, F, B, En, Sn, or Mn"
     
     cube = after;
+    return cube;
+}
+function isSolved(cube) {
+    return (JSON.stringify(cube) === stringedCube);
 }
 
-function constructCube(size) {
-    if (isNaN(size) || size < 2 || size % 1 !== 0)
-        throw "size must be an integer greater than 1";
-    
-    let cube = [];
-    let s = size - 1;
-    
-    for (let x = 0; x < size; x++) {
-        cube.push([]);
-        let plane = cube[x];
-        
-        for (let y = 0; y < size; y++) {
-            plane.push([]);
-            let line = plane[y];
-            
-            for (let z = 0; z < size; z++) {
-                let piece = "";
-                
-                if (x === 0)
-                    piece += "y";
-                else if (x === s)
-                    piece += "w";
-                
-                if (y === 0)
-                    piece += "g";
-                else if (y === s)
-                    piece += "b";
-                
-                if (z === 0)
-                    piece += "o";
-                else if (z === s)
-                    piece += "r";
-                    
-                line.push(piece);
+function bruteForce(n) { // main cube
+    /*for (let side of sides) {
+        for (let [turn, amount] of Object.entries(turnAmounts)) {
+            let cube = deepCopy(mainCube);
+            cube = turnSide(cube, side, amount);
+            if (isSolved(cube)) {
+                let moves = [side + turn];
+                return moves;
+            }
+        }
+    }*/
+    /*
+    if (n >= 2) {
+        for (let side1 of sides) {
+            for (let [turn1, amount1] of Object.entries(turnAmounts)) {
+                for (let side2 of sides) {
+                    for (let [turn2, amount2] of Object.entries(turnAmounts)) {
+                        let cube = deepCopy(mainCube);
+                        cube = turnSide(cube, side1, amount1);
+                        cube = turnSide(cube, side2, amount2);
+                        if (isSolved(cube)) {
+                            let moves = [side1 + turn1, side2 + turn2];
+                            return moves;
+                        }
+                    }
+                }
             }
         }
     }
-    return cube;
+    */
+    // for any n
+    let turns = [];
+    for (let side of sides) {
+        for (let [turn, amount] of Object.entries(turnAmounts)) {
+            turns.push({side, turn, amount});
+        }
+    }
+    console.log(turns)
+    
+    return false;
 }
 
-function deepCopy(array) {
-    return JSON.parse(JSON.stringify(array));
-}
-
-function reorder(string, ...indexes) {
-    let newString = "";
-    for (let index of indexes)
-        newString += string[index];
-    return newString;
-}
-
+//display functions
 function displaySetup() {
     let cubeContainer = document.querySelector("#cube-container");
     cubeContainer.style = "grid-template-columns: auto auto auto;";
@@ -209,8 +254,18 @@ function displaySetup() {
         face.style = `grid-template-columns: ${"auto ".repeat(cubeSize)};`;
         cubeContainer.appendChild(face);
     }
+    
+    for (let side of sides) {
+        let turnButton = document.createElement("button");
+        turnButton.id = side;
+        turnButton.innerHTML = "Turn " + side;
+        turnButton.onclick = () => {
+            mainCube = turnSide(mainCube, side);
+            display();
+        }
+        document.body.appendChild(turnButton);
+    }
 }
-
 function display() {
     
     function colorPiece(face, row, col, color) {
@@ -221,7 +276,7 @@ function display() {
     
     
     for (let x = 0; x < cubeSize; x++) {
-        const plane = cube[x];
+        const plane = mainCube[x];
         for (let y = 0; y < cubeSize; y++) {
             const line = plane[y];
             for (let z = 0; z < cubeSize; z++) {

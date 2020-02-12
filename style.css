@@ -20,3 +20,8 @@ body {
 .piece {
     border: 1px solid;
 }
+
+button {
+    margin: 10px;
+    padding: 10px;
+}
