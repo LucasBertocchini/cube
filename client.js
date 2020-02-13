@@ -39,9 +39,16 @@ const sides = ["U", "D", "B", "F", "L", "R"],
 
 window.onload = () => {
     displaySetup();
-    mainCube = turnSide(mainCube, "B", -1);
-    mainCube = turnSide(mainCube, "L");
-    console.log(bruteForce(2));
+    for (let i = 0; i < 2; i++) {
+        let side = sides[randomInt(sides.length)];
+        let amounts = Object.values(turnAmounts);
+        let amount = amounts[randomInt(amounts.length)];
+        console.log(side, amount);
+        mainCube = turnSide(mainCube, side, amount);
+    }
+    let solve = bruteForceSolve(2)
+    if (solve) console.log(...solve);
+    else console.log(false);
     display();
 }
 
@@ -59,6 +66,9 @@ function keyByValue(object, value) {
     return Object.keys(object).find(
         key => (object[key] === value)
     );
+}
+function randomInt(n) {
+    return Math.floor(Math.random() * n);
 }
 
 //cube functions
@@ -184,44 +194,41 @@ function isSolved(cube) {
     return (JSON.stringify(cube) === stringedCube);
 }
 
-function bruteForce(n) { // main cube
-    /*for (let side of sides) {
-        for (let [turn, amount] of Object.entries(turnAmounts)) {
-            let cube = deepCopy(mainCube);
-            cube = turnSide(cube, side, amount);
-            if (isSolved(cube)) {
-                let moves = [side + turn];
-                return moves;
-            }
-        }
-    }*/
-    /*
-    if (n >= 2) {
-        for (let side1 of sides) {
-            for (let [turn1, amount1] of Object.entries(turnAmounts)) {
-                for (let side2 of sides) {
-                    for (let [turn2, amount2] of Object.entries(turnAmounts)) {
-                        let cube = deepCopy(mainCube);
-                        cube = turnSide(cube, side1, amount1);
-                        cube = turnSide(cube, side2, amount2);
-                        if (isSolved(cube)) {
-                            let moves = [side1 + turn1, side2 + turn2];
-                            return moves;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    */
-    // for any n
+function bruteForceSolve(n) { // main cube
     let turns = [];
     for (let side of sides) {
-        for (let [turn, amount] of Object.entries(turnAmounts)) {
+        for (let [turn, amount] of Object.entries(turnAmounts))
             turns.push({side, turn, amount});
+    }
+    const length = turns.length;
+    
+    for (let amount = 1; amount <= n; amount++) {
+        let indices = Array(amount).fill(0);
+        for (let i = amount; i >= 0;) {
+            let cube = deepCopy(mainCube);
+            for (let index of indices) {
+                let turn = turns[index];
+                /*if (index > 0 && turn.side === turns[index - 1].side)
+                    break;*/
+                cube = turnSide(cube, turn.side, turn.amount)
+            }
+            if (isSolved(cube)) {
+                let moves = [];
+                for (let i of indices)
+                    moves.push(turns[i]);
+                return moves;
+            }
+
+            for (i = amount; i--;) {
+                if (indices[i] < length - 1) {
+                    indices[i]++;
+                    break;
+                }
+                indices[i] = 0;
+            }
         }
     }
-    console.log(turns)
+    
     
     return false;
 }
