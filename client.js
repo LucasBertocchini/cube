@@ -21,10 +21,14 @@
 ]
 */
 
+//import {bruteForceSolve} from "./bruteForceSolve.js";
+
 const cubeSize = 3;
+
 let mainCube = constructCube(cubeSize);
-const solvedCube = deepCopy(mainCube);
-const stringedCube = JSON.stringify(solvedCube);
+const solvedCube = deepCopy(mainCube),
+      stringedCube = JSON.stringify(solvedCube);
+
 const colors = {
     y: "yellow",
     w: "white",
@@ -32,23 +36,19 @@ const colors = {
     b: "blue",
     o: "orange",
     r: "red"
-};
-const sides = ["U", "D", "B", "F", "L", "R"],
-      turnAmounts = {"": 1, "'": -1, "2": 2};
+},
+      sides = ["U", "D", "B", "F", "L", "R"],
+      turnAmounts = [1, -1, 2];
+
+let turns = [];
+sides.forEach(side => {
+    turnAmounts.forEach(amount => turns.push({side, amount}));
+});
+const turnsLength = turns.length;
 
 
 window.onload = () => {
     displaySetup();
-    for (let i = 0; i < 2; i++) {
-        let side = sides[randomInt(sides.length)];
-        let amounts = Object.values(turnAmounts);
-        let amount = amounts[randomInt(amounts.length)];
-        console.log(side, amount);
-        mainCube = turnSide(mainCube, side, amount);
-    }
-    let solve = bruteForceSolve(2)
-    if (solve) console.log(...solve);
-    else console.log(false);
     display();
 }
 
@@ -61,14 +61,6 @@ function reorder(string, ...indexes) {
     for (let index of indexes)
         newString += string[index];
     return newString;
-}
-function keyByValue(object, value) {
-    return Object.keys(object).find(
-        key => (object[key] === value)
-    );
-}
-function randomInt(n) {
-    return Math.floor(Math.random() * n);
 }
 
 //cube functions
@@ -194,125 +186,52 @@ function isSolved(cube) {
     return (JSON.stringify(cube) === stringedCube);
 }
 
-function bruteForceSolve(n) { // main cube
-    let turns = [];
-    for (let side of sides) {
-        for (let [turn, amount] of Object.entries(turnAmounts))
-            turns.push({side, turn, amount});
-    }
-    const length = turns.length;
-    
-    for (let amount = 1; amount <= n; amount++) {
-        let indices = Array(amount).fill(0);
-        for (let i = amount; i >= 0;) {
-            let cube = deepCopy(mainCube);
-            for (let index of indices) {
-                let turn = turns[index];
-                /*if (index > 0 && turn.side === turns[index - 1].side)
-                    break;*/
-                cube = turnSide(cube, turn.side, turn.amount)
+function moveSets(n) {
+    let indices = Array(n).fill(0);
+    let length = sides.length;
+    let turnAmounts = [1, -1, 2];
+    for (let i = n; i >= 0;) {
+        
+        function sameIndices() {
+            for (let j = 1; j < n; j++) {
+                if (indices[j] === indices[j - 1])
+                    return true;
             }
-            if (isSolved(cube)) {
+        }
+        if (!sameIndices()) {
+            let indices2 = Array(n).fill(0);
+            for (let j = n; j >= 0;) {
+                
+                let cube = deepCopy(mainCube);
                 let moves = [];
-                for (let i of indices)
-                    moves.push(turns[i]);
-                return moves;
-            }
-
-            for (i = amount; i--;) {
-                if (indices[i] < length - 1) {
-                    indices[i]++;
-                    break;
+                for (let k = 0; k < n; k++) {
+                    let index1 = indices[k];
+                    let index2 = indices2[k];
+                    let side = sides[index1];
+                    let amount = turnAmounts[index2];
+                    moves.push({side, amount});
                 }
-                indices[i] = 0;
-            }
-        }
-    }
-    
-    
-    return false;
-}
-
-//display functions
-function displaySetup() {
-    let cubeContainer = document.querySelector("#cube-container");
-    cubeContainer.style = "grid-template-columns: auto auto auto;";
-    
-    let gridItems = [
-        null, "B", null,
-        null, "U", null,
-        "L" , "F", "R" ,
-        null, "D", null
-    ];
-    
-    for (let gridItem of gridItems) {
-        let face = document.createElement("div");
-        face.className = "face";
-        if (gridItem) {
-            face.id = gridItem;
-            
-            for (let i = 0; i < cubeSize ** 2; i++) {
-                let piece = document.createElement("div");
-                piece.className = "piece";
-                if (i === (cubeSize ** 2 - 1) / 2) piece.innerHTML = gridItem;
-                face.appendChild(piece);
-            }
-        }
-        face.style = `grid-template-columns: ${"auto ".repeat(cubeSize)};`;
-        cubeContainer.appendChild(face);
-    }
-    
-    for (let side of sides) {
-        let turnButton = document.createElement("button");
-        turnButton.id = side;
-        turnButton.innerHTML = "Turn " + side;
-        turnButton.onclick = () => {
-            mainCube = turnSide(mainCube, side);
-            display();
-        }
-        document.body.appendChild(turnButton);
-    }
-}
-function display() {
-    
-    function colorPiece(face, row, col, color) {
-        let faceElement = document.getElementById(face);
-        let piece = faceElement.children[col + cubeSize * row];
-        piece.style.backgroundColor = colors[color];
-    }
-    
-    
-    for (let x = 0; x < cubeSize; x++) {
-        const plane = mainCube[x];
-        for (let y = 0; y < cubeSize; y++) {
-            const line = plane[y];
-            for (let z = 0; z < cubeSize; z++) {
-                const piece = line[z];
+                let solved = false;
+                //while (!solved) {
+                    
+                //}
                 
-                const caseX = (x === 0 || x === cubeSize - 1),
-                      caseY = (y === 0 || y === cubeSize - 1);
-                
-                if (x === 0) //U
-                    colorPiece("U", y, z, piece[0]);
-                else if (x === cubeSize - 1)
-                    colorPiece("D", cubeSize - 1 - y, z, piece[0]);
-                
-                const indexY = (caseX) ? 1 : 0;
-                if (y === 0) {
-                    colorPiece("B", cubeSize - 1 - x, z, piece[indexY])
-                } else if (y === cubeSize - 1) {
-                    colorPiece("F", x, z, piece[indexY])
-                }
-                
-                let indexZ = 0;
-                if (caseX || caseY) indexZ = 1;
-                if (caseX && caseY) indexZ = 2;
-                if (z === 0) {
-                    colorPiece("L", x, y, piece[indexZ])
-                } else if (z === cubeSize - 1) {
-                    colorPiece("R", x, cubeSize - 1 - y, piece[indexZ])
+                for (j = n; j--;) {
+                    if (indices2[j] < 3 - 1) {
+                        indices2[j]++;
+                        break;
+                    }
+                    indices2[j] = 0;
                 }
             }
+        }
+        
+        for (i = n; i--;) {
+            if (indices[i] < length - 1) {
+                indices[i]++;
+                break;
+            }
+            indices[i] = 0;
         }
     }
 }
