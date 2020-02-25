@@ -37,9 +37,27 @@ const colors = {
     o: "orange",
     r: "red"
 },
-      sides = ["U", "D", "B", "F", "L", "R"],
-      turnAmounts = [1, -1, 2];
+      middles = ["E", "S", "M"],
+      turnAmounts = [1, -1, 2],
+      layers = {
+        U: 0,
+        E: 1,
+        D: cubeSize - 1,
+        B: 0,
+        S: 1,
+        F: cubeSize - 1,
+        L: 0,
+        M: 1,
+        R: cubeSize - 1
+    };
 
+let sides = ["U", "D", "F", "B", "L", "R"];
+if (cubeSize === 3) middles.forEach(middle => sides.push(middle));
+else if (cubeSize > 3) {
+    for (let layer = 1; layer < cubeSize - 1; layer++) {
+        middles.forEach(middle => sides.push(middle + layer.toString()));
+    }
+}
 let turns = [];
 sides.forEach(side => {
     turnAmounts.forEach(amount => turns.push({side, amount}));
@@ -104,21 +122,17 @@ function constructCube(size) {
     return cube;
 }
 function turnSide(cube, side, amount = 1) {
+    if (!turnAmounts.includes(amount)) throw "turn amount must be 1, -1, or 2";
+
     // conjugate the direction for opposite sides
-    if (["D", "B", "R"].includes(side) &&
-        (amount === 1 || amount === -1))
-            amount *= -1;
+    if (["D", "B", "R"].includes(side) && amount !== 2)
+        amount *= -1;
+
     
-    const layers = {
-        U: 0,
-        D: cubeSize - 1,
-        L: 0,
-        R: cubeSize - 1,
-        B: 0,
-        F: cubeSize - 1
+    let layer = layers[side];
+    if (layer === undefined) {
+        layer = parseInt(side.slice(1));
     }
-    
-    const layer = layers[side];
     let after = deepCopy(cube);
     
     function calcIndexes(i, j, iPrime, jPrime) {
@@ -129,8 +143,6 @@ function turnSide(cube, side, amount = 1) {
             indexes = [j, iPrime];
         else if (amount === 2)
             indexes = [iPrime, jPrime];
-        else
-            throw "turn amount must be 1, -1, or 2";
         return indexes;
     }
     
@@ -144,7 +156,7 @@ function turnSide(cube, side, amount = 1) {
             }
         }
     }
-    
+        //"E", "S", "M"
     /* loops are inside the if statements to avoid calling if's
     many times unnecisarily */
     if (side === "U" || side === "D") {
@@ -176,9 +188,20 @@ function turnSide(cube, side, amount = 1) {
             
             after[i][j][layer] = newPiece;
         });
-    } else
-        throw "side must be U, D, L, R, F, B, En, Sn, or Mn"
-    
+    } else if (side === "M" || side[0] === "M") {
+        calcPieces((i, j, indexes) => {
+            let newPiece = cube[layer][indexes[0]][indexes[1]];
+            
+            if (newPiece.length === 2 && amount !== 2)
+                newPiece = reorder(newPiece, 1, 0);
+            
+            after[layer][i][j] = newPiece;
+        });
+    } else if (side === 1) {
+        
+    } else if (side === 1) {
+        
+    } else throw "side must be U, D, L, R, F, B, E(n), S(n), or M(n)"
     cube = after;
     return cube;
 }
