@@ -26,8 +26,7 @@
 const cubeSize = 3;
 
 let mainCube = constructCube(cubeSize);
-const solvedCube = deepCopy(mainCube),
-      stringedCube = JSON.stringify(solvedCube);
+const solvedCube = deepCopy(mainCube);
 
 const colors = {
     y: "yellow",
@@ -58,6 +57,7 @@ else if (cubeSize > 3) {
         middles.forEach(middle => sides.push(middle + layer.toString()));
     }
 }
+
 let turns = [];
 sides.forEach(side => {
     turnAmounts.forEach(amount => turns.push({side, amount}));
@@ -65,10 +65,31 @@ sides.forEach(side => {
 const turnsLength = turns.length;
 
 
+
+
+
+
+
+
+
 window.onload = () => {
     displaySetup();
+    isSolved(mainCube)
     display();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //helper functions
 function deepCopy(array) {
@@ -130,9 +151,7 @@ function turnSide(cube, side, amount = 1) {
 
     
     let layer = layers[side];
-    if (layer === undefined) {
-        layer = parseInt(side.slice(1));
-    }
+    if (layer === undefined) layer = parseInt(side.slice(1));
     let after = deepCopy(cube);
     
     function calcIndexes(i, j, iPrime, jPrime) {
@@ -156,7 +175,7 @@ function turnSide(cube, side, amount = 1) {
             }
         }
     }
-        //"E", "S", "M"
+    
     /* loops are inside the if statements to avoid calling if's
     many times unnecisarily */
     if (side === "U" || side === "D") {
@@ -188,7 +207,7 @@ function turnSide(cube, side, amount = 1) {
             
             after[i][j][layer] = newPiece;
         });
-    } else if (side === "M" || side[0] === "M") {
+    } else if (side[0] === "E") {
         calcPieces((i, j, indexes) => {
             let newPiece = cube[layer][indexes[0]][indexes[1]];
             
@@ -197,16 +216,152 @@ function turnSide(cube, side, amount = 1) {
             
             after[layer][i][j] = newPiece;
         });
-    } else if (side === 1) {
+    } else if (side[0] === "S") {
+        calcPieces((i, j, indexes) => {
+            let newPiece = cube[indexes[0]][layer][indexes[1]];
+            
+            if (newPiece.length === 2 && amount !== 2)
+                newPiece = reorder(newPiece, 1, 0);
+            
+            after[i][layer][j] = newPiece;
+        });
+    } else if (side[0] === "M") {
+        calcPieces((i, j, indexes) => {
+            let newPiece = cube[indexes[0]][indexes[1]][layer];
+            
+            if (newPiece.length === 2 && amount !== 2)
+                newPiece = reorder(newPiece, 1, 0);
+            
+            after[i][j][layer] = newPiece;
+        });
+    } else throw "side must be U, D, L, R, F, B, E(n), S(n), or M(n)";
+    
+    return after;
+}
+function turnCube(cube, axis, amount = 1) {
+    let after = deepCopy(cube);
+    
+    if (axis === "x") {
+        let tempCube = turnSide(cube, "R");
+        tempCube = turnSide(tempCube, "M", -1);
+        tempCube = turnSide(tempCube, "L", -1);
+        after = tempCube;
+    } else if (axis === "y") {
         
-    } else if (side === 1) {
+    } else if (axis === "z") {
         
-    } else throw "side must be U, D, L, R, F, B, E(n), S(n), or M(n)"
-    cube = after;
-    return cube;
+    }
+    
+    return after;
 }
 function isSolved(cube) {
-    return (JSON.stringify(cube) === stringedCube);
+    /*let firstPiece = cube[0][0][0],
+        lastPiece = cube[cubeSize - 1][cubeSize - 1][cubeSize - 1],
+        U = firstPiece[0],
+        D = lastPiece[0],
+        F = lastPiece[1],
+        B = firstPiece[1],
+        L = firstPiece[2],
+        R = lastPiece[2];
+    
+    for (let i = 0; i < cube.length; i++) {
+        const plane = cube[i];
+        for (let j = 0; j < cube.length; j++) {
+            const line = plane[j];
+            for (let k = 0; k < cube.length; k++) {
+                const piece = line[k],
+                      icolor = piece[0],
+                      jcolor = (i === 0 || i === cubeSize - 1) ? piece[1] : piece[0],
+                      kcolor = piece[piece.length - 1];
+                
+                if (i === 0) {
+                    if (U !== icolor) return false;
+                    U = icolor;
+                } else if (i === cubeSize - 1) {
+                    if (D !== icolor) return false;
+                    D = icolor;
+                }
+                
+                if (j === 0) {
+                    if (B !== jcolor) return false;
+                    B = jcolor;
+                } else if (j === cubeSize - 1) {
+                    if (F !== jcolor) return false;
+                    F = jcolor;
+                }
+                
+                if (k === 0) {
+                    if (L !== kcolor) return false;
+                    L = kcolor;
+                } else if (k === cubeSize - 1) {
+                    if (R !== kcolor) return false;
+                    R = kcolor;
+                }
+            }
+        }
+    }
+    return true;*/
+    let solvedCubes = [];
+    let tempCube = solvedCube;
+    
+    for (let i = 0; i < 4; i++) {
+        solvedCubes.push(tempCube);
+        tempCube = turnSide(solvedCube, "F");
+        tempCube = turnSide(tempCube, "S");
+        tempCube = turnSide(tempCube, "B", -1);
+    }
+    
+    tempCube = turnSide(solvedCube, "U");
+    tempCube = turnSide(tempCube, "E");
+    tempCube = turnSide(tempCube, "D", -1);
+    for (let i = 0; i < 4; i++) {
+        solvedCubes.push(tempCube);
+        tempCube = turnSide(solvedCube, "F");
+        tempCube = turnSide(tempCube, "S");
+        tempCube = turnSide(tempCube, "B", -1);
+    }
+    
+    tempCube = turnSide(solvedCube, "L");
+    tempCube = turnSide(tempCube, "M");
+    tempCube = turnSide(tempCube, "R", -1);
+    for (let i = 0; i < 4; i++) {
+        solvedCubes.push(tempCube);
+        tempCube = turnSide(solvedCube, "F");
+        tempCube = turnSide(tempCube, "S");
+        tempCube = turnSide(tempCube, "B", -1);
+    }
+    
+    tempCube = turnSide(solvedCube, "U");
+    tempCube = turnSide(tempCube, "E");
+    tempCube = turnSide(tempCube, "D", -1);
+    for (let i = 0; i < 4; i++) {
+        solvedCubes.push(tempCube);
+        tempCube = turnSide(solvedCube, "F");
+        tempCube = turnSide(tempCube, "S");
+        tempCube = turnSide(tempCube, "B", -1);
+    }
+    
+    tempCube = turnSide(solvedCube, "L");
+    tempCube = turnSide(tempCube, "M");
+    tempCube = turnSide(tempCube, "R", -1);
+    for (let i = 0; i < 4; i++) {
+        solvedCubes.push(tempCube);
+        tempCube = turnSide(solvedCube, "F");
+        tempCube = turnSide(tempCube, "S");
+        tempCube = turnSide(tempCube, "B", -1);
+    }
+    
+    tempCube = turnSide(solvedCube, "U");
+    tempCube = turnSide(tempCube, "E");
+    tempCube = turnSide(tempCube, "D", -1);
+    for (let i = 0; i < 4; i++) {
+        solvedCubes.push(tempCube);
+        tempCube = turnSide(solvedCube, "F");
+        tempCube = turnSide(tempCube, "S");
+        tempCube = turnSide(tempCube, "B", -1);
+    }
+    
+    console.log(solvedCubes);
 }
 
 function moveSets(n) {
