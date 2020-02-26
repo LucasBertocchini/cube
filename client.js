@@ -21,8 +21,6 @@
 ]
 */
 
-//import {bruteForceSolve} from "./bruteForceSolve.js";
-
 const cubeSize = 3;
 
 let mainCube = constructCube(cubeSize);
@@ -65,6 +63,7 @@ sides.forEach(side => {
 const turnsLength = turns.length;
 
 
+    
 
 
 
@@ -74,7 +73,10 @@ const turnsLength = turns.length;
 
 window.onload = () => {
     displaySetup();
-    isSolved(mainCube)
+    
+    randomizeCube(50, false);
+    console.log(beginnerSolve3());
+    
     display();
 }
 
@@ -100,6 +102,9 @@ function reorder(string, ...indexes) {
     for (let index of indexes)
         newString += string[index];
     return newString;
+}
+function randInt(n) {
+    return Math.floor(Math.random() * n);
 }
 
 //cube functions
@@ -239,130 +244,34 @@ function turnSide(cube, side, amount = 1) {
     return after;
 }
 function turnCube(cube, axis, amount = 1) {
-    let after = deepCopy(cube);
+    let after,
+        negAmount = (amount === 2) ? 2 : -amount;
     
     if (axis === "x") {
-        let tempCube = turnSide(cube, "R");
-        tempCube = turnSide(tempCube, "M", -1);
-        tempCube = turnSide(tempCube, "L", -1);
-        after = tempCube;
+        after = turnSide(cube, "R", amount);
+        after = turnSide(after, "M", negAmount);
+        after = turnSide(after, "L", negAmount);
     } else if (axis === "y") {
-        
+        after = turnSide(cube, "U", amount);
+        after = turnSide(after, "E", amount);
+        after = turnSide(after, "D", negAmount);
     } else if (axis === "z") {
-        
-    }
+        after = turnSide(cube, "F", amount);
+        after = turnSide(after, "S", amount);
+        after = turnSide(after, "B", negAmount);
+    } else throw "axis must be x, y, or z";
     
     return after;
 }
-function isSolved(cube) {
-    /*let firstPiece = cube[0][0][0],
-        lastPiece = cube[cubeSize - 1][cubeSize - 1][cubeSize - 1],
-        U = firstPiece[0],
-        D = lastPiece[0],
-        F = lastPiece[1],
-        B = firstPiece[1],
-        L = firstPiece[2],
-        R = lastPiece[2];
-    
-    for (let i = 0; i < cube.length; i++) {
-        const plane = cube[i];
-        for (let j = 0; j < cube.length; j++) {
-            const line = plane[j];
-            for (let k = 0; k < cube.length; k++) {
-                const piece = line[k],
-                      icolor = piece[0],
-                      jcolor = (i === 0 || i === cubeSize - 1) ? piece[1] : piece[0],
-                      kcolor = piece[piece.length - 1];
-                
-                if (i === 0) {
-                    if (U !== icolor) return false;
-                    U = icolor;
-                } else if (i === cubeSize - 1) {
-                    if (D !== icolor) return false;
-                    D = icolor;
-                }
-                
-                if (j === 0) {
-                    if (B !== jcolor) return false;
-                    B = jcolor;
-                } else if (j === cubeSize - 1) {
-                    if (F !== jcolor) return false;
-                    F = jcolor;
-                }
-                
-                if (k === 0) {
-                    if (L !== kcolor) return false;
-                    L = kcolor;
-                } else if (k === cubeSize - 1) {
-                    if (R !== kcolor) return false;
-                    R = kcolor;
-                }
-            }
-        }
+function randomizeCube(order, log = true) {
+    for (let i = 0; i < order; i++) {
+        let index = randInt(turnsLength);
+        let turn = turns[index];
+        if (log) console.log(turn);
+        mainCube = turnSide(mainCube, turn.side, turn.amount);
     }
-    return true;*/
-    let solvedCubes = [];
-    let tempCube = solvedCube;
-    
-    for (let i = 0; i < 4; i++) {
-        solvedCubes.push(tempCube);
-        tempCube = turnSide(solvedCube, "F");
-        tempCube = turnSide(tempCube, "S");
-        tempCube = turnSide(tempCube, "B", -1);
-    }
-    
-    tempCube = turnSide(solvedCube, "U");
-    tempCube = turnSide(tempCube, "E");
-    tempCube = turnSide(tempCube, "D", -1);
-    for (let i = 0; i < 4; i++) {
-        solvedCubes.push(tempCube);
-        tempCube = turnSide(solvedCube, "F");
-        tempCube = turnSide(tempCube, "S");
-        tempCube = turnSide(tempCube, "B", -1);
-    }
-    
-    tempCube = turnSide(solvedCube, "L");
-    tempCube = turnSide(tempCube, "M");
-    tempCube = turnSide(tempCube, "R", -1);
-    for (let i = 0; i < 4; i++) {
-        solvedCubes.push(tempCube);
-        tempCube = turnSide(solvedCube, "F");
-        tempCube = turnSide(tempCube, "S");
-        tempCube = turnSide(tempCube, "B", -1);
-    }
-    
-    tempCube = turnSide(solvedCube, "U");
-    tempCube = turnSide(tempCube, "E");
-    tempCube = turnSide(tempCube, "D", -1);
-    for (let i = 0; i < 4; i++) {
-        solvedCubes.push(tempCube);
-        tempCube = turnSide(solvedCube, "F");
-        tempCube = turnSide(tempCube, "S");
-        tempCube = turnSide(tempCube, "B", -1);
-    }
-    
-    tempCube = turnSide(solvedCube, "L");
-    tempCube = turnSide(tempCube, "M");
-    tempCube = turnSide(tempCube, "R", -1);
-    for (let i = 0; i < 4; i++) {
-        solvedCubes.push(tempCube);
-        tempCube = turnSide(solvedCube, "F");
-        tempCube = turnSide(tempCube, "S");
-        tempCube = turnSide(tempCube, "B", -1);
-    }
-    
-    tempCube = turnSide(solvedCube, "U");
-    tempCube = turnSide(tempCube, "E");
-    tempCube = turnSide(tempCube, "D", -1);
-    for (let i = 0; i < 4; i++) {
-        solvedCubes.push(tempCube);
-        tempCube = turnSide(solvedCube, "F");
-        tempCube = turnSide(tempCube, "S");
-        tempCube = turnSide(tempCube, "B", -1);
-    }
-    
-    console.log(solvedCubes);
 }
+
 
 function moveSets(n) {
     let indices = Array(n).fill(0);

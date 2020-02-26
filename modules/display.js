@@ -33,9 +33,12 @@ function displaySetup() {
         cubeContainer.appendChild(face);
     }
     
+    
+    
+    
+    
     for (let side of sides) {
         let turnButton = document.createElement("button");
-        turnButton.id = side;
         turnButton.innerHTML = "Turn " + side;
         turnButton.onclick = e => {
             let turn = {side, amount: 1};
@@ -55,6 +58,37 @@ function displaySetup() {
     
     addBreak();
     
+    for (let axis of ["x", "y", "z"]) {
+        let rotateButton = document.createElement("button");
+        rotateButton.innerHTML = "Rotate " + axis;
+        rotateButton.onclick = e => {
+            console.log("rotate " + axis);
+            mainCube = turnCube(mainCube, axis);
+            display();
+        }
+        rotateButton.oncontextmenu = e => {
+            console.log("rotate " + axis + "'");
+            mainCube = turnCube(mainCube, axis, -1);
+            display();
+            return false;
+        }
+        document.body.appendChild(rotateButton);
+    }
+    
+    addBreak();
+    
+    for (let i of [1, 2, 3, 5, 10, 100]) {
+        let randomizeCubeButton = document.createElement("button");
+        randomizeCubeButton.innerHTML = "Randomize " + i;
+        randomizeCubeButton.onclick = e => {
+            randomizeCube(i);
+            display();
+        }
+        document.body.appendChild(randomizeCubeButton);
+    }
+    
+    addBreak();
+    
     for (let i = 1; i <= 5; i++) {
         let bruteForceSolveButton = document.createElement("button");
         bruteForceSolveButton.innerHTML = "Brute Force " + i;
@@ -65,6 +99,13 @@ function displaySetup() {
         }
         document.body.appendChild(bruteForceSolveButton);
     }
+    
+    addBreak();
+    
+    let beginnerSolve3Button = document.createElement("button");
+    beginnerSolve3Button.innerHTML = "Beginner Solve 3";
+    beginnerSolve3Button.onclick = e => beginnerSolve3(mainCube);
+    document.body.appendChild(beginnerSolve3Button);
     
     addBreak();
     
