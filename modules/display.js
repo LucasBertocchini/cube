@@ -43,13 +43,13 @@ function displaySetup() {
         turnButton.onclick = e => {
             let turn = {side, amount: 1};
             console.log(turn);
-            mainCube = turnSide(mainCube, side);
+            mainCube.turn(side);
             display();
         }
         turnButton.oncontextmenu = e => {
             let turn = {side, amount: -1};
             console.log(turn);
-            mainCube = turnSide(mainCube, side, -1);
+            mainCube.turn(side, -1);
             display();
             return false;
         }
@@ -63,12 +63,12 @@ function displaySetup() {
         rotateButton.innerHTML = "Rotate " + axis;
         rotateButton.onclick = e => {
             console.log("rotate " + axis);
-            mainCube = turnCube(mainCube, axis);
+            mainCube.turnCube(axis);
             display();
         }
         rotateButton.oncontextmenu = e => {
             console.log("rotate " + axis + "'");
-            mainCube = turnCube(mainCube, axis, -1);
+            mainCube.turnCube(axis, -1);
             display();
             return false;
         }
@@ -104,7 +104,7 @@ function displaySetup() {
     
     let beginnerSolve3Button = document.createElement("button");
     beginnerSolve3Button.innerHTML = "Beginner Solve 3";
-    beginnerSolve3Button.onclick = e => beginnerSolve3(mainCube);
+    beginnerSolve3Button.onclick = e => beginnerSolve3(mainCube.pieces);
     document.body.appendChild(beginnerSolve3Button);
     
     addBreak();
@@ -113,7 +113,7 @@ function displaySetup() {
     resetButton.innerHTML = "Reset";
     resetButton.onclick = e => {
         console.clear();
-        mainCube = solvedCube;
+        mainCube.pieces = solvedCube;
         display();
     }
     document.body.appendChild(resetButton);
@@ -129,7 +129,7 @@ function display() {
     
     
     for (let x = 0; x < cubeSize; x++) {
-        const plane = mainCube[x];
+        const plane = mainCube.pieces[x];
         for (let y = 0; y < cubeSize; y++) {
             const line = plane[y];
             for (let z = 0; z < cubeSize; z++) {

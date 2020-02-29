@@ -1,17 +1,17 @@
 "use strict";
 
 function bruteForceSolve(order) {
-    if (isSolved(mainCube)) return [];
+    if (isSolved(mainCube.pieces)) return [];
     if (order < 1) throw "brute force order must be an integer >= 1";
     
     for (let turn of turns) {
-        let cube = turnSide(mainCube, turn.side, turn.amount);
+        let cube = mainCube.returnTurn(turn.side, turn.amount);
         if (isSolved(cube)) return [turn];
     }
     
     if (order >= 2) {
         let cubeList = [];
-        cubeList.push(turnSide(mainCube, "U"));
+        cubeList.push(mainCube.turnSide("U"));
 
         let indices = [0, 0];
         for (let i = 2; i >= 0;) {
@@ -24,7 +24,7 @@ function bruteForceSolve(order) {
 
             if (noRepeatedSide) {
                 let turn = turns[indices[1]];
-                let cube = turnSide(cubeList[0], turn.side, turn.amount);
+                let cube = cubeList[0].turnSide(turn.side, turn.amount);
                 if (isSolved(cube)) {
                     let moves = [];
                     for (let index of indices) {

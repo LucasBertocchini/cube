@@ -1,14 +1,15 @@
 "use strict";
 
 let solvedCubes = [];
-let tempCube = solvedCube;
-tempCube = turnCube(tempCube, "x", 1);
+let tempCube = new Cube(cubeSize);
+tempCube.turnCube("x", 1);
 for (let i = 0; i < 6; i++) { // 6 faces
-    tempCube = (i % 2 === 0) ? turnCube(tempCube, "x", -1) : turnCube(tempCube, "y");
+    if (i % 2 === 0) tempCube.turnCube("x", -1);
+    else tempCube.turnCube("y");
     for (let j = 0; j < 4; j++) { // 4 rotations per face
         const stringedCube = JSON.stringify(tempCube);
         solvedCubes.push(stringedCube);
-        tempCube = turnCube(tempCube, "z");
+        tempCube.turnCube("z");
     }
 }
 
