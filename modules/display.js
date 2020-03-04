@@ -89,11 +89,11 @@ function displaySetup() {
     
     addBreak();
     
-    for (let i = 1; i <= 5; i++) {
+    for (let i = 1; i <= 4; i++) {
         let bruteForceSolveButton = document.createElement("button");
         bruteForceSolveButton.innerHTML = "Brute Force " + i;
         bruteForceSolveButton.onclick = e => {
-            let solve = bruteForceSolve(i);
+            let solve = mainCube.bruteForce(i);
             console.log(solve);
             display();
         }

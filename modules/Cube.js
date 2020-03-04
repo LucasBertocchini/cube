@@ -19,20 +19,12 @@ class Cube {
                 for (let z = 0; z < size; z++) {
                     let piece = "";
 
-                    if (x === 0)
-                        piece += "y";
-                    else if (x === s)
-                        piece += "w";
-
-                    if (y === 0)
-                        piece += "g";
-                    else if (y === s)
-                        piece += "b";
-
-                    if (z === 0)
-                        piece += "o";
-                    else if (z === s)
-                        piece += "r";
+                    if      (x === 0) piece += "y";
+                    else if (x === s) piece += "w";
+                    if      (y === 0) piece += "g";
+                    else if (y === s) piece += "b";
+                    if      (z === 0) piece += "o";
+                    else if (z === s) piece += "r";
 
                     line.push(piece);
                 }
@@ -41,7 +33,7 @@ class Cube {
         this.pieces = cube;
     }
     
-    turn(side, amount = 1, updateNotReturn = true) {
+    static turn(pieces, side, amount = 1) {
         if (!turnAmounts.includes(amount)) throw "turn amount must be 1, -1, or 2";
 
         // conjugate the direction for opposite sides
@@ -51,7 +43,7 @@ class Cube {
 
         let layer = layers[side];
         if (layer === undefined) layer = parseInt(side.slice(1));
-        let after = deepCopy(this.pieces);
+        let after = deepCopy(pieces);
 
         function calcIndexes(i, j, iPrime, jPrime) {
             let indexes;
@@ -79,7 +71,7 @@ class Cube {
         many times unnecisarily */
         if (side === "U" || side === "D") {
             calcPieces((i, j, indexes) => {
-                let newPiece = this.pieces[layer][indexes[0]][indexes[1]];
+                let newPiece = pieces[layer][indexes[0]][indexes[1]];
 
                 if (newPiece.length === 3 && amount !== 2)
                     newPiece = reorder(newPiece, 0, 2, 1);
@@ -88,7 +80,7 @@ class Cube {
             });
         } else if (side === "F" || side === "B") {
             calcPieces((i, j, indexes) => {
-                let newPiece = this.pieces[indexes[0]][layer][indexes[1]];
+                let newPiece = pieces[indexes[0]][layer][indexes[1]];
 
                 if (newPiece.length === 3 && amount !== 2)
                     newPiece = reorder(newPiece, 2, 1, 0);
@@ -99,7 +91,7 @@ class Cube {
             });
         } else if (side === "L" || side === "R") {
             calcPieces((i, j, indexes) => {
-                let newPiece = this.pieces[indexes[0]][indexes[1]][layer];
+                let newPiece = pieces[indexes[0]][indexes[1]][layer];
 
                 if (newPiece.length === 3 && amount !== 2)
                     newPiece = reorder(newPiece, 1, 0, 2);
@@ -108,7 +100,7 @@ class Cube {
             });
         } else if (side[0] === "E") {
             calcPieces((i, j, indexes) => {
-                let newPiece = this.pieces[layer][indexes[0]][indexes[1]];
+                let newPiece = pieces[layer][indexes[0]][indexes[1]];
 
                 if (newPiece.length === 2 && amount !== 2)
                     newPiece = reorder(newPiece, 1, 0);
@@ -117,7 +109,7 @@ class Cube {
             });
         } else if (side[0] === "S") {
             calcPieces((i, j, indexes) => {
-                let newPiece = this.pieces[indexes[0]][layer][indexes[1]];
+                let newPiece = pieces[indexes[0]][layer][indexes[1]];
 
                 if (newPiece.length === 2 && amount !== 2)
                     newPiece = reorder(newPiece, 1, 0);
@@ -126,7 +118,7 @@ class Cube {
             });
         } else if (side[0] === "M") {
             calcPieces((i, j, indexes) => {
-                let newPiece = this.pieces[indexes[0]][indexes[1]][layer];
+                let newPiece = pieces[indexes[0]][indexes[1]][layer];
 
                 if (newPiece.length === 2 && amount !== 2)
                     newPiece = reorder(newPiece, 1, 0);
@@ -135,12 +127,11 @@ class Cube {
             });
         } else throw "side must be U, D, L, R, F, B, E(n), S(n), or M(n)";
 
-        if (updateNotReturn) this.pieces = after;
-        else return after;
+        return after;
     }
     
-    returnTurn(side, amount = 1) {
-        return this.turn(side, amount, false);
+    turn(side, amount = 1) {
+        this.pieces = Cube.turn(this.pieces, side, amount);
     }
     
     turnCube(axis, amount = 1) {
@@ -160,5 +151,23 @@ class Cube {
             this.turn("S", amount);
             this.turn("B", negAmount);
         } else throw "axis must be x, y, or z";
+    }
+    
+    isSolved() {
+        return Cube.isSolved(this.pieces);
+    }
+    
+    static isSolved(pieces) {
+        return cubeIsSolved(pieces);
+    }
+    
+    copy() {
+        let cube = new Cube(cubeSize);
+        cube.pieces = deepCopy(this.pieces);
+        return cube;
+    }
+    
+    bruteForce(order) {
+        return cubeBruteForce(this, order);
     }
 }

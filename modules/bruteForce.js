@@ -1,17 +1,17 @@
 "use strict";
 
-function bruteForceSolve(order) {
-    if (isSolved(mainCube.pieces)) return [];
+function cubeBruteForce(cube, order) {
+    if (cube.isSolved()) return [];
     if (order < 1) throw "brute force order must be an integer >= 1";
-    
+    const pieces = cube.pieces;
+
     for (let turn of turns) {
-        let cube = mainCube.returnTurn(turn.side, turn.amount);
-        if (isSolved(cube)) return [turn];
+        let cube = Cube.turn(pieces, turn.side, turn.amount);
+        if (Cube.isSolved(cube)) return [turn];
     }
-    
+
     if (order >= 2) {
-        let cubeList = [];
-        cubeList.push(mainCube.turnSide("U"));
+        let cubeList = [Cube.turn(pieces, "U")];
 
         let indices = [0, 0];
         for (let i = 2; i >= 0;) {
@@ -24,8 +24,9 @@ function bruteForceSolve(order) {
 
             if (noRepeatedSide) {
                 let turn = turns[indices[1]];
-                let cube = cubeList[0].turnSide(turn.side, turn.amount);
-                if (isSolved(cube)) {
+                let cube = Cube.turn(cubeList[0], turn.side, turn.amount);
+
+                if (Cube.isSolved(cube)) {
                     let moves = [];
                     for (let index of indices) {
                         let turn = turns[index];
@@ -43,20 +44,18 @@ function bruteForceSolve(order) {
                 if (noRepeatedSide) {
                     if (i === 1 && indices[0] < turnsLength - 1) {
                         let turn = turns[indices[0] + 1];
-                        cubeList[0] = turnSide(mainCube, turn.side, turn.amount);
+                        cubeList[0] = Cube.turn(pieces, turn.side, turn.amount);
                     }
                 }
                 indices[i] = 0;
             }
         }
     }
-    
+
     for (let subOrder = 3; subOrder <= order; subOrder++) {
-        let cubeList = [];
-        cubeList.push(turnSide(mainCube, "U"));
-        for (let i = 0; i < subOrder - 2; i++) {
-            cubeList.push(turnSide(cubeList[i], "U"));
-        }
+        let cubeList = [Cube.turn(pieces, "U")];
+        for (let i = 0; i < subOrder - 2; i++)
+            cubeList.push(Cube.turn(cubeList[i], "U"));
 
         let indices = Array(subOrder).fill(0);
         for (let i = subOrder; i >= 0;) {
@@ -69,8 +68,8 @@ function bruteForceSolve(order) {
 
             if (noRepeatedSide !== false) {
                 let turn = turns[indices[subOrder - 1]];
-                let cube = turnSide(cubeList[subOrder - 2], turn.side, turn.amount);
-                if (isSolved(cube)) {
+                let cube = Cube.turn(cubeList[subOrder - 2], turn.side, turn.amount);
+                if (Cube.isSolved(cube)) {
                     let moves = [];
                     for (let index of indices) {
                         let turn = turns[index];
@@ -88,19 +87,19 @@ function bruteForceSolve(order) {
 
                 if (i === 1 && indices[0] < turnsLength - 1) {
                     let turn = turns[indices[0] + 1];
-                    cubeList[0] = turnSide(mainCube, turn.side, turn.amount);
+                    cubeList[0] = Cube.turn(pieces, turn.side, turn.amount);
                 }
                 for (let j = 0; j < subOrder - 3; j++) {
                     if (i === j + 2 && indices[j + 1] < turnsLength - 1) {
                         let turn = turns[indices[j + 1] + 1];
-                        cubeList[j + 1] = turnSide(cubeList[j], turn.side, turn.amount);
+                        cubeList[j + 1] = Cube.turn(cubeList[j], turn.side, turn.amount);
                     }
                 }
                 if (i === subOrder - 1 &&
                     indices[subOrder - 2] < turnsLength - 1
                    ) {
                     let turn = turns[indices[subOrder - 2] + 1];
-                    cubeList[subOrder - 2] = turnSide(
+                    cubeList[subOrder - 2] = Cube.turn(
                         cubeList[subOrder - 3],
                         turn.side,
                         turn.amount
@@ -111,12 +110,12 @@ function bruteForceSolve(order) {
             }
         }
     }
-    
+
     return null;
 }
-
+/*
 function bruteForceNaive(order) { // main cube
-    if (isSolved(mainCube)) return [];
+    if (mainCube.isSolved) return [];
     let turns = [];
     for (let side of sides) {
         for (let [turn, amount] of Object.entries(turnAmounts))
@@ -128,10 +127,10 @@ function bruteForceNaive(order) { // main cube
         let indices = Array(amount).fill(0);
         for (let i = amount; i >= 0;) {
             
-            let cube = deepCopy(mainCube);
+            let cube = deepCopy(mainCube.pieces);
             for (let index of indices) {
                 let turn = turns[index];
-                cube = turnSide(cube, turn.side, turn.amount)
+                cube = Cube.turn(cube, turn.side, turn.amount)
             }
             if (isSolved(cube)) {
                 let moves = [];
@@ -151,4 +150,4 @@ function bruteForceNaive(order) { // main cube
     }
     
     return false;
-}
+}*/

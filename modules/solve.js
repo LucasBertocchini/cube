@@ -1,4 +1,5 @@
 "use strict";
+
 function bruteForce(cube, order, solveFunction) {
     let sides = ["U", "D", "F", "B", "L", "R"];
 

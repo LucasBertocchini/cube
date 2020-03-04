@@ -54,9 +54,8 @@ const faces = ["U", "D", "F", "B", "L", "R"],
             else if (cubeSize === 2) return faces;
             else if (cubeSize > 3) {
                 let temp = [];
-                for (let layer = 1; layer < cubeSize - 1; layer++) {
+                for (let layer = 1; layer < cubeSize - 1; layer++)
                     middles.forEach(middle => temp.push(middle + layer.toString()));
-                }
             } else throw "cube size must be 2, 3, or >3";
         })(),
       turns = (() => {
@@ -70,7 +69,21 @@ const faces = ["U", "D", "F", "B", "L", "R"],
         })(),
       turnsLength = turns.length;
 
-
+const solvedCubes = (() => {
+    let solvedCubes = [];
+    let tempCube = new Cube(cubeSize);
+    tempCube.turnCube("x");
+    for (let i = 0; i < 6; i++) { // 6 faces
+        if (i % 2 === 0) tempCube.turnCube("x", -1);
+        else tempCube.turnCube("y");
+        for (let j = 0; j < 4; j++) { // 4 rotations per face
+            const stringedCube = JSON.stringify(tempCube.pieces);
+            solvedCubes.push(stringedCube);
+            tempCube.turnCube("z");
+        }
+    }
+    return solvedCubes;
+})();
     
 
 
