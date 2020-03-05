@@ -86,24 +86,14 @@ function cubeBruteForce(cube, order) {
                 }
 
                 if (i === 1 && indices[0] < turnsLength - 1) {
-                    let turn = turns[indices[0] + 1];
+                    const turn = turns[indices[0] + 1];
                     cubeList[0] = Cube.turn(pieces, turn.face, turn.amount);
                 }
-                for (let j = 0; j < subOrder - 3; j++) {
+                for (let j = 0; j < subOrder - 2; j++) {
                     if (i === j + 2 && indices[j + 1] < turnsLength - 1) {
-                        let turn = turns[indices[j + 1] + 1];
+                        const turn = turns[indices[j + 1] + 1];
                         cubeList[j + 1] = Cube.turn(cubeList[j], turn.face, turn.amount);
                     }
-                }
-                if (i === subOrder - 1 &&
-                    indices[subOrder - 2] < turnsLength - 1
-                   ) {
-                    let turn = turns[indices[subOrder - 2] + 1];
-                    cubeList[subOrder - 2] = Cube.turn(
-                        cubeList[subOrder - 3],
-                        turn.face,
-                        turn.amount
-                    );
                 }
 
                 indices[i] = 0;

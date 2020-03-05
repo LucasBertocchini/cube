@@ -40,7 +40,6 @@ class Cube {
         if (["D", "B", "R"].includes(face) && amount !== 2)
             amount *= -1;
 
-
         let layer = layers[face];
         if (layer === undefined) layer = parseInt(face.slice(1));
         let after = deepCopy(pieces);

@@ -68,6 +68,16 @@ const sides = ["U", "D", "F", "B", "L", "R"],
             return temp;
         })(),
       turnsLength = turns.length,
+      sideTurns = (() => {
+            let temp = [];
+            sides.forEach(face => 
+                turnAmounts.forEach(
+                    amount => temp.push({face, amount})
+                )
+            );
+            return temp;
+        })(),
+      sideTurnsLength = sideTurns.length,
       solvedCubes = (() => {
             let solvedCubes = [];
             let tempCube = new Cube(cubeSize);
@@ -91,11 +101,19 @@ window.onload = () => {
     displaySetup();
     
     //mainCube.scramble(50, false);
-    mainCube.pieces = [[["goy","bo","wrg"],["og","y","yr"],["brw","oy","ryb"]],[["gr","g","yb"],["o","","r"],["br","b","gy"]],[["ybo","rw","ogw"],["wo","w","wg"],["owb","wb","ryg"]]];
-    mainCube.turn("D");
-    mainCube.turn("R", 2);
-    mainCube.turn("M");
-    beginnerSolve3();
+    
+    
+//    mainCube.pieces = [[["goy","bo","wrg"],["og","y","yr"],["brw","oy","ryb"]],[["gr","g","yb"],["o","","r"],["br","b","gy"]],[["ybo","rw","ogw"],["wo","w","wg"],["owb","wb","ryg"]]];
+//    mainCube.turn("D");
+//    mainCube.turn("R", 2);
+//    mainCube.turn("D");
+//    mainCube.turn("L", 2);
+//    mainCube.turn("U");
+//    mainCube.turn("R", 2);
+//    beginnerSolve3();
+    
+    mainCube.scramble(3);
+    console.log(mainCube.bruteForce(3));
 
     display();
 }
