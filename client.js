@@ -46,12 +46,12 @@ const colors = {
         R: cubeSize - 1
 };
 
-const faces = ["U", "D", "F", "B", "L", "R"],
+const sides = ["U", "D", "F", "B", "L", "R"],
       middles = ["E", "S", "M"],
       turnAmounts = [1, -1, 2],
-      sides = (() => {
-            if (cubeSize === 3) return faces.concat(middles);
-            else if (cubeSize === 2) return faces;
+      faces = (() => {
+            if (cubeSize === 3) return sides.concat(middles);
+            else if (cubeSize === 2) return sides;
             else if (cubeSize > 3) {
                 let temp = [];
                 for (let layer = 1; layer < cubeSize - 1; layer++)
@@ -60,30 +60,29 @@ const faces = ["U", "D", "F", "B", "L", "R"],
         })(),
       turns = (() => {
             let temp = [];
-            sides.forEach(side => 
+            faces.forEach(face => 
                 turnAmounts.forEach(
-                    amount => temp.push({side, amount})
+                    amount => temp.push({face, amount})
                 )
             );
             return temp;
         })(),
-      turnsLength = turns.length;
-
-const solvedCubes = (() => {
-    let solvedCubes = [];
-    let tempCube = new Cube(cubeSize);
-    tempCube.turnCube("x");
-    for (let i = 0; i < 6; i++) { // 6 faces
-        if (i % 2 === 0) tempCube.turnCube("x", -1);
-        else tempCube.turnCube("y");
-        for (let j = 0; j < 4; j++) { // 4 rotations per face
-            const stringedCube = JSON.stringify(tempCube.pieces);
-            solvedCubes.push(stringedCube);
-            tempCube.turnCube("z");
-        }
-    }
-    return solvedCubes;
-})();
+      turnsLength = turns.length,
+      solvedCubes = (() => {
+            let solvedCubes = [];
+            let tempCube = new Cube(cubeSize);
+            tempCube.turn("x");
+            for (let i = 0; i < 6; i++) { // 6 faces
+                if (i % 2 === 0) tempCube.turn("x", -1);
+                else tempCube.turn("y");
+                for (let j = 0; j < 4; j++) { // 4 rotations per face
+                    const stringedCube = JSON.stringify(tempCube.pieces);
+                    solvedCubes.push(stringedCube);
+                    tempCube.turn("z");
+                }
+            }
+            return solvedCubes;
+        })();
     
 
 
@@ -91,11 +90,12 @@ const solvedCubes = (() => {
 window.onload = () => {
     displaySetup();
     
-    //randomizeCube(50, false);
-    //mainCube = [[["goy","bo","wrg"],["og","y","yr"],["brw","oy","ryb"]],[["gr","g","yb"],["o","","r"],["br","b","gy"]],[["ybo","rw","ogw"],["wo","w","wg"],["owb","wb","ryg"]]];
-    //turnSideMainCube("D");
-    //turnSideMainCube("R", 2);
-    //console.log(beginnerSolve3());
+    //mainCube.scramble(50, false);
+    mainCube.pieces = [[["goy","bo","wrg"],["og","y","yr"],["brw","oy","ryb"]],[["gr","g","yb"],["o","","r"],["br","b","gy"]],[["ybo","rw","ogw"],["wo","w","wg"],["owb","wb","ryg"]]];
+    mainCube.turn("D");
+    mainCube.turn("R", 2);
+    mainCube.turn("M");
+    beginnerSolve3();
 
     display();
 }
@@ -129,23 +129,9 @@ function randInt(n) {
 //cube functions
 
 
-function randomizeCube(order, log = true) {
-    for (let i = 0; i < order; i++) {
-        let index = randInt(turnsLength);
-        let turn = turns[index];
-        if (log) console.log(turn);
-        mainCube = Cube.turnSide(mainCube, turn.side, turn.amount);
-    }
-}
-function turnSideMainCube(side, amount = 1) {
-    mainCube = Cube.turnSide(mainCube, side, amount);
-    display();
-}
-
-
 function moveSets(n) {
     let indices = Array(n).fill(0);
-    let length = sides.length;
+    let length = faces.length;
     let turnAmounts = [1, -1, 2];
     for (let i = n; i >= 0;) {
         
@@ -164,7 +150,7 @@ function moveSets(n) {
                 for (let k = 0; k < n; k++) {
                     let index1 = indices[k];
                     let index2 = indices2[k];
-                    let side = sides[index1];
+                    let side = faces[index1];
                     let amount = turnAmounts[index2];
                     moves.push({side, amount});
                 }

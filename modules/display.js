@@ -37,19 +37,19 @@ function displaySetup() {
     
     
     
-    for (let side of sides) {
+    for (let face of faces.concat(["y", "z", "x"])) {
         let turnButton = document.createElement("button");
-        turnButton.innerHTML = "Turn " + side;
+        turnButton.innerHTML = face;
         turnButton.onclick = e => {
-            let turn = {side, amount: 1};
+            let turn = {face, amount: 1};
             console.log(turn);
-            mainCube.turn(side);
+            mainCube.turn(face);
             display();
         }
         turnButton.oncontextmenu = e => {
-            let turn = {side, amount: -1};
+            let turn = {face, amount: -1};
             console.log(turn);
-            mainCube.turn(side, -1);
+            mainCube.turn(face, -1);
             display();
             return false;
         }
@@ -58,30 +58,11 @@ function displaySetup() {
     
     addBreak();
     
-    for (let axis of ["x", "y", "z"]) {
-        let rotateButton = document.createElement("button");
-        rotateButton.innerHTML = "Rotate " + axis;
-        rotateButton.onclick = e => {
-            console.log("rotate " + axis);
-            mainCube.turnCube(axis);
-            display();
-        }
-        rotateButton.oncontextmenu = e => {
-            console.log("rotate " + axis + "'");
-            mainCube.turnCube(axis, -1);
-            display();
-            return false;
-        }
-        document.body.appendChild(rotateButton);
-    }
-    
-    addBreak();
-    
-    for (let i of [1, 2, 3, 5, 10, 100]) {
+    for (let i of [3, 4, 5, 10, 100]) {
         let randomizeCubeButton = document.createElement("button");
-        randomizeCubeButton.innerHTML = "Randomize " + i;
+        randomizeCubeButton.innerHTML = "rand " + i;
         randomizeCubeButton.onclick = e => {
-            randomizeCube(i);
+            mainCube.scramble(i);
             display();
         }
         document.body.appendChild(randomizeCubeButton);
@@ -91,7 +72,7 @@ function displaySetup() {
     
     for (let i = 1; i <= 4; i++) {
         let bruteForceSolveButton = document.createElement("button");
-        bruteForceSolveButton.innerHTML = "Brute Force " + i;
+        bruteForceSolveButton.innerHTML = "brute force " + i;
         bruteForceSolveButton.onclick = e => {
             let solve = mainCube.bruteForce(i);
             console.log(solve);
@@ -103,17 +84,17 @@ function displaySetup() {
     addBreak();
     
     let beginnerSolve3Button = document.createElement("button");
-    beginnerSolve3Button.innerHTML = "Beginner Solve 3";
+    beginnerSolve3Button.innerHTML = "beginner solve 3";
     beginnerSolve3Button.onclick = e => beginnerSolve3(mainCube.pieces);
     document.body.appendChild(beginnerSolve3Button);
     
     addBreak();
     
     let resetButton = document.createElement("button");
-    resetButton.innerHTML = "Reset";
+    resetButton.innerHTML = "reset";
     resetButton.onclick = e => {
         console.clear();
-        mainCube.pieces = solvedCube;
+        mainCube = new Cube(cubeSize);
         display();
     }
     document.body.appendChild(resetButton);

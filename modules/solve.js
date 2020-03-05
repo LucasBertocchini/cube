@@ -1,5 +1,5 @@
 "use strict";
-
+/*
 function bruteForce(cube, order, solveFunction) {
     let sides = ["U", "D", "F", "B", "L", "R"];
 
@@ -127,48 +127,184 @@ function bruteForce(cube, order, solveFunction) {
 }
 
 function crossSolvedW(cube) {
-    let U = cube[0];
+    let U = cube.pieces[0];
     if (U[0][1][0] !== "w" || U[1][0][0] !== "w" || U[1][2][0] !== "w" || U[2][1][0] !== "w")
         return false;
     return true;
+}
+*/
+
+function bruteForce(cube, order, solveFunction) {
+    cube = cube.pieces;
+    if (solveFunction(cube)) return [];
+    if (order < 1) throw "brute force order must be an integer >= 1";
+    const pieces = cube;
+
+    for (let turn of turns) {
+        let cube = Cube.turn(pieces, turn.face, turn.amount);
+        if (solveFunction(cube)) return [turn];
+    }
+
+    if (order >= 2) {
+        let cubeList = [Cube.turn(pieces, "U")];
+
+        let indices = [0, 0];
+        for (let i = 2; i >= 0;) {
+
+            const noRepeatedFace = indices.reduce((prev, index) => {
+                if (prev === false) return false;
+                else if (turns[prev].face === turns[index].face) return false;
+                return index;
+            });
+
+            if (noRepeatedFace) {
+                let turn = turns[indices[1]];
+                let cube = Cube.turn(cubeList[0], turn.face, turn.amount);
+
+                if (solveFunction(cube)) {
+                    let moves = [];
+                    for (let index of indices) {
+                        let turn = turns[index];
+                        moves.push(turn);
+                    }
+                    return moves;
+                }
+            }
+
+            for (i = 2; i--;) {
+                if (indices[i] < turnsLength - 1) {
+                    indices[i]++;
+                    break;
+                }
+                if (noRepeatedFace) {
+                    if (i === 1 && indices[0] < turnsLength - 1) {
+                        let turn = turns[indices[0] + 1];
+                        cubeList[0] = Cube.turn(pieces, turn.face, turn.amount);
+                    }
+                }
+                indices[i] = 0;
+            }
+        }
+    }
+
+    for (let subOrder = 3; subOrder <= order; subOrder++) {
+        let cubeList = [Cube.turn(pieces, "U")];
+        for (let i = 0; i < subOrder - 2; i++)
+            cubeList.push(Cube.turn(cubeList[i], "U"));
+
+        let indices = Array(subOrder).fill(0);
+        for (let i = subOrder; i >= 0;) {
+
+            const noRepeatedSide = indices.reduce((prev, index) => {
+                if (prev === false) return false;
+                else if (turns[prev].face === turns[index].face) return false;
+                return index;
+            });
+
+            if (noRepeatedSide !== false) {
+                let turn = turns[indices[subOrder - 1]];
+                let cube = Cube.turn(cubeList[subOrder - 2], turn.face, turn.amount);
+                if (solveFunction(cube)) {
+                    let moves = [];
+                    for (let index of indices) {
+                        let turn = turns[index];
+                        moves.push(turn);
+                    }
+                    return moves;
+                }
+            }
+
+            for (i = subOrder; i--;) {
+                if (indices[i] < turnsLength - 1) {
+                    indices[i]++;
+                    break;
+                }
+
+                if (i === 1 && indices[0] < turnsLength - 1) {
+                    let turn = turns[indices[0] + 1];
+                    cubeList[0] = Cube.turn(pieces, turn.face, turn.amount);
+                }
+                for (let j = 0; j < subOrder - 3; j++) {
+                    if (i === j + 2 && indices[j + 1] < turnsLength - 1) {
+                        let turn = turns[indices[j + 1] + 1];
+                        cubeList[j + 1] = Cube.turn(cubeList[j], turn.face, turn.amount);
+                    }
+                }
+                if (i === subOrder - 1 &&
+                    indices[subOrder - 2] < turnsLength - 1
+                   ) {
+                    let turn = turns[indices[subOrder - 2] + 1];
+                    cubeList[subOrder - 2] = Cube.turn(
+                        cubeList[subOrder - 3],
+                        turn.face,
+                        turn.amount
+                    );
+                }
+
+                indices[i] = 0;
+            }
+        }
+    }
+
+    return null;
 }
 
 function beginnerSolve3(displayCube = true) {
     if (cubeSize !== 3) throw "cube size must be 3 for beginnerSolve3";
     
-    let cube = deepCopy(mainCube),
+    let cube = mainCube.copy(),
         moves = [];
     
     //choose color to solve from
     let mainColor = "w";
     
-    
-    
     //orient cube with color side on D
-    {
+    (function orient() {
         const orientations = [
-            {indices: [0, 1, 1], side: "M", amount: 2},  //U
-            {indices: [1, 2, 1], side: "M", amount: 1},  //F
-            {indices: [1, 0, 1], side: "M", amount: -1}, //B
-            {indices: [1, 1, 0], side: "S", amount: -1}, //L
-            {indices: [1, 1, 2], side: "S", amount: 1}   //R
+            {indices: [0, 1, 1], face: "M", amount: 2},  //U
+            {indices: [1, 2, 1], face: "M", amount: 1},  //F
+            {indices: [1, 0, 1], face: "M", amount: -1}, //B
+            {indices: [1, 1, 0], face: "S", amount: -1}, //L
+            {indices: [1, 1, 2], face: "S", amount: 1}   //R
         ];
         for (let orientation of orientations) {
-            const i = orientation.indices,
-                  side = orientation.side,
-                  amount = orientation.amount;
-            if (cube[i[0]][i[1]][i[2]] === mainColor) {
-                moves.push({side, amount});
-                cube = turnSide(cube, side, amount);
+            const i = orientation.indices;
+            if (cube.pieces[i[0]][i[1]][i[2]] === mainColor) {
+                const face = orientation.face,
+                      amount = orientation.amount;
+                moves.push({face, amount});
+                cube.turn(face, amount);
             }
         }
-    }
-    
+    })();
     
     //cross
     (function cross() {
-        console.log(cube[2]);
-        console.log(bruteForce(cube, 3, crossSolvedW));
+        console.log(cube.pieces[0]);
+        let bf = bruteForce(cube, 4, () => {
+            const U = cube.pieces[0];
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    if ((i === 1 || j === 1) && !(i === 1 && j === 1)) {
+                        // edge piece
+                        const line = U[i];
+                        const piece = line[j];
+                        const color = piece[0];
+                        if (color !== mainColor) return false;
+                    }
+                }
+            }
+            
+            return true;
+        });
+        console.log(bf);
+        
+        
+        
+        
+        
+        
+        //console.log(bruteForce(cube, 3, crossSolvedW));
         /*
         const oppositeColors = [["w", "y"], ["b", "g"], ["r", "o"]];
         const areOpposites = (c1, c2) => oppositeColors.includes([c1, c2]) ||
@@ -300,5 +436,6 @@ function beginnerSolve3(displayCube = true) {
         display();
     }
     
+    console.log(moves)
     return moves;
 }
