@@ -112,7 +112,15 @@ window.onload = () => {
 //    mainCube.turn("R", 2);
 //    beginnerSolve3();
     
-    mainCube.scramble(3);
+    //mainCube.scramble(3);
+    mainCube.turn("L", 2);
+    mainCube.turn("U", -1);
+    mainCube.turn("F", -1);
+    
+//    mainCube.turn("F");
+//    mainCube.turn("U");
+//    mainCube.turn("L", 2);
+    
     console.log(mainCube.bruteForce(3));
 
     display();

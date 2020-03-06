@@ -164,7 +164,7 @@ class Cube {
     }
     
     bruteForce(order) {
-        return cubeBruteForce(this, order);
+        return cubeBruteForce(this.pieces, order);
     }
     
     scramble(order, log = true) {
