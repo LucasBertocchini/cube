@@ -148,13 +148,12 @@ class Cube {
     turn(face, amount = 1) {
         this.pieces = Cube.turn(this.pieces, face, amount);
     }
-    
-    isSolved() {
-        return Cube.isSolved(this.pieces);
-    }
-    
+
     static isSolved(pieces) {
         return cubeIsSolved(pieces);
+    }
+    isSolved() {
+        return Cube.isSolved(this.pieces);
     }
     
     copy() {
