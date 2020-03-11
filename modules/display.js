@@ -60,9 +60,9 @@ function displaySetup() {
     
     for (let i of [3, 4, 5, 10, 100]) {
         let randomizeCubeButton = document.createElement("button");
-        randomizeCubeButton.innerHTML = "rand " + i;
+        randomizeCubeButton.innerHTML = "scramble " + i;
         randomizeCubeButton.onclick = e => {
-            mainCube.scramble(i);
+            mainCube.scramble(i, true);
             display();
         }
         document.body.appendChild(randomizeCubeButton);
@@ -93,8 +93,7 @@ function displaySetup() {
     let resetButton = document.createElement("button");
     resetButton.innerHTML = "reset";
     resetButton.onclick = e => {
-        console.clear();
-        mainCube = new Cube(cubeSize);
+        mainCube.reset();
         display();
     }
     document.body.appendChild(resetButton);

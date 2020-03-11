@@ -33,8 +33,7 @@ const colors = {
     o: "orange",
     r: "red"
 },
-      
-      layers = {
+    layers = {
         U: 0,
         E: 1,
         D: cubeSize - 1,
@@ -47,55 +46,53 @@ const colors = {
 };
 
 const sides = ["U", "D", "F", "B", "L", "R"],
-      middles = ["E", "S", "M"],
-      turnAmounts = [1, -1, 2],
-      faces = (() => {
-            if (cubeSize === 3) return sides.concat(middles);
-            else if (cubeSize === 2) return sides;
-            else if (cubeSize > 3) {
-                let temp = [];
-                for (let layer = 1; layer < cubeSize - 1; layer++)
-                    middles.forEach(middle => temp.push(middle + layer.toString()));
-            } else throw "cube size must be 2, 3, or >3";
-        })(),
-      turns = (() => {
+    middles = ["E", "S", "M"],
+    turnAmounts = [1, -1, 2],
+    faces = (() => {
+        if (cubeSize === 3) return sides.concat(middles);
+        else if (cubeSize === 2) return sides;
+        else if (cubeSize > 3) {
             let temp = [];
-            faces.forEach(face => 
-                turnAmounts.forEach(
-                    amount => temp.push({face, amount})
-                )
-            );
-            return temp;
-        })(),
-      turnsLength = turns.length,
-      sideTurns = (() => {
-            let temp = [];
-            sides.forEach(face => 
-                turnAmounts.forEach(
-                    amount => temp.push({face, amount})
-                )
-            );
-            return temp;
-        })(),
-      sideTurnsLength = sideTurns.length,
-      solvedCubes = (() => {
-            let solvedCubes = [];
-            let tempCube = new Cube(cubeSize);
-            tempCube.turn("x");
-            for (let i = 0; i < 6; i++) { // 6 faces
-                if (i % 2 === 0) tempCube.turn("x", -1);
-                else tempCube.turn("y");
-                for (let j = 0; j < 4; j++) { // 4 rotations per face
-                    const stringedCube = JSON.stringify(tempCube.pieces);
-                    solvedCubes.push(stringedCube);
-                    tempCube.turn("z");
-                }
+            for (let layer = 1; layer < cubeSize - 1; layer++)
+                middles.forEach(middle => temp.push(middle + layer.toString()));
+        } else throw "cube size must be 2, 3, or >3";
+    })(),
+    turns = (() => {
+        let temp = [];
+        faces.forEach(face => 
+            turnAmounts.forEach(
+                amount => temp.push({face, amount})
+            )
+        );
+        return temp;
+    })(),
+    turnsLength = turns.length,
+    sideTurns = (() => {
+        let temp = [];
+        sides.forEach(face => 
+            turnAmounts.forEach(
+                amount => temp.push({face, amount})
+            )
+        );
+        return temp;
+    })(),
+    sideTurnsLength = sideTurns.length,
+    solvedCubes = (() => {
+        let solvedCubes = [];
+        let tempCube = new Cube(cubeSize);
+        tempCube.turn("x");
+        for (let i = 0; i < 6; i++) { // 6 faces
+            if (i % 2 === 0) tempCube.turn("x", -1);
+            else tempCube.turn("y");
+            for (let j = 0; j < 4; j++) { // 4 rotations per face
+                const stringedCube = JSON.stringify(tempCube.pieces);
+                solvedCubes.push(stringedCube);
+                tempCube.turn("z");
             }
-            return solvedCubes;
-        })();
-    
-
-
+        }
+        return solvedCubes;
+    })(),
+    axes = [["U", "E", "D"], ["F", "S", "B"], ["L", "M", "R"]];
 
 window.onload = () => {
     displaySetup();

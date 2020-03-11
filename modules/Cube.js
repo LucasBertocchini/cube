@@ -149,12 +149,8 @@ class Cube {
         this.pieces = Cube.turn(this.pieces, face, amount);
     }
 
-    static isSolved(pieces) {
-        return cubeIsSolved(pieces);
-    }
-    isSolved() {
-        return Cube.isSolved(this.pieces);
-    }
+    static isSolved(pieces) {return cubeIsSolved(pieces);}
+    isSolved() {return Cube.isSolved(this.pieces);}
     
     copy() {
         let cube = new Cube(cubeSize);
@@ -162,16 +158,46 @@ class Cube {
         return cube;
     }
     
-    bruteForce(order) {
-        return cubeBruteForce(this.pieces, order);
-    }
+    bruteForce(order) {return cubeBruteForce(this.pieces, order);}
     
-    scramble(order, log = true) {
+    reset(clear = true) {
+
+        this.pieces = new Cube(cubeSize).pieces;
+        if (clear) console.clear();
+    }
+
+    sameAxis(face1, face2) {
+        let axis = face => {
+            for (let i = 0; i < 3; i++)
+                if (axes[i].includes(face[0])) return i;
+            throw "face must have axis";
+        }
+        if (axis(face1) === axis(face2)) return true;
+        return false;
+    }
+
+    scramble(order = 100, log = false) {
+        let turnsList = [];
+
         for (let i = 0; i < order; i++) {
-            let index = randInt(turnsLength);
-            let turn = turns[index];
-            if (log) console.log(turn);
-            mainCube.turn(turn.face, turn.amount);
+            const prev= turnsList[turnsList.length - 1];
+
+            let found = false;
+            while (!found) {
+                const index = randInt(turnsLength),
+                    turn = turns[index];
+                if (!prev ||
+                    !this.sameAxis(turn.face, prev.face) ||
+                    (turn.face !== prev.face && turn.amount === prev.amount)
+                    ) {
+                    if (log) console.log(turn);
+                    this.turn(turn.face, turn.amount);
+                    turnsList.push(turn);
+                    found = true;
+                }
+            }
         }
     }
+
+
 }
