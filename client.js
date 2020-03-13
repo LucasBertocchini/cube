@@ -99,27 +99,19 @@ window.onload = () => {
     
     //mainCube.scramble(50, false);
     
-    
-//    mainCube.pieces = [[["goy","bo","wrg"],["og","y","yr"],["brw","oy","ryb"]],[["gr","g","yb"],["o","","r"],["br","b","gy"]],[["ybo","rw","ogw"],["wo","w","wg"],["owb","wb","ryg"]]];
-//    mainCube.turn("D");
-//    mainCube.turn("R", 2);
-//    mainCube.turn("D");
-//    mainCube.turn("L", 2);
-//    mainCube.turn("U");
-//    mainCube.turn("R", 2);
-//    beginnerSolve3();
-    
-    //mainCube.scramble(3);
-    mainCube.turn("L", 2);
-    mainCube.turn("U", -1);
-    mainCube.turn("F", -1);
-    
-//    mainCube.turn("F");
-//    mainCube.turn("U");
-//    mainCube.turn("L", 2);
-    
-    console.log(mainCube.bruteForce(3));
-
+    // mainCube.pieces = [[["goy","bo","wrg"],["og","y","yr"],["brw","oy","ryb"]],[["gr","g","yb"],["o","","r"],["br","b","gy"]],[["ybo","rw","ogw"],["wo","w","wg"],["owb","wb","ryg"]]];
+    // mainCube.turn("D");
+    // mainCube.turn("R", 2);
+    // mainCube.turn("D");
+    // //mainCube.turn("L", 2);
+    // //mainCube.turn("U");
+    // //mainCube.turn("R", 2);
+    // beginnerSolve3();
+    let a = Date.now();
+    mainCube.pieces = [[["gwo","yg","ygr"],["go","y","yr"],["yrb","ob","oby"]],[["wo","g","gr"],["o","","r"],["rb","b","by"]],[["brw","yo","owb"],["bw","w","wg"],["oyg","wr","wrg"]]];
+    console.log(mainCube.bruteForce(4));
+    let b = Date.now();
+    console.log(b - a) //3000 - 3030
     display();
 }
 

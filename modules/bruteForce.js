@@ -18,13 +18,13 @@ function cubeBruteForce(pieces, order) {
             const repeatedFace = (turns[indices[0]].face === turns[indices[1]].face);
             
             if (!repeatedFace) {
-                let turn = turns[indices[1]];
-                let cube = Cube.turn(cubeList[0], turn.face, turn.amount);
+                const turn = turns[indices[1]];
+                const cube = Cube.turn(cubeList[0], turn.face, turn.amount);
 
                 if (Cube.isSolved(cube)) {
                     let moves = [];
                     for (let index of indices) {
-                        let turn = turns[index];
+                        const turn = turns[index];
                         moves.push(turn);
                     }
                     return moves;
@@ -36,13 +36,12 @@ function cubeBruteForce(pieces, order) {
                     indices[i]++;
                     break;
                 }
-                
-                if (i === 1 && indices[0] < turnsLength - 1) {
-                    let turn = turns[indices[0] + 1];
-                    cubeList[0] = Cube.turn(pieces, turn.face, turn.amount);
-                }
-                
                 indices[i] = 0;
+            }
+
+            if (indices[1] === 0) {
+                const turn = turns[indices[0]];
+                cubeList[0] = Cube.turn(pieces, turn.face, turn.amount);
             }
         }
     }
@@ -63,13 +62,13 @@ function cubeBruteForce(pieces, order) {
             })();
 
             if (!repeatedFace) {
-                let turn = turns[indices[subOrder - 1]];
-                let cube = Cube.turn(cubeList[subOrder - 1], turn.face, turn.amount);
+                const turn = turns[indices[subOrder - 1]];
+                const cube = Cube.turn(cubeList[subOrder - 1], turn.face, turn.amount);
 
                 if (Cube.isSolved(cube)) {
                     let moves = [];
                     for (let index of indices) {
-                        let turn = turns[index];
+                        const turn = turns[index];
                         moves.push(turn);
                     }
                     return moves;
