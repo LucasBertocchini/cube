@@ -11,15 +11,19 @@ function cubeTurn(pieces, face, amount) {
 	if (layer === undefined) layer = parseInt(face.slice(1));
 	let after = deepCopy(pieces);
 
-	function calcIndexes(i, j, iPrime, jPrime) {
-	    let indexes;
-	    if (amount === 1)
-	        indexes = [jPrime, i];
-	    else if (amount === -1)
-	        indexes = [j, iPrime];
-	    else if (amount === 2)
-	        indexes = [iPrime, jPrime];
-	    return indexes;
+	function calcIndices(i, j, iPrime, jPrime) {
+	    let indices;
+	    switch (amount) {
+	    	case 1:
+		        indices = [jPrime, i];
+		        break;
+		    case -1:
+		        indices = [j, iPrime];
+		        break;
+		    case 2:
+		        indices = [iPrime, jPrime];
+	    }
+	    return indices;
 	}
 
 	function calcPieces(newPieceFunction) {
@@ -27,87 +31,136 @@ function cubeTurn(pieces, face, amount) {
 	        const iPrime = cubeSize - 1 - i;
 	        for (let j = 0; j < cubeSize; j++) {
 	            const jPrime = cubeSize - 1 - j;
-	            let indexes = calcIndexes(i, j, iPrime, jPrime);
-	            newPieceFunction(i, j, indexes);
+	            let indices = calcIndices(i, j, iPrime, jPrime);
+	            newPieceFunction(i, j, indices);
 	        }
 	    }
 	}
-
+	
 	/* loops are inside the if statements to avoid calling if's
 	many times unnecisarily */
-	if (face === "U" || face === "D") {
-	    calcPieces((i, j, indexes) => {
-	        let newPiece = pieces[layer][indexes[0]][indexes[1]];
+	switch (face[0]) {
+		case "U":
+		case "D":
+		    calcPieces((i, j, indices) => {
+		        let newPiece = pieces[layer][indices[0]][indices[1]];
 
-	        if (newPiece.length === 3 && amount !== 2)
-	            newPiece = reorder(newPiece, 0, 2, 1);
+		        if (newPiece.length === 3 && amount !== 2)
+		            newPiece = reorder(newPiece, 0, 2, 1);
 
-	        after[layer][i][j] = newPiece;
-	    });
-	} else if (face === "F" || face === "B") {
-	    calcPieces((i, j, indexes) => {
-	        let newPiece = pieces[indexes[0]][layer][indexes[1]];
+		        after[layer][i][j] = newPiece;
+		    });
+		    break;
+		
+		case "F":
+		case "B":
+		    calcPieces((i, j, indices) => {
+		        let newPiece = pieces[indices[0]][layer][indices[1]];
 
-	        if (newPiece.length === 3 && amount !== 2)
-	            newPiece = reorder(newPiece, 2, 1, 0);
-	        else if (newPiece.length === 2 && amount !== 2)
-	            newPiece = reorder(newPiece, 1, 0);
+		        if (newPiece.length === 3 && amount !== 2)
+		            newPiece = reorder(newPiece, 2, 1, 0);
+		        else if (newPiece.length === 2 && amount !== 2)
+		            newPiece = reorder(newPiece, 1, 0);
 
-	        after[i][layer][j] = newPiece;
-	    });
-	} else if (face === "L" || face === "R") {
-	    calcPieces((i, j, indexes) => {
-	        let newPiece = pieces[indexes[0]][indexes[1]][layer];
+		        after[i][layer][j] = newPiece;
+		    });
+		    break;
+		
+		case "L":
+		case "R":
+		    calcPieces((i, j, indices) => {
+		        let newPiece = pieces[indices[0]][indices[1]][layer];
 
-	        if (newPiece.length === 3 && amount !== 2)
-	            newPiece = reorder(newPiece, 1, 0, 2);
+		        if (newPiece.length === 3 && amount !== 2)
+		            newPiece = reorder(newPiece, 1, 0, 2);
 
-	        after[i][j][layer] = newPiece;
-	    });
-	} else if (face === "E") {
-	    calcPieces((i, j, indexes) => {
-	        let newPiece = pieces[layer][indexes[0]][indexes[1]];
+		        after[i][j][layer] = newPiece;
+		    });
+		    break;
+		
+		case "E":
+		    calcPieces((i, j, indices) => {
+		        let newPiece = pieces[layer][indices[0]][indices[1]];
 
-	        if (newPiece.length === 2 && amount !== 2)
-	            newPiece = reorder(newPiece, 1, 0);
+		        if (newPiece.length === 2 && amount !== 2)
+		            newPiece = reorder(newPiece, 1, 0);
 
-	        after[layer][i][j] = newPiece;
-	    });
-	} else if (face === "S") {
-	    calcPieces((i, j, indexes) => {
-	        let newPiece = pieces[indexes[0]][layer][indexes[1]];
+		        after[layer][i][j] = newPiece;
+		    });
+		    break;
+		
+		case "S":
+		    calcPieces((i, j, indices) => {
+		        let newPiece = pieces[indices[0]][layer][indices[1]];
 
-	        if (newPiece.length === 2 && amount !== 2)
-	            newPiece = reorder(newPiece, 1, 0);
+		        if (newPiece.length === 2 && amount !== 2)
+		            newPiece = reorder(newPiece, 1, 0);
 
-	        after[i][layer][j] = newPiece;
-	    });
-	} else if (face === "M") {
-	    calcPieces((i, j, indexes) => {
-	        let newPiece = pieces[indexes[0]][indexes[1]][layer];
+		        after[i][layer][j] = newPiece;
+		    });
+		    break;
+		
+		case "M":
+		    calcPieces((i, j, indices) => {
+		        let newPiece = pieces[indices[0]][indices[1]][layer];
 
-	        if (newPiece.length === 2 && amount !== 2)
-	            newPiece = reorder(newPiece, 1, 0);
+		        if (newPiece.length === 2 && amount !== 2)
+		            newPiece = reorder(newPiece, 1, 0);
 
-	        after[i][j][layer] = newPiece;
-	    });
-	} else if (face === "y") {
-	    const negAmount = (amount === 2) ? 2 : -amount;
-	    after = Cube.turn(after, "U", amount);
-	    after = Cube.turn(after, "E", amount);
-	    after = Cube.turn(after, "D", negAmount);
-	} else if (face === "z") {
-	    const negAmount = (amount === 2) ? 2 : -amount;
-	    after = Cube.turn(after, "F", amount);
-	    after = Cube.turn(after, "S", amount);
-	    after = Cube.turn(after, "B", negAmount);
-	} else if (face === "x") {
-	    const negAmount = (amount === 2) ? 2 : -amount;
-	    after = Cube.turn(after, "R", amount);
-	    after = Cube.turn(after, "M", negAmount);
-	    after = Cube.turn(after, "L", negAmount);
-	}  else
-	    throw "face must be U, D, L, R, F, B, E(n), S(n), M(n), y, z, or x";
+		        after[i][j][layer] = newPiece;
+		    });
+		    break;
+		
+		case "y": 
+		    for (let layer = 0; layer < cubeSize; layer++) {
+			    calcPieces((i, j, indices) => {
+			    	let newPiece = pieces[layer][indices[0]][indices[1]];
+
+			    	if (newPiece.length === 3 && amount !== 2)
+			            newPiece = reorder(newPiece, 0, 2, 1);
+			        else if (newPiece.length === 2 && amount !== 2 &&
+			        	layer !== 0 && layer !== cubeSize - 1)
+			            newPiece = reorder(newPiece, 1, 0);
+
+			    	after[layer][i][j] = newPiece;
+			    });
+			}
+		    break;
+		
+		case "z":
+		    for (let layer = 0; layer < cubeSize; layer++) {
+			    calcPieces((i, j, indices) => {
+			    	let newPiece = pieces[indices[0]][layer][indices[1]];
+
+			    	if (newPiece.length === 3 && amount !== 2)
+			            newPiece = reorder(newPiece, 2, 1, 0);
+			        else if (newPiece.length === 2 && amount !== 2)
+		            	newPiece = reorder(newPiece, 1, 0);
+
+			    	after[i][layer][j] = newPiece;
+			    });
+			}
+		    break;
+		
+		case "x":
+		    for (let layer = 0; layer < cubeSize; layer++) {
+			    calcPieces((i, j, indices) => {
+			    	let newPiece = pieces[indices[0]][indices[1]][layer];
+
+			    	if (newPiece.length === 3 && amount !== 2)
+			            newPiece = reorder(newPiece, 1, 0, 2);
+			        else if (newPiece.length === 2 && amount !== 2 &&
+			        	layer !== 0 && layer !== cubeSize - 1)
+		            	newPiece = reorder(newPiece, 1, 0);
+
+			    	after[i][j][layer] = newPiece;
+			    });
+			}
+		    break;
+		
+		default:
+		    throw "face must be U, D, L, R, F, B, E(n), S(n), M(n), y, z, or x";
+	}
 
 	return after;
 }
@@ -123,15 +176,15 @@ function edgesTurn(pieces, face, amount) {
 	if (layer === undefined) layer = parseInt(face.slice(1));
 	let after = deepCopy(pieces);
 
-	function calcIndexes(i, j, iPrime, jPrime) {
-	    let indexes;
+	function calcIndices(i, j, iPrime, jPrime) {
+	    let indices;
 	    if (amount === 1)
-	        indexes = [jPrime, i];
+	        indices = [jPrime, i];
 	    else if (amount === -1)
-	        indexes = [j, iPrime];
+	        indices = [j, iPrime];
 	    else if (amount === 2)
-	        indexes = [iPrime, jPrime];
-	    return indexes;
+	        indices = [iPrime, jPrime];
+	    return indices;
 	}
 
 	function calcPieces(newPieceFunction) {
@@ -140,72 +193,89 @@ function edgesTurn(pieces, face, amount) {
 	        for (let j = 0; j < cubeSize; j++) {
 	            const jPrime = cubeSize - 1 - j;
 
-	            let indexes = calcIndexes(i, j, iPrime, jPrime);
-	            newPieceFunction(i, j, indexes);
+	            let indices = calcIndices(i, j, iPrime, jPrime);
+	            newPieceFunction(i, j, indices);
 	        }
 	    }
 	}
 
 	/* loops are inside the if statements to avoid calling if's
 	many times unnecisarily */
-	if (face === "U" || face === "D") {
-	    calcPieces((i, j, indexes) => {
-	        let newPiece = pieces[layer][indexes[0]][indexes[1]];
+	switch (face[0]) {
+		case "U":
+		case "D":
+		    calcPieces((i, j, indices) => {
+		        let newPiece = pieces[layer][indices[0]][indices[1]];
 
-	        if (newPiece) after[layer][i][j] = newPiece;
-	    });
-	} else if (face === "F" || face === "B") {
-	    calcPieces((i, j, indexes) => {
-	        let newPiece = pieces[indexes[0]][layer][indexes[1]];
+		        if (newPiece) after[layer][i][j] = newPiece;
+		    });
+		    break;
+		
+		case "F":
+		case "B":
+		    calcPieces((i, j, indices) => {
+		        let newPiece = pieces[indices[0]][layer][indices[1]];
 
-	        if (newPiece) {
-		        if (amount !== 2)
-		            newPiece = reorder(newPiece, 1, 0);
+		        if (newPiece) {
+			        if (amount !== 2)
+			            newPiece = reorder(newPiece, 1, 0);
 
-		        after[i][layer][j] = newPiece;
-		    }
-	    });
-	} else if (face === "L" || face === "R") {
-	    calcPieces((i, j, indexes) => {
-	        let newPiece = pieces[indexes[0]][indexes[1]][layer];
+			        after[i][layer][j] = newPiece;
+			    }
+		    });
+		    break;
+		
+		case "L":
+		case "R":
+		    calcPieces((i, j, indices) => {
+		        let newPiece = pieces[indices[0]][indices[1]][layer];
 
-	        if (newPiece) after[i][j][layer] = newPiece;
-	    });
-	} else if (face === "E") {
-	    calcPieces((i, j, indexes) => {
-	        let newPiece = pieces[layer][indexes[0]][indexes[1]];
+		        if (newPiece) after[i][j][layer] = newPiece;
+		    });
+		    break;
+		
+		case "E":
+		    calcPieces((i, j, indices) => {
+		        let newPiece = pieces[layer][indices[0]][indices[1]];
 
-	        if (newPiece) {
-		        if (amount !== 2)
-		            newPiece = reorder(newPiece, 1, 0);
+		        if (newPiece) {
+			        if (amount !== 2)
+			            newPiece = reorder(newPiece, 1, 0);
 
-		        after[layer][i][j] = newPiece;
-		    }
-	    });
-	} else if (face === "S") {
-	    calcPieces((i, j, indexes) => {
-	        let newPiece = pieces[indexes[0]][layer][indexes[1]];
+			        after[layer][i][j] = newPiece;
+			    }
+		    });
+		    break;
+		
+		case "S":
+		    calcPieces((i, j, indices) => {
+		        let newPiece = pieces[indices[0]][layer][indices[1]];
 
-	        if (newPiece) {
-	        	if (amount !== 2)
-	        		newPiece = reorder(newPiece, 1, 0);
+		        if (newPiece) {
+		        	if (amount !== 2)
+		        		newPiece = reorder(newPiece, 1, 0);
 
-		       	after[i][layer][j] = newPiece;
-	    	}
-	    });
-	} else if (face === "M") {
-	    calcPieces((i, j, indexes) => {
-	        let newPiece = pieces[indexes[0]][indexes[1]][layer];
+			       	after[i][layer][j] = newPiece;
+		    	}
+		    });
+		    break;
+		
+		case "M":
+		    calcPieces((i, j, indices) => {
+		        let newPiece = pieces[indices[0]][indices[1]][layer];
 
-	        if (newPiece) {
-		        if (amount !== 2)
-		            newPiece = reorder(newPiece, 1, 0);
+		        if (newPiece) {
+			        if (amount !== 2)
+			            newPiece = reorder(newPiece, 1, 0);
 
-		        after[i][j][layer] = newPiece;
-		    }
-	    });
-	} else
-	    throw "face must be U, D, L, R, F, B, E(n), S(n), M(n), y, z, or x";
+			        after[i][j][layer] = newPiece;
+			    }
+		    });
+		    break;
+		
+		default:
+		    throw "face must be U, D, L, R, F, B, E(n), S(n), M(n), y, z, or x";
+	}
 
 	return after;
 }

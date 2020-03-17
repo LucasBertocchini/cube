@@ -77,7 +77,7 @@ const sides = ["U", "D", "F", "B", "L", "R"],
         return temp;
     })(),
     sideTurnsLength = sideTurns.length,
-    solvedCubes = (() => {
+    /*solvedCubes = (() => {
         let solvedCubes = [];
         let tempCube = new Cube(cubeSize);
         tempCube.turn("x");
@@ -91,24 +91,24 @@ const sides = ["U", "D", "F", "B", "L", "R"],
             }
         }
         return solvedCubes;
-    })(),
+    })(),*/
     axes = [["U", "E", "D"], ["F", "S", "B"], ["L", "M", "R"]];
 
 window.onload = () => {
     displaySetup();
     
-    //mainCube.scramble(50, false);
-    
     // mainCube.pieces = [[["goy","bo","wrg"],["og","y","yr"],["brw","oy","ryb"]],[["gr","g","yb"],["o","","r"],["br","b","gy"]],[["ybo","rw","ogw"],["wo","w","wg"],["owb","wb","ryg"]]];
     // mainCube.turn("D");
     // mainCube.turn("R", 2);
     // mainCube.turn("D");
-    // //mainCube.turn("L", 2);
-    // //mainCube.turn("U");
+    // mainCube.turn("L", 2);
+    // mainCube.turn("U");
     // //mainCube.turn("R", 2);
     // beginnerSolve3();
-    mainCube.scramble(3);
-    console.log(mainCube.bruteForce(3));
+
+    // mainCube.pieces = [[["bry","br","brw"],["rg","o","yb"],["ryg","ow","yob"]],[["gy","g","oy"],["w","","y"],["bo","b","ry"]],[["ogy","og","grw"],["rw","r","gw"],["wbo","wb","gow"]]];
+    // console.log(mainCube.bruteForce(4));
+
     display();
 }
 
