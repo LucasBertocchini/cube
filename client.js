@@ -107,11 +107,8 @@ window.onload = () => {
     // //mainCube.turn("U");
     // //mainCube.turn("R", 2);
     // beginnerSolve3();
-    let a = Date.now();
-    mainCube.pieces = [[["gwo","yg","ygr"],["go","y","yr"],["yrb","ob","oby"]],[["wo","g","gr"],["o","","r"],["rb","b","by"]],[["brw","yo","owb"],["bw","w","wg"],["oyg","wr","wrg"]]];
-    console.log(mainCube.bruteForce(4));
-    let b = Date.now();
-    console.log(b - a) //3000 - 3030
+    mainCube.scramble(3);
+    console.log(mainCube.bruteForce(3));
     display();
 }
 

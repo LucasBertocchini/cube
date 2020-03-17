@@ -9,31 +9,34 @@ function cubeBruteForce(pieces, order) {
         if (Cube.isSolved(cube)) return [turn];
     }
 
-    if (order >= 2) {
-        let cubeList = [Cube.turn(pieces, "U")];
+    if (order >= 2) { //convert to double for loop
+        let first = Cube.turn(pieces, "U");
 
         let indices = [0, 0];
         for (let i = 2; i >= 0;) {
 
-            const repeatedFace = (turns[indices[0]].face === turns[indices[1]].face);
-            
-            if (!repeatedFace) {
-                const turn = turns[indices[1]];
-                const cube = Cube.turn(cubeList[0], turn.face, turn.amount);
+            const turn = turns[indices[1]];
+            const cube = Cube.turn(first, turn.face, turn.amount);
 
-                if (Cube.isSolved(cube)) {
-                    let moves = [];
-                    for (let index of indices) {
-                        const turn = turns[index];
-                        moves.push(turn);
-                    }
-                    return moves;
+            if (Cube.isSolved(cube)) {
+                let moves = [];
+                for (let index of indices) {
+                    const turn = turns[index];
+                    moves.push(turn);
                 }
+                return moves;
             }
 
             for (i = 2; i--;) {
                 if (indices[i] < turnsLength - 1) {
                     indices[i]++;
+
+                    if (i === 1) {
+	                    while (turns[indices[0]].face === turns[indices[1]].face &&
+	                    	indices[1] < turnsLength - 1)
+	                    	indices[1]++;
+                	}
+
                     break;
                 }
                 indices[i] = 0;
@@ -41,7 +44,7 @@ function cubeBruteForce(pieces, order) {
 
             if (indices[1] === 0) {
                 const turn = turns[indices[0]];
-                cubeList[0] = Cube.turn(pieces, turn.face, turn.amount);
+                first = Cube.turn(pieces, turn.face, turn.amount);
             }
         }
     }
@@ -55,29 +58,37 @@ function cubeBruteForce(pieces, order) {
         let indices = Array(subOrder).fill(0);
         for (let i = subOrder; i >= 0;) {
 
-            const repeatedFace = (() => {
-                for (let j = 1; j < subOrder; j++)
-                    if (turns[indices[j - 1]].face === turns[indices[j]].face) return true;
-                return false;
-            })();
+            const turn = turns[indices[subOrder - 1]];
+            const cube = Cube.turn(cubeList[subOrder - 1], turn.face, turn.amount);
 
-            if (!repeatedFace) {
-                const turn = turns[indices[subOrder - 1]];
-                const cube = Cube.turn(cubeList[subOrder - 1], turn.face, turn.amount);
-
-                if (Cube.isSolved(cube)) {
-                    let moves = [];
-                    for (let index of indices) {
-                        const turn = turns[index];
-                        moves.push(turn);
-                    }
-                    return moves;
+            if (Cube.isSolved(cube)) {
+                let moves = [];
+                for (let index of indices) {
+                    const turn = turns[index];
+                    moves.push(turn);
                 }
+                return moves;
             }
 
             for (i = subOrder; i--;) {
                 if (indices[i] < turnsLength - 1) {
                     indices[i]++;
+
+                    //assure there are no repeated faces
+                    //does not catch leading 0's or trailing {turnsLength - 1}'s
+                	if (i === 0 || i === 1) {
+                    	while (turns[indices[1]].face === turns[indices[0]].face &&
+                    		indices[1] < turnsLength - 1)
+                    		indices[1]++;
+                    }
+                    for (let j = 2; j < subOrder; j++) {
+                    	if (i === j) {
+	                    	while (turns[indices[j]].face === turns[indices[j - 1]].face &&
+	                    		indices[j] < turnsLength - 1)
+	                    		indices[j]++;
+	                    }
+                    }
+                    
                     break;
                 }
                 indices[i] = 0;
