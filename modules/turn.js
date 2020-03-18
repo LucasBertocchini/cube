@@ -1,48 +1,45 @@
 "use strict";
 
-function cubeTurn(pieces, face, amount) {
-	if (!turnAmounts.includes(amount)) throw "turn amount must be 1, -1, or 2";
+function calcIndices(amount, i, j, iPrime, jPrime) {
+    switch (amount) {
+    	case 1:
+	        return [jPrime, i];
+	    case -1:
+	        return [j, iPrime];
+	    case 2:
+	        return [iPrime, jPrime];
+	    default:
+	    	throw "amount must be 1, -1, or 2";
+    }
+}
 
+function calcPieces(amount, newPieceFunction) {
+    for (let i = 0; i < cubeSize; i++) {
+        const iPrime = cubeSize - 1 - i;
+        for (let j = 0; j < cubeSize; j++) {
+            const jPrime = cubeSize - 1 - j;
+            let indices = calcIndices(amount, i, j, iPrime, jPrime);
+            newPieceFunction(i, j, indices);
+        }
+    }
+}
+
+function cubeTurn(pieces, face, amount) {
 	// conjugate the direction for opposite sides
 	if (["D", "B", "R"].includes(face) && amount !== 2)
 	    amount *= -1;
 
 	let layer = layers[face];
 	if (layer === undefined) layer = parseInt(face.slice(1));
+
 	let after = deepCopy(pieces);
 
-	function calcIndices(i, j, iPrime, jPrime) {
-	    let indices;
-	    switch (amount) {
-	    	case 1:
-		        indices = [jPrime, i];
-		        break;
-		    case -1:
-		        indices = [j, iPrime];
-		        break;
-		    case 2:
-		        indices = [iPrime, jPrime];
-	    }
-	    return indices;
-	}
-
-	function calcPieces(newPieceFunction) {
-	    for (let i = 0; i < cubeSize; i++) {
-	        const iPrime = cubeSize - 1 - i;
-	        for (let j = 0; j < cubeSize; j++) {
-	            const jPrime = cubeSize - 1 - j;
-	            let indices = calcIndices(i, j, iPrime, jPrime);
-	            newPieceFunction(i, j, indices);
-	        }
-	    }
-	}
-	
 	/* loops are inside the if statements to avoid calling if's
 	many times unnecisarily */
 	switch (face[0]) {
 		case "U":
 		case "D":
-		    calcPieces((i, j, indices) => {
+		    calcPieces(amount, (i, j, indices) => {
 		        let newPiece = pieces[layer][indices[0]][indices[1]];
 
 		        if (newPiece.length === 3 && amount !== 2)
@@ -54,7 +51,7 @@ function cubeTurn(pieces, face, amount) {
 		
 		case "F":
 		case "B":
-		    calcPieces((i, j, indices) => {
+		    calcPieces(amount, (i, j, indices) => {
 		        let newPiece = pieces[indices[0]][layer][indices[1]];
 
 		        if (newPiece.length === 3 && amount !== 2)
@@ -68,7 +65,7 @@ function cubeTurn(pieces, face, amount) {
 		
 		case "L":
 		case "R":
-		    calcPieces((i, j, indices) => {
+		    calcPieces(amount, (i, j, indices) => {
 		        let newPiece = pieces[indices[0]][indices[1]][layer];
 
 		        if (newPiece.length === 3 && amount !== 2)
@@ -79,7 +76,7 @@ function cubeTurn(pieces, face, amount) {
 		    break;
 		
 		case "E":
-		    calcPieces((i, j, indices) => {
+		    calcPieces(amount, (i, j, indices) => {
 		        let newPiece = pieces[layer][indices[0]][indices[1]];
 
 		        if (newPiece.length === 2 && amount !== 2)
@@ -90,7 +87,7 @@ function cubeTurn(pieces, face, amount) {
 		    break;
 		
 		case "S":
-		    calcPieces((i, j, indices) => {
+		    calcPieces(amount, (i, j, indices) => {
 		        let newPiece = pieces[indices[0]][layer][indices[1]];
 
 		        if (newPiece.length === 2 && amount !== 2)
@@ -101,7 +98,7 @@ function cubeTurn(pieces, face, amount) {
 		    break;
 		
 		case "M":
-		    calcPieces((i, j, indices) => {
+		    calcPieces(amount, (i, j, indices) => {
 		        let newPiece = pieces[indices[0]][indices[1]][layer];
 
 		        if (newPiece.length === 2 && amount !== 2)
@@ -113,7 +110,7 @@ function cubeTurn(pieces, face, amount) {
 		
 		case "y": 
 		    for (let layer = 0; layer < cubeSize; layer++) {
-			    calcPieces((i, j, indices) => {
+			    calcPieces(amount, (i, j, indices) => {
 			    	let newPiece = pieces[layer][indices[0]][indices[1]];
 
 			    	if (newPiece.length === 3 && amount !== 2)
@@ -129,7 +126,7 @@ function cubeTurn(pieces, face, amount) {
 		
 		case "z":
 		    for (let layer = 0; layer < cubeSize; layer++) {
-			    calcPieces((i, j, indices) => {
+			    calcPieces(amount, (i, j, indices) => {
 			    	let newPiece = pieces[indices[0]][layer][indices[1]];
 
 			    	if (newPiece.length === 3 && amount !== 2)
@@ -144,7 +141,7 @@ function cubeTurn(pieces, face, amount) {
 		
 		case "x":
 		    for (let layer = 0; layer < cubeSize; layer++) {
-			    calcPieces((i, j, indices) => {
+			    calcPieces(amount, (i, j, indices) => {
 			    	let newPiece = pieces[indices[0]][indices[1]][layer];
 
 			    	if (newPiece.length === 3 && amount !== 2)
@@ -166,45 +163,21 @@ function cubeTurn(pieces, face, amount) {
 }
 
 function edgesTurn(pieces, face, amount) {
-	if (!turnAmounts.includes(amount)) throw "turn amount must be 1, -1, or 2";
-
 	// conjugate the direction for opposite sides
 	if (["D", "B", "R"].includes(face) && amount !== 2)
 	    amount *= -1;
 
 	let layer = layers[face];
 	if (layer === undefined) layer = parseInt(face.slice(1));
+
 	let after = deepCopy(pieces);
-
-	function calcIndices(i, j, iPrime, jPrime) {
-	    let indices;
-	    if (amount === 1)
-	        indices = [jPrime, i];
-	    else if (amount === -1)
-	        indices = [j, iPrime];
-	    else if (amount === 2)
-	        indices = [iPrime, jPrime];
-	    return indices;
-	}
-
-	function calcPieces(newPieceFunction) {
-	    for (let i = 0; i < cubeSize; i++) {
-	        const iPrime = cubeSize - 1 - i;
-	        for (let j = 0; j < cubeSize; j++) {
-	            const jPrime = cubeSize - 1 - j;
-
-	            let indices = calcIndices(i, j, iPrime, jPrime);
-	            newPieceFunction(i, j, indices);
-	        }
-	    }
-	}
 
 	/* loops are inside the if statements to avoid calling if's
 	many times unnecisarily */
 	switch (face[0]) {
 		case "U":
 		case "D":
-		    calcPieces((i, j, indices) => {
+		    calcPieces(amount, (i, j, indices) => {
 		        let newPiece = pieces[layer][indices[0]][indices[1]];
 
 		        if (newPiece) after[layer][i][j] = newPiece;
@@ -213,7 +186,7 @@ function edgesTurn(pieces, face, amount) {
 		
 		case "F":
 		case "B":
-		    calcPieces((i, j, indices) => {
+		    calcPieces(amount, (i, j, indices) => {
 		        let newPiece = pieces[indices[0]][layer][indices[1]];
 
 		        if (newPiece) {
@@ -227,7 +200,7 @@ function edgesTurn(pieces, face, amount) {
 		
 		case "L":
 		case "R":
-		    calcPieces((i, j, indices) => {
+		    calcPieces(amount, (i, j, indices) => {
 		        let newPiece = pieces[indices[0]][indices[1]][layer];
 
 		        if (newPiece) after[i][j][layer] = newPiece;
@@ -235,7 +208,7 @@ function edgesTurn(pieces, face, amount) {
 		    break;
 		
 		case "E":
-		    calcPieces((i, j, indices) => {
+		    calcPieces(amount, (i, j, indices) => {
 		        let newPiece = pieces[layer][indices[0]][indices[1]];
 
 		        if (newPiece) {
@@ -248,7 +221,7 @@ function edgesTurn(pieces, face, amount) {
 		    break;
 		
 		case "S":
-		    calcPieces((i, j, indices) => {
+		    calcPieces(amount, (i, j, indices) => {
 		        let newPiece = pieces[indices[0]][layer][indices[1]];
 
 		        if (newPiece) {
@@ -261,7 +234,7 @@ function edgesTurn(pieces, face, amount) {
 		    break;
 		
 		case "M":
-		    calcPieces((i, j, indices) => {
+		    calcPieces(amount, (i, j, indices) => {
 		        let newPiece = pieces[indices[0]][indices[1]][layer];
 
 		        if (newPiece) {

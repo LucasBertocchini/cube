@@ -97,14 +97,14 @@ const sides = ["U", "D", "F", "B", "L", "R"],
 window.onload = () => {
     displaySetup();
     
-    // mainCube.pieces = [[["goy","bo","wrg"],["og","y","yr"],["brw","oy","ryb"]],[["gr","g","yb"],["o","","r"],["br","b","gy"]],[["ybo","rw","ogw"],["wo","w","wg"],["owb","wb","ryg"]]];
-    // mainCube.turn("D");
-    // mainCube.turn("R", 2);
-    // mainCube.turn("D");
-    // mainCube.turn("L", 2);
-    // mainCube.turn("U");
-    // //mainCube.turn("R", 2);
-    // beginnerSolve3();
+    mainCube.pieces = [[["goy","bo","wrg"],["og","y","yr"],["brw","oy","ryb"]],[["gr","g","yb"],["o","","r"],["br","b","gy"]],[["ybo","rw","ogw"],["wo","w","wg"],["owb","wb","ryg"]]];
+    mainCube.turn("D");
+    mainCube.turn("R", 2);
+    mainCube.turn("D");
+    mainCube.turn("L", 2);
+    mainCube.turn("U");
+    mainCube.turn("R", 2);
+    beginnerSolve3();
 
     // mainCube.pieces = [[["bry","br","brw"],["rg","o","yb"],["ryg","ow","yob"]],[["gy","g","oy"],["w","","y"],["bo","b","ry"]],[["ogy","og","grw"],["rw","r","gw"],["wbo","wb","gow"]]];
     // console.log(mainCube.bruteForce(4));

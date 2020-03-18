@@ -112,20 +112,19 @@ function bruteForceEdges(edges, order, solveFunction) {
         }
     }
 
-    for (let subOrder = 3; subOrder <= order; subOrder++) {
+    for (let suborder = 3; suborder <= order; suborder++) {
         let cubeList = [edges];
-        let lastU = 0;
-        let lastPieceToU = 0;
         let count = 0;
 
-        for (let i = 0; i < subOrder - 1; i++)
+        for (let i = 0; i < suborder - 1; i++)
             cubeList.push(Edges.turn(cubeList[i], "U"));
 
-        let indices = Array(subOrder).fill(0);
-        for (let i = subOrder; i >= 0;) {
+        let indices = Array(suborder).fill(0);
+        for (let i = suborder; i >= 0;) {
 
-            const turn = turns[indices[subOrder - 1]];
-            const cube = Edges.turn(cubeList[subOrder - 1], turn.face, turn.amount);
+            const s = suborder - 1,
+                turn = turns[indices[s]],
+                cube = Edges.turn(cubeList[s], turn.face, turn.amount);
 
             if (solveFunction(cube)) {
                 let moves = [];
@@ -136,22 +135,78 @@ function bruteForceEdges(edges, order, solveFunction) {
                 return moves;
             }
 
-            for (i = subOrder; i--;) {
+            for (i = suborder; i--;) {
                 if (indices[i] < turnsLength - 1) {
-                    indices[i]++;
+
+                    let valid = () => {
+                        let lastU = 0;
+                        let lastToU = 0;
+                        for (let j = 0; j < suborder; j++) {
+                            const index = indices[j];
+                            if (index > 2) lastU++; //alternatively, turns[index].face === "U"
+                            else lastU = 0;
+
+                            //if (indices[0] === 5) console.log(lastU);
+
+                            if (lastU >= 2) {
+                                if (indices[j] < turnsLength - 1) {
+                                    indices[j]++;
+                                    return false;
+                                }
+
+                            }
+                        }
+                        return true;
+                    };
+
+                    let validity;
+                    for (let j = 0; j < turnsLength - 1 - 3; j++) {
+                        if (validity) break;
+                        validity = valid();
+                    }
+
+                    
+
+                    if (validity) indices[i]++;
+                    
 
                     //assure there are no repeated faces
                     //does not catch leading 0's or trailing {turnsLength - 1}'s
-                    if (i === 0 || i === 1) {
-                        while (turns[indices[1]].face === turns[indices[0]].face &&
-                            indices[1] < turnsLength - 1)
-                            indices[1]++;
-                    }
-                    for (let j = 2; j < subOrder; j++) {
-                        if (i === j) {
-                            while (turns[indices[j]].face === turns[indices[j - 1]].face &&
-                                indices[j] < turnsLength - 1)
-                                indices[j]++;
+                    // if (i === 1 || i === 0) {
+                    //     while (turns[indices[1]].face === turns[indices[0]].face &&
+                    //         indices[1] < turnsLength - 1) {
+                    //         indices[1]++;
+                    //         console.log(indices)
+                    //     }
+                    // }
+                    // for (let j = 2; j < suborder; j++) {
+                    //     if (i === j) {
+                    //         while (turns[indices[j]].face === turns[indices[j - 1]].face &&
+                    //             indices[j] < turnsLength - 1) {
+                    //             indices[j]++;
+                    //             console.log(indices)
+                    //         }
+                    //     }
+                    // }
+
+
+
+
+                    //if (indices[0] === 5)
+                        console.log(indices);
+
+                    
+
+
+
+
+
+
+
+                    if (indices[suborder - 1] === 0) {
+                        for (let j = 0; j < suborder - 1; j++) {
+                            const turn = turns[indices[j]];
+                            cubeList[j + 1] = Edges.turn(cubeList[j], turn.face, turn.amount);
                         }
                     }
 
@@ -159,18 +214,11 @@ function bruteForceEdges(edges, order, solveFunction) {
                 }
                 indices[i] = 0;
             }
-            console.log(indices)
             
-
-            if (indices[subOrder - 1] === 0) {
-                for (let j = 0; j < subOrder - 1; j++) {
-                    const turn = turns[indices[j]];
-                    cubeList[j + 1] = Edges.turn(cubeList[j], turn.face, turn.amount);
-                }
-            }
             count++
+            //if (indices[0] === 5) console.log("count " + count) //545
         }
-        console.log(count) //2284
+        console.log("final count " + count) //2284
     }
     return null;
 }
