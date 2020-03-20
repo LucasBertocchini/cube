@@ -52,7 +52,7 @@ function beginnerSolve3(displayCube = true) {
         
         let edges = new Edges(cube.pieces);
         console.log(edges);
-        const bf = bruteForceEdges(edges.pieces, 3, solveFunction)
+        const bf = bruteForceEdges(edges.pieces, 3, solveFunction, mainColor)
         if (bf) {
             for (let turn of bf) {
                 moves.push(turn);
@@ -69,7 +69,7 @@ function beginnerSolve3(displayCube = true) {
     
     //return
     if (displayCube) {
-        mainCube = cube;
+        //mainCube = cube;
         display();
     }
     
@@ -77,7 +77,7 @@ function beginnerSolve3(displayCube = true) {
     return moves;
 }
 
-function bruteForceEdges(edges, order, solveFunction) {
+function bruteForceEdges(edges, order, solveFunction, color) {
 
     const sidesSansD = sides.filter(side => side !== "D");
     const turns = (() => {
@@ -126,16 +126,54 @@ function bruteForceEdges(edges, order, solveFunction) {
                 if (indices[i] < turnsLength - 1) {
                     indices[i]++;
 
-                    let UInLastTwoMoves = () => {
-                        let lastU = 0;
-                        for (let j = 0; j < suborder; j++) {
+                    const positions = [
+                        [0, 1],
+                        [1, 0],
+                        [1, 2],
+                        [2, 1]
+                    ];
+                    function countU(pieces) {
+                        const U = pieces[0];
+                        let count = 0;
+                        for (let [i, j] of positions) {
+                            const line = U[i],
+                                piece = line[j],
+                                color1 = piece[0];
+                            if (color1 === color) count++;
+                        }
+                        
+                        return count;
+                    }
+
+                    let UOrToUEveryTwoMoves = () => {
+                        const firstTurn = turns[indices[0]];
+                        let lastU = 0//(firstTurn.face !== "U") ? 1 : 0;
+
+                        let cube0 = edges;
+                        let cube1 = Edges.turn(edges, firstTurn.face, firstTurn.amount);
+                        let lastToU = 0;
+
+                        for (let j = 1; j < suborder; j++) {
                             const index = indices[j];
 
-                            if (turns[index].face !== "U" && turns[index].face !== "L") lastU++;
+                            if (turns[index].face !== "U") lastU++;
                             else lastU = 0;
 
-                            if (lastU >= 2)
+                            const n0 = countU(cube0),
+                                n1 = countU(cube1);
+
+                            if (n1 > n0) lastToU = 0;
+                            else lastToU++;
+
+                            //console.log(n1, n0)
+                            //console.log({lastU, lastToU})
+
+                            if (lastU >= 2 && lastToU >= 2)
                                 return false;
+
+                            cube0 = cube1;
+                            const turn = turns[index];
+                            cube1 = Edges.turn(cube1, turn.face, turn.amount);
                         }
                         return true;
                     }
@@ -148,28 +186,21 @@ function bruteForceEdges(edges, order, solveFunction) {
                         return true;
                     }
 
-                    let valid = UInLastTwoMoves() && noRepeatedFace();
+                    let valid = noRepeatedFace() && UOrToUEveryTwoMoves();
 
                     if (valid) {
                         console.log(indices);
                         count++;
 
 
+                        const s = suborder - 1;
 
-
-
-                        if (indices[suborder - 1] === 0 || indices[suborder - 1] === 3) {
-                            for (let j = 0; j < suborder - 1; j++) {
-                                const turn = turns[indices[j]];
-                                cubeList[j + 1] = Edges.turn(cubeList[j], turn.face, turn.amount);
-                            }
+                        let cube = cubeList[0];
+                        for (const index of indices) {
+                            const turn = turns[index];
+                            cube = Edges.turn(cube, turn.face, turn.amount);
                         }
-
-
-
-                        const s = suborder - 1,
-                            turn = turns[indices[s]],
-                            cube = Edges.turn(cubeList[s], turn.face, turn.amount);
+                            
 
                         if (solveFunction(cube)) {
                             let moves = [];
@@ -180,9 +211,6 @@ function bruteForceEdges(edges, order, solveFunction) {
                             return moves;
                         }
                     }
-
-
-
 
                     break;
                 }
