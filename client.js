@@ -101,10 +101,12 @@ window.onload = () => {
     mainCube.turn("D");
     mainCube.turn("R", 2);
     mainCube.turn("D");
-    mainCube.turn("L", 2);
-    mainCube.turn("U");
-    mainCube.turn("R", 2);
+    // mainCube.turn("L", 2);
+    // mainCube.turn("U");
+    // mainCube.turn("R", 2);
+    console.time();
     beginnerSolve3();
+    console.timeEnd();
 
     // mainCube.pieces = [[["bry","br","brw"],["rg","o","yb"],["ryg","ow","yob"]],[["gy","g","oy"],["w","","y"],["bo","b","ry"]],[["ogy","og","grw"],["rw","r","gw"],["wbo","wb","gow"]]];
     // console.log(mainCube.bruteForce(4));
