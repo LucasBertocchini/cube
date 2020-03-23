@@ -108,6 +108,14 @@ window.onload = () => {
     beginnerSolve3();
     console.timeEnd();
 
+    mainCube.turn("S", 2)
+    mainCube.turn("F", 2)
+    mainCube.turn("D", 1)
+    mainCube.turn("L", 1)
+
+    beginnerSolve3();
+
+
     // mainCube.pieces = [[["bry","br","brw"],["rg","o","yb"],["ryg","ow","yob"]],[["gy","g","oy"],["w","","y"],["bo","b","ry"]],[["ogy","og","grw"],["rw","r","gw"],["wbo","wb","gow"]]];
     // console.log(mainCube.bruteForce(4));
 

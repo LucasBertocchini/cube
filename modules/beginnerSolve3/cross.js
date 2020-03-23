@@ -19,60 +19,30 @@ const positions = [
     [2, 1]
 ];
 
-let sideIndices = {
-    B: {indices: [0, 1], color: "g"},
-    L: {indices: [1, 0], color: "l"},
-    R: {indices: [1, 2], color: "r"},
-    F: {indices: [2, 1], color: "b"}
-};
+let sideIndices = [
+    {face: "B", indices: [0, 1], color: "g"},
+    {face: "L", indices: [1, 0], color: "l"},
+    {face: "R", indices: [1, 2], color: "r"},
+    {face: "F", indices: [2, 1], color: "b"}
+];
 
 function cross(cube, mainColor, moves) {
-
     let edges = new Edges(cube.pieces);
     const bruteForce = bruteForceEdges(edges.pieces, 5, mainColor);
-
     if (bruteForce) {
-        for (let turn of bruteForce) {
+        for (const turn of bruteForce) {
             moves.push(turn);
             cube.turn(turn.face, turn.amount);
         }
     } else throw "brute force edges failed";
 
-    let colorsSans = [];
-    for (let key in sideIndices) {
-        let value = sideIndices[key];
-        const i = value.indices,
-            i0 = i[0],
-            i1 = i[1],
-            color = cube.pieces[1][i0][i1];
-        value.color = color;
-        colorsSans.push(color);
-    };
-console.log(sideIndices)
-    for (let permutation of permutations(colorsSans)) {
-
-        if (permutation.toString() === colorsSans.toString()) {
-
-            for (let color of permutation) {
-                
-                const pos = (color => {
-                        for (let face in sideIndices) {
-                            let value = sideIndices[face];
-                            if (color === value.color) return value.indices;
-                        }
-                    })(color),
-                    i0 = pos[0],
-                    i1 = pos[1],
-                    piece = cube.pieces[0][i0][i1],
-                    pieceColor = piece[1];
-
-                if (color === pieceColor) {
-                    
-                }
-                console.log(color, pieceColor);
-            }
+    const toD = bringToD(cube);
+    if (toD) {
+        for (const turn of toD) {
+            moves.push(turn);
+            cube.turn(turn.face, turn.amount);
         }
-    }
+    } else throw "bringing to D failed";
 }
 
 function bruteForceEdges(edges, order, mainColor) {
@@ -102,7 +72,7 @@ function bruteForceEdges(edges, order, mainColor) {
 
         //cubeList holds values of the cube after each turn of the j-th index-th turnsSans
         //such that cubeList[j + 1] = Edges.turn(cubeList[j], turnsSans[indices[j]].face, turnsSans[indices[j]].amount)
-        //for 0 <= j < suborder, and cubeList[0] is always edges
+        //for 0 <= j < suborder, and cubeList[0] := edges
         let cubeList = [edges];
         for (let i = 0; i < s; i++)
             cubeList.push(Edges.turn(cubeList[i], "U"));
@@ -215,4 +185,74 @@ function crossSolved(pieces, mainColor) {
     }
 
     return true;
+}
+
+function bringToD(cube) {
+    let colorsSans = [];
+    for (let value of sideIndices) {
+        const i = value.indices,
+            i0 = i[0],
+            i1 = i[1],
+            color = cube.pieces[1][i0][i1];
+        value.color = color;
+        colorsSans.push(color);
+    };
+
+    let movesSet = [];
+    const permutationList = permutations(colorsSans);
+
+    for (let i = 0; i < permutationList.length; i++) {
+        const permutation = permutationList[i];
+        movesSet.push([]);
+        let newCube = cube.pieces;
+
+        for (let color of permutation) {
+
+            const pos = color => {
+                    for (let value of sideIndices)
+                        if (value.color === color)
+                            return value;
+                },
+                posColor = pos(color),
+                indices = posColor.indices,
+                i0 = indices[0],
+                i1 = indices[1],
+                piece = newCube[0][i0][i1],
+                pieceColor = piece[1];
+
+            if (pieceColor === color) {
+                const face = posColor.face,
+                    turn = {face, amount: 2};
+                movesSet[i].push(turn);
+            } else {
+                for (let amount of turnAmounts) {
+                    newCube = Cube.turn(newCube, "U", amount);
+                    let newPiece = newCube[0][i0][i1],
+                        newPieceColor = newPiece[1];
+
+                    if (newPieceColor === color) {
+                        movesSet[i].push({face: "U", amount})
+                        const face = posColor.face,
+                            turn = {face, amount: 2};
+                        movesSet[i].push(turn);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    const minimumLength = (() => {
+        let min = Infinity;
+        for (const turns of movesSet) {
+            let length = turns.length;
+            if (length < min) min = length;
+        }
+        return min;
+    })();
+
+    for (const turns of movesSet) {
+        if (turns.length === minimumLength)
+            return turns;
+    }
 }
