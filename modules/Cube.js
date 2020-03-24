@@ -68,7 +68,7 @@ class Cube {
         let turnsList = [];
 
         for (let i = 0; i < order; i++) {
-            const prev= turnsList[turnsList.length - 1];
+            const prev = turnsList[turnsList.length - 1];
 
             let found = false;
             while (!found) {
