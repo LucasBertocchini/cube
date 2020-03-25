@@ -114,6 +114,7 @@ function display() {
             const line = plane[y];
             for (let z = 0; z < cubeSize; z++) {
                 const piece = line[z];
+                if (!piece) continue;
                 
                 const caseX = (x === 0 || x === cubeSize - 1),
                       caseY = (y === 0 || y === cubeSize - 1);

@@ -92,32 +92,41 @@ class Cube {
 
 class Edges {
     constructor(pieces) {
-        let edges = [];
+        if (pieces) {
+            let edges = [];
 
-        for (let x = 0; x < cubeSize; x++) {
-            edges.push([]);
-            let edgesPlane = edges[x];
-            const plane = pieces[x];
+            for (let x = 0; x < cubeSize; x++) {
+                edges.push([]);
+                let edgesPlane = edges[x];
+                const plane = pieces[x];
 
-             for (let y = 0; y < cubeSize; y++) {
-                edgesPlane.push([]);
-                let edgesLine = edgesPlane[y];
-                const line = plane[y];
+                 for (let y = 0; y < cubeSize; y++) {
+                    edgesPlane.push([]);
+                    let edgesLine = edgesPlane[y];
+                    const line = plane[y];
 
-                 for (let z = 0; z < cubeSize; z++) {
-                    let edgesPiece = edgesLine[z];
-                    const piece = line[z];
+                     for (let z = 0; z < cubeSize; z++) {
+                        let edgesPiece = edgesLine[z];
+                        const piece = line[z];
 
-                    if (piece.length === 2)
-                        edgesLine.push(piece);
-                    else edgesLine.push(null);
+                        if (piece.length === 2)
+                            edgesLine.push(piece);
+                        else edgesLine.push(null);
+                    }
                 }
             }
-        }
 
-        this.pieces = edges;
+            this.pieces = edges;
+        }
     }
 
     static turn(pieces, face, amount = 1) {return edgesTurn(pieces, face, amount)}
     turn(face, amount = 1) {this.pieces = edgesTurn(this.pieces, face, amount);}
+
+
+    copy() {
+        let cube = new Edges;
+        cube.pieces = deepCopy(this.pieces);
+        return cube;
+    }
 }
