@@ -113,32 +113,36 @@ function display() {
         for (let y = 0; y < cubeSize; y++) {
             const line = plane[y];
             for (let z = 0; z < cubeSize; z++) {
-                const piece = line[z];
-                if (!piece) continue;
+                let piece = line[z];
                 
                 const caseX = (x === 0 || x === cubeSize - 1),
                       caseY = (y === 0 || y === cubeSize - 1);
+
+                const indexY = (caseX) ? 1 : 0;
+                let indexZ = 0;
+                if (caseX || caseY) indexZ = 1;
+                if (caseX && caseY) indexZ = 2;
                 
-                if (x === 0) //U
+                if (!piece) {
+                    piece = {0: "G"};
+                    piece[indexY] = "G";
+                    piece[indexZ] = "G";
+                }
+
+                if (x === 0)
                     colorPiece("U", y, z, piece[0]);
                 else if (x === cubeSize - 1)
                     colorPiece("D", cubeSize - 1 - y, z, piece[0]);
                 
-                const indexY = (caseX) ? 1 : 0;
-                if (y === 0) {
+                if (y === 0)
                     colorPiece("B", cubeSize - 1 - x, z, piece[indexY])
-                } else if (y === cubeSize - 1) {
+                else if (y === cubeSize - 1)
                     colorPiece("F", x, z, piece[indexY])
-                }
                 
-                let indexZ = 0;
-                if (caseX || caseY) indexZ = 1;
-                if (caseX && caseY) indexZ = 2;
-                if (z === 0) {
+                if (z === 0)
                     colorPiece("L", x, y, piece[indexZ])
-                } else if (z === cubeSize - 1) {
+                else if (z === cubeSize - 1)
                     colorPiece("R", x, cubeSize - 1 - y, piece[indexZ])
-                }
             }
         }
     }

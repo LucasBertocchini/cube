@@ -27,27 +27,35 @@ let sideIndices = [
 ];
 
 function cross(cube, mainColor, moves) {
-    let edges = new Edges(cube.pieces);
+    const edges = new Edges(cube.pieces);
     const bruteForce3 = bruteForceEdges(edges.pieces, cross3, 5, mainColor);
 
     let movesSet = [];
     if (bruteForce3) {
-        for (let moves3 of bruteForce3) {
-            let copy = edges.copy();
-            for (const turn of moves3)
-                copy.turn(turn.face, turn.amount);
+        if (bruteForce3.length)
+            for (const moves3 of bruteForce3) {
+                let copy = edges.copy();
+                for (const turn of moves3)
+                    copy.turn(turn.face, turn.amount);
 
-            const bruteForce1 = bruteForceEdges(copy.pieces, crossSolved, 4, mainColor);
-            if (bruteForce1) {
-                for (let moves1 of bruteForce1) {
-                    const bruteForceMoves = moves3.concat(moves1);
-                    movesSet.push(bruteForceMoves)
-                }
-            } throw "brute force edges failed";
+                const bruteForce1 = bruteForceEdges(deepCopy(copy.pieces), crossSolved, 4, mainColor);
+                if (bruteForce1)
+                    for (const moves1 of bruteForce1) {
+                        const bruteForceMoves = moves3.concat(moves1);
+                        movesSet.push(bruteForceMoves);
+                    }
+                else throw "brute force edges failed";
+            }
+        else {
+            const bruteForce1 = bruteForceEdges(edges.pieces, crossSolved, 4, mainColor);
+            if (bruteForce1)
+                for (const moves1 of bruteForce1)
+                    movesSet.push(moves1);
+            else throw "brute force edges failed";
         }
     } else throw "brute force edges failed";
 
-    const optimalMove = (() => {
+    const optimalMoves = (() => {
         const optimalLength = movesSet.reduce(
             (acc, val) => Math.min(acc, val.length), Infinity
         );
@@ -57,7 +65,10 @@ function cross(cube, mainColor, moves) {
         throw "finding optimal move failed";
     })();
 
-    for (const turn of optimalMove) {
+    // console.log(movesSet)
+    // console.log(optimalMoves)
+
+    for (const turn of optimalMoves) {
         moves.push(turn);
         cube.turn(turn.face, turn.amount);
     }
@@ -98,36 +109,49 @@ function bruteForceEdges(edges, solveFunction, order, mainColor) {
     if (movesSet.length) return movesSet;
 
     for (let suborder = 3; suborder <= order; suborder++) {
+        let turnsList = Array(suborder).fill({face: "U", amount: 1})
         const s = suborder - 1;
 
         //cubeList holds values of the cube after each turn of the j-th index-th turnsSans
         //such that cubeList[j + 1] = Edges.turn(cubeList[j], turnsSans[indices[j]].face, turnsSans[indices[j]].amount)
         //for 0 <= j < suborder, and cubeList[0] := edges
-        let cubeList = [edges];
+        let cubeList = [deepCopy(edges)];
         for (let i = 0; i < s; i++)
-            cubeList.push(Edges.turn(cubeList[i], "U"));
+            cubeList.push(Edges.turn(deepCopy(cubeList[i]), "U"));
 
         let indices = Array(suborder).fill(0),
             prev = [...indices];
 
         for (let i = suborder; i >= 0;) {
             for (i = suborder; i--;) {
-                //the i-- assures that i != suborder
+                //the i-- assures that i !== suborder
 
                 if (indices[i] < turnsSansLength - 1) {
                     indices[i]++;
 
                     if (i < s) {
                         const turn = turnsSans[indices[i]];
-                        cubeList[i + 1] = Edges.turn(cubeList[i], turn.face, turn.amount);
+                        turnsList[i] = turn;
+                        cubeList[i + 1] = Edges.turn(deepCopy(cubeList[i]), turn.face, turn.amount);
                     }
 
                     const moveIsValid = noRepeatedFace(suborder, indices, mainColor) &&
                         UOrToUEveryTwoMoves(suborder, indices, cubeList, mainColor);
-                    
+
+
                     if (moveIsValid) {
                         const lastTurn = turnsSans[indices[s]],
-                            cube = Edges.turn(cubeList[s], lastTurn.face, lastTurn.amount);
+                            cube1 = Edges.turn(cubeList[s], lastTurn.face, lastTurn.amount);
+
+                        turnsList[s] = lastTurn;
+
+                        let cube = deepCopy(edges);
+                        for (let turn of turnsList)
+                            cube = Edges.turn(cube, turn.face, turn.amount)
+
+
+                        if (cube1.toString() != cube.toString())
+                            console.log(indices)
 
                         if (solveFunction(cube, mainColor)) {
                             let moves = [];
@@ -142,6 +166,12 @@ function bruteForceEdges(edges, solveFunction, order, mainColor) {
                     break;
                 }
                 indices[i] = 0;
+
+                if (i < s) {
+                    const turn = turnsSans[0];
+                    turnsList[i] = turn;
+                    cubeList[i + 1] = Edges.turn(deepCopy(cubeList[i]), turn.face, turn.amount);
+                }
             }
         }
         if (movesSet.length) return movesSet;
@@ -162,8 +192,10 @@ function UOrToUEveryTwoMoves(suborder, indices, cubeList, mainColor) {
     const firstTurn = turnsSans[indices[0]];
     let lastU = (firstTurn.face !== "U") ? 1 : 0;
 
-    let prev = cubeList[0],
-        next = cubeList[1],
+    let copy = deepCopy(cubeList);
+
+    let prev = copy[0],
+        next = copy[1],
         lastToU = (countU(next, mainColor) > countU(prev, mainColor)) ? 0 : 1,
         lastOffU = {
             howLongAgo: (countU(next, mainColor) < countU(prev, mainColor)) ? 0 : 1,
@@ -180,7 +212,7 @@ function UOrToUEveryTwoMoves(suborder, indices, cubeList, mainColor) {
 
         //lastToU
         prev = next;
-        if (j < suborder - 1) next = cubeList[j + 1];
+        if (j < suborder - 1) next = copy[j + 1];
         //a major optimization may be to change this line ^ to:
         //next = Edges.turn(next, turn.face, turn.amount);
 
@@ -223,7 +255,7 @@ function countU(pieces, mainColor) {
 }
 
 function cross3(pieces, mainColor) {
-    return (countU(pieces, mainColor) === 3);
+    return (countU(pieces, mainColor) >= 3);
 }
 
 function crossSolved(pieces, mainColor) {

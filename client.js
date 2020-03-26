@@ -31,7 +31,8 @@ const colors = {
     g: "green",
     b: "blue",
     o: "orange",
-    r: "red"
+    r: "red",
+    G: "gray"
 },
     layers = {
         U: 0,
