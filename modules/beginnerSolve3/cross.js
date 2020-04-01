@@ -1,5 +1,12 @@
 "use strict";
 
+let sideIndices = [
+    {face: "B", indices: [0, 1], color: "g"},
+    {face: "L", indices: [1, 0], color: "l"},
+    {face: "R", indices: [1, 2], color: "r"},
+    {face: "F", indices: [2, 1], color: "b"}
+];
+
 const sidesSans = sides.filter(side => side !== "D"),
     turnsSans = (() => {
         let result = [];
@@ -10,89 +17,94 @@ const sidesSans = sides.filter(side => side !== "D"),
         );
         return result;
     })(),
-    turnsSansLength = turnsSans.length;
-
-const positions = [
-    [0, 1],
-    [1, 0],
-    [1, 2],
-    [2, 1]
-];
-
-let sideIndices = [
-    {face: "B", indices: [0, 1], color: "g"},
-    {face: "L", indices: [1, 0], color: "l"},
-    {face: "R", indices: [1, 2], color: "r"},
-    {face: "F", indices: [2, 1], color: "b"}
-];
+    turnsSansLength = turnsSans.length,
+    positions = (() => {
+        let result = [];
+        for (let side of sideIndices)
+            result.push(side.indices);
+        return result;
+    })();
 
 function cross(cube, mainColor, moves) {
     const edges = new Edges(cube.pieces);
     const bruteForce3 = bruteForceEdges(edges.pieces, cross3, 5, mainColor);
 
-    let movesSet = [];
-    if (bruteForce3) {
-        if (bruteForce3.length)
-            for (const moves3 of bruteForce3) {
-                let copy = edges.copy();
-                for (const turn of moves3)
-                    copy.turn(turn.face, turn.amount);
+    let turnSet;
+    if (bruteForce3)
+        if (bruteForce3.length) {
+            let copy = edges.copy();
+            for (const turn of bruteForce3)
+                copy.turn(turn.face, turn.amount);
 
-                const bruteForce1 = bruteForceEdges(deepCopy(copy.pieces), crossSolved, 4, mainColor);
-                if (bruteForce1)
-                    for (const moves1 of bruteForce1) {
-                        const bruteForceMoves = moves3.concat(moves1);
-                        movesSet.push(bruteForceMoves);
+            const bruteForce1 = bruteForceEdges(copy.pieces, crossSolved, 4, mainColor);
+            if (bruteForce1) {
+                const lastMove3 = bruteForce3[bruteForce3.length - 1],
+                    firstMove1 = bruteForce1[0];
+                let repeatedFace = (lastMove3.face === firstMove1.face);
+
+                if (repeatedFace) {
+                    const netAmount = lastMove3.amount + firstMove1.amount;
+                    bruteForce3.pop();
+                    bruteForce1.shift();
+
+                    if (netAmount % 4 === 0) {
+                        const effectiveAmount = (() => {
+                            switch(netAmount) {
+                                case 1, 2, -1:
+                                    return netAmount;
+                                case -2:
+                                    return 2;
+                                case 3:
+                                    return -1;
+                                default:
+                                    throw "unexpected net amount: " + netAmount;
+                            }
+                        })();
+                        bruteForce3.push({
+                            face: lastMove3.face,
+                            amount: effectiveAmount
+                        });
                     }
-                else throw "brute force edges failed";
-            }
-        else {
+                }
+
+                const bruteForceMoves = bruteForce3.concat(bruteForce1);
+                turnSet = bruteForceMoves;
+            } else throw "brute force edges failed";
+        } else {
             const bruteForce1 = bruteForceEdges(edges.pieces, crossSolved, 4, mainColor);
             if (bruteForce1)
-                for (const moves1 of bruteForce1)
-                    movesSet.push(moves1);
+                turnSet = bruteForce1;
             else throw "brute force edges failed";
         }
-    } else throw "brute force edges failed";
+    else throw "brute force edges failed";
 
-    const optimalMoves = (() => {
-        const optimalLength = movesSet.reduce(
-            (acc, val) => Math.min(acc, val.length), Infinity
-        );
-        for (const moves of movesSet)
-            if (moves.length === optimalLength)
-                return moves;
-        throw "finding optimal move failed";
-    })();
-
-    // console.log(movesSet)
-    // console.log(optimalMoves)
-
-    for (const turn of optimalMoves) {
+    for (const turn of turnSet) {
         moves.push(turn);
         cube.turn(turn.face, turn.amount);
     }
 
-    // const toD = bringToD(cube);
-    // if (toD) {
-    //     for (const turn of toD) {
-    //         moves.push(turn);
-    //         cube.turn(turn.face, turn.amount);
-    //     }
-    // } else throw "bringing to D failed";
+    const lastMove = turnSet[turnSet.length - 1];
+
+    const toD = bringToD(cube, lastMove);
+    if (toD)
+        for (const turn of toD) {
+            moves.push(turn);
+            cube.turn(turn.face, turn.amount);
+        }
+    else throw "bringing to D failed";
 }
+
+
 
 function bruteForceEdges(edges, solveFunction, order, mainColor) {
     if (solveFunction(edges, mainColor)) return [];
     if (order < 1) throw "brute force order must be an integer >= 1";
 
-    let movesSet = [];
-
     for (const turn of turnsSans) {
         const cube = Edges.turn(edges, turn.face, turn.amount);
-        if (solveFunction(cube, mainColor)) movesSet.push([turn]);
+        if (solveFunction(cube, mainColor))
+            return [turn];
     }
-    if (movesSet.length) return movesSet;
 
     if (order >= 2) {
         for (const turn1 of turnsSans) {
@@ -102,89 +114,72 @@ function bruteForceEdges(edges, solveFunction, order, mainColor) {
                 const cube = Edges.turn(cube1, turn2.face, turn2.amount);
 
                 if (solveFunction(cube, mainColor))
-                    movesSet.push([turn1, turn2]);
+                    return [turn1, turn2];
             }
         }
     }
-    if (movesSet.length) return movesSet;
 
     for (let suborder = 3; suborder <= order; suborder++) {
-        let turnsList = Array(suborder).fill({face: "U", amount: 1})
-        const s = suborder - 1;
+        const s = suborder - 1,
+            firstTurn = turnsSans[0];
+        let turnsList = Array(suborder).fill(firstTurn);
 
+        let cubeList = [edges];
         //cubeList holds values of the cube after each turn of the j-th index-th turnsSans
         //such that cubeList[j + 1] = Edges.turn(cubeList[j], turnsSans[indices[j]].face, turnsSans[indices[j]].amount)
         //for 0 <= j < suborder, and cubeList[0] := edges
-        let cubeList = [deepCopy(edges)];
-        for (let i = 0; i < s; i++)
-            cubeList.push(Edges.turn(deepCopy(cubeList[i]), "U"));
 
-        let indices = Array(suborder).fill(0),
-            prev = [...indices];
+        for (let i = 0; i < s; i++)
+            cubeList.push(Edges.turn(
+                cubeList[i], firstTurn.face, firstTurn.amount
+            ));
+
+        let indices = Array(suborder).fill(0);
 
         for (let i = suborder; i >= 0;) {
+            const moveIsValid = noRepeatedFace(suborder, indices, mainColor) &&
+                UOrToUEveryTwoMoves(suborder, indices, cubeList, mainColor);
+
+            if (moveIsValid) {
+                const lastTurn = turnsSans[indices[s]],
+                    cube = Edges.turn(cubeList[s], lastTurn.face, lastTurn.amount);
+
+                if (solveFunction(cube, mainColor)) {
+                    let moves = [];
+                    for (const index of indices) {
+                        const turn = turnsSans[index];
+                        moves.push(turn);
+                    }
+                    return moves;
+                }
+            }
+
+            let range = suborder;
             for (i = suborder; i--;) {
                 //the i-- assures that i !== suborder
+                range--;
 
                 if (indices[i] < turnsSansLength - 1) {
                     indices[i]++;
-
-                    if (i < s) {
-                        const turn = turnsSans[indices[i]];
-                        turnsList[i] = turn;
-                        cubeList[i + 1] = Edges.turn(deepCopy(cubeList[i]), turn.face, turn.amount);
-                    }
-
-                    const moveIsValid = noRepeatedFace(suborder, indices, mainColor) &&
-                        UOrToUEveryTwoMoves(suborder, indices, cubeList, mainColor);
-
-
-                    if (moveIsValid) {
-                        const lastTurn = turnsSans[indices[s]],
-                            cube1 = Edges.turn(cubeList[s], lastTurn.face, lastTurn.amount);
-
-                        turnsList[s] = lastTurn;
-
-                        let cube = deepCopy(edges);
-                        for (let turn of turnsList)
-                            cube = Edges.turn(cube, turn.face, turn.amount)
-
-
-                        if (cube1.toString() != cube.toString())
-                            console.log(indices)
-
-                        if (solveFunction(cube, mainColor)) {
-                            let moves = [];
-                            for (const index of indices) {
-                                const turn = turnsSans[index];
-                                moves.push(turn);
-                            }
-                            movesSet.push(moves);
-                        }
-                        prev = [...indices];
-                    }
                     break;
                 }
                 indices[i] = 0;
+            }
 
-                if (i < s) {
-                    const turn = turnsSans[0];
-                    turnsList[i] = turn;
-                    cubeList[i + 1] = Edges.turn(deepCopy(cubeList[i]), turn.face, turn.amount);
-                }
+            for (let j = range; j < s; j++) {
+                const turn = turnsSans[indices[j]];
+                cubeList[j + 1] = Edges.turn(cubeList[j], turn.face, turn.amount);
             }
         }
-        if (movesSet.length) return movesSet;
     }
 
     return null;
 }
 
 function noRepeatedFace(suborder, indices, mainColor) {
-    for (let j = 1; j < suborder; j++) {
+    for (let j = 1; j < suborder; j++)
         if (turnsSans[indices[j]].face === turnsSans[indices[j - 1]].face)
             return false;
-    }
     return true;
 }
 
@@ -269,7 +264,7 @@ function crossSolved(pieces, mainColor) {
     return true;
 }
 
-function bringToD(cube) {
+function bringToD(cube, lastMove) {
     let colorsSans = [];
     for (let value of sideIndices) {
         const i = value.indices,
@@ -327,6 +322,8 @@ function bringToD(cube) {
     const minimumLength = (() => {
         let min = Infinity;
         for (const turns of movesSet) {
+            if (lastMove && turns[0].face === lastMove.face && turns[0].amount === lastMove.amount)
+                continue;
             let length = turns.length;
             if (length < min) min = length;
         }

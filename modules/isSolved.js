@@ -1,6 +1,22 @@
 "use strict";
 
-const cubeIsSolved = cube => stepByStep(cube);
+Cube.isSolved = stepByStep;
+
+// const solvedCubes = (() => {
+//     let solvedCubes = [];
+//     let tempCube = new Cube(cubeSize);
+//     tempCube.turn("x");
+//     for (let i = 0; i < 6; i++) { // 6 faces
+//         if (i % 2 === 0) tempCube.turn("x", -1);
+//         else tempCube.turn("y");
+//         for (let j = 0; j < 4; j++) { // 4 rotations per face
+//             const stringedCube = JSON.stringify(tempCube.pieces);
+//             solvedCubes.push(stringedCube);
+//             tempCube.turn("z");
+//         }
+//     }
+//     return solvedCubes;
+// })();
 
 function stepByStep(cube) {
     const firstPiece = cube[0][0][0],
@@ -49,7 +65,7 @@ function stepByStep(cube) {
     return true;
 }
 
-function check24(cube) {
-    const stringedCube = JSON.stringify(cube);
-    return solvedCubes.includes(stringedCube);
-}
+// function check24(cube) {
+//     const stringedCube = JSON.stringify(cube);
+//     return solvedCubes.includes(stringedCube);
+// }

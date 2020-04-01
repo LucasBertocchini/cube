@@ -87,6 +87,14 @@ function displaySetup() {
     beginnerSolve3Button.innerHTML = "beginner solve 3";
     beginnerSolve3Button.onclick = e => beginnerSolve3(mainCube.pieces);
     document.body.appendChild(beginnerSolve3Button);
+
+    let scrambleAndSolveButton = document.createElement("button");
+    scrambleAndSolveButton.innerHTML = "scramble and solve";
+    scrambleAndSolveButton.onclick = e => {
+        mainCube.scramble();
+        beginnerSolve3(mainCube.pieces);
+    }
+    document.body.appendChild(scrambleAndSolveButton);
     
     addBreak();
     

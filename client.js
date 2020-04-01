@@ -78,21 +78,6 @@ const sides = ["U", "D", "F", "B", "L", "R"],
         return temp;
     })(),
     sideTurnsLength = sideTurns.length,
-    /*solvedCubes = (() => {
-        let solvedCubes = [];
-        let tempCube = new Cube(cubeSize);
-        tempCube.turn("x");
-        for (let i = 0; i < 6; i++) { // 6 faces
-            if (i % 2 === 0) tempCube.turn("x", -1);
-            else tempCube.turn("y");
-            for (let j = 0; j < 4; j++) { // 4 rotations per face
-                const stringedCube = JSON.stringify(tempCube.pieces);
-                solvedCubes.push(stringedCube);
-                tempCube.turn("z");
-            }
-        }
-        return solvedCubes;
-    })(),*/
     axes = [["U", "E", "D"], ["F", "S", "B"], ["L", "M", "R"]];
 
 window.onload = () => {

@@ -1,28 +1,7 @@
 "use strict";
 
-function calcIndices(amount, i, j, iPrime, jPrime) {
-    switch (amount) {
-    	case 1:
-	        return [jPrime, i];
-	    case -1:
-	        return [j, iPrime];
-	    case 2:
-	        return [iPrime, jPrime];
-	    default:
-	    	throw "amount must be 1, -1, or 2";
-    }
-}
-
-function calcPieces(amount, newPieceFunction) {
-    for (let i = 0; i < cubeSize; i++) {
-        const iPrime = cubeSize - 1 - i;
-        for (let j = 0; j < cubeSize; j++) {
-            const jPrime = cubeSize - 1 - j;
-            let indices = calcIndices(amount, i, j, iPrime, jPrime);
-            newPieceFunction(i, j, indices);
-        }
-    }
-}
+Cube.turn = cubeTurn;
+Edges.turn = edgesTurn;
 
 function cubeTurn(pieces, face, amount) {
 	// conjugate the direction for opposite sides
@@ -160,6 +139,30 @@ function cubeTurn(pieces, face, amount) {
 	}
 
 	return after;
+}
+
+function calcIndices(amount, i, j, iPrime, jPrime) {
+    switch (amount) {
+    	case 1:
+	        return [jPrime, i];
+	    case -1:
+	        return [j, iPrime];
+	    case 2:
+	        return [iPrime, jPrime];
+	    default:
+	    	throw "amount must be 1, -1, or 2";
+    }
+}
+
+function calcPieces(amount, newPieceFunction) {
+    for (let i = 0; i < cubeSize; i++) {
+        const iPrime = cubeSize - 1 - i;
+        for (let j = 0; j < cubeSize; j++) {
+            const jPrime = cubeSize - 1 - j;
+            let indices = calcIndices(amount, i, j, iPrime, jPrime);
+            newPieceFunction(i, j, indices);
+        }
+    }
 }
 
 function edgesTurn(pieces, face, amount) {

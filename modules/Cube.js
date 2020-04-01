@@ -34,12 +34,9 @@ class Cube {
         this.pieces = cube;
     }
     
-    static turn(pieces, face, amount = 1) {return cubeTurn(pieces, face, amount);}
     turn(face, amount = 1) {this.pieces = Cube.turn(this.pieces, face, amount);}
-
-    static isSolved(pieces) {return cubeIsSolved(pieces);}
     isSolved() {return Cube.isSolved(this.pieces);}
-    
+
     copy() {
         let cube = new Cube(cubeSize);
         cube.pieces = deepCopy(this.pieces);
@@ -49,7 +46,6 @@ class Cube {
     bruteForce(order) {return cubeBruteForce(this.pieces, order);}
     
     reset(clear = true) {
-
         this.pieces = new Cube(cubeSize).pieces;
         if (clear) console.clear();
     }
@@ -120,7 +116,6 @@ class Edges {
         }
     }
 
-    static turn(pieces, face, amount = 1) {return edgesTurn(pieces, face, amount)}
     turn(face, amount = 1) {this.pieces = edgesTurn(this.pieces, face, amount);}
 
 
