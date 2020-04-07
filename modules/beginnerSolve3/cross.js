@@ -26,6 +26,8 @@ const sidesSans = sides.filter(side => side !== "D"),
     })();
 
 function cross(cube, mainColor, moves) {
+    if (crossSolved(cube.pieces, mainColor, 2)) return;
+
     const edges = new Edges(cube.pieces);
     const bruteForce3 = bruteForceEdges(edges.pieces, cross3, 5, mainColor);
 
@@ -253,10 +255,10 @@ function cross3(pieces, mainColor) {
     return (countU(pieces, mainColor) >= 3);
 }
 
-function crossSolved(pieces, mainColor) {
-    const U = pieces[0];
+function crossSolved(pieces, mainColor, layer = 0) {
+    const face = pieces[layer];
     for (let [i, j] of positions) {
-        const line = U[i],
+        const line = face[i],
             piece = line[j],
             color1 = piece[0];
         if (color1 !== mainColor) return false;

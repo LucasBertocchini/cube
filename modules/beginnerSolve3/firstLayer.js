@@ -17,7 +17,7 @@ const faceIndices = {
 
 
 function firstLayer(cube, mainColor, moves) {
-	cube.turns("F U2 F'");
+	//cube.turns("F U2 F'");
 
 	const fourCorners = (() => {
 		let result = [];
@@ -40,6 +40,7 @@ function firstLayer(cube, mainColor, moves) {
 	for (const permutation of permutations) {
 		for (let corner of permutation)
 			solveCorner(cube, corner, centerColors);
+		break;
 		console.log("\n");
 	}
 }
@@ -51,38 +52,52 @@ function solveCorner(cube, corner, centerColors) {
 	const pos = findCorner(cube, corner);
 	const shouldBe = cornerShouldBe(cube, corner, centerColors);
 
+	const amounts = {
+		//same
+		"[[0,0],[0,0]]": 0,
+		"[[0,2],[0,2]]": 0,
+		"[[2,0],[2,0]]": 0,
+		"[[2,2],[2,2]]": 0,
 
-	console.log(corner, pos, shouldBe);
+		//three in a row
+		"[[2,0],[0,0]]": 1,
+		"[[0,0],[0,2]]": 1,
+		"[[2,2],[2,0]]": 1,
+		"[[0,2],[2,2]]": 1,
+
+		//three not in a row
+		"[[0,2],[0,0]]": -1,
+		"[[2,2],[0,2]]": -1,
+		"[[0,0],[2,0]]": -1,
+		"[[2,0],[2,2]]": -1,
+
+		//two of each number
+		"[[2,2],[0,0]]": 2,
+		"[[2,0],[0,2]]": 2,
+		"[[0,2],[2,0]]": 2,
+		"[[0,0],[2,2]]": 2,
+	};
+
+
 	if (pos[0] === 0) {
-		if (eqarray(pos.slice(1), shouldBe.slice(1))) {
-			if (isSamePiece(corner, "ogw")) {
-				if (corner[0] === "o") {
-					cube.turns("L U L'");
-				} else if (corner[0] === "g") {
-					cube.turns("B' U' B");
-				}
-			}
-		}
-		for (const amount of turnAmounts) {
-			const newCube = cube.copy();
-			newCube.turn("U", amount);
-			const newPos = findCorner(newCube, corner);
+		console.log(corner, pos, shouldBe);
 
-			if (eqarray(newPos.slice(1), shouldBe.slice(1))) {
-				if (isSamePiece(corner, "ogw")) {
-					console.log(corner)
-					if (corner[0] === "o") {
-						cube.turn("U", amount);
-						cube.turns("L U L'");
-						break;
-					} else if (corner[0] === "g") {
-						cube.turn("U", amount);
-						cube.turns("B' U' B");
-						break;
-					}
-				}
-			}
-		}
+		const dpos = [pos.slice(1), shouldBe.slice(1)],
+			stringedPos = JSON.stringify(dpos),
+			amount = amounts[stringedPos];
+		if (amount === undefined) throw "amount not found";
+
+		if (amount) cube.turn("U", amount);
+		
+		if (eqarray(shouldBe, [2, 0, 0])) {
+			if (corner[0] === "o")
+				cube.turns("L U L'");
+			else if (corner[0] === "g")
+				cube.turns("B' U' B");
+			else if (corner[0] === "w")
+				cube.turns("L U2 L' U' L U L'");
+			else throw "corner not the right color"
+		}	
 	}
 }
 
