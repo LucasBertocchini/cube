@@ -276,10 +276,10 @@ function bringToD(cube, lastMove) {
     };
 
     let movesSet = [];
-    const permutationList = permutations(colorsSans);
+    const permutations = permute(colorsSans);
 
-    for (let i = 0; i < permutationList.length; i++) {
-        const permutation = permutationList[i];
+    for (let i = 0; i < permutations.length; i++) {
+        const permutation = permutations[i];
         movesSet.push([]);
         let newCube = cube.pieces;
 

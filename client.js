@@ -2,21 +2,21 @@
 // TU resident: column0679dough
 // link: file:///C:/Users/User/Desktop/cube/index.html
 /* 3x3 cube = [
-    //     L     M      R
-    [ //U
-        ["ygo", "yg", "ygr"], //B
-        ["yo" , "y" , "yr" ], //S
-        ["ybo", "yb", "ybr"]  //F
+           L     M      R
+    [  U
+        ["ygo", "yg", "ygr"], B
+        ["yo" , "y" , "yr" ], S
+        ["ybo", "yb", "ybr"]  F
     ],
-    [ //E
-        ["go" , "g" , "gr" ], //B
-        ["o"  , ""  , "r"  ], //S
-        ["bo" , "b" , "br" ]  //F
+    [  E
+        ["go" , "g" , "gr" ], B
+        ["o"  , ""  , "r"  ], S
+        ["bo" , "b" , "br" ]  F
     ],
-    [ //D
-        ["wgo", "wg", "wgr"], //B
-        ["wo" , "w" , "wr" ], //S
-        ["wbo", "wb", "wbr"]  //F
+    [  D
+        ["wgo", "wg", "wgr"], B
+        ["wo" , "w" , "wr" ], S
+        ["wbo", "wb", "wbr"]  F
     ]
 ]
 */
@@ -26,25 +26,19 @@ const cubeSize = 3;
 let mainCube = new Cube(cubeSize);
 
 const colors = {
-    y: "yellow",
-    w: "white",
-    g: "green",
-    b: "blue",
-    o: "orange",
-    r: "red",
-    G: "gray"
-},
+        y: "yellow",
+        w: "white",
+        g: "green",
+        b: "blue",
+        o: "orange",
+        r: "red",
+        G: "gray"
+    },
     layers = {
-        U: 0,
-        E: 1,
-        D: cubeSize - 1,
-        B: 0,
-        S: 1,
-        F: cubeSize - 1,
-        L: 0,
-        M: 1,
-        R: cubeSize - 1
-};
+        U: 0, E: 1, D: 2,
+        B: 0, S: 1, F: 2,
+        L: 0, M: 1, R: 2
+    };
 
 const sides = ["U", "D", "F", "B", "L", "R"],
     middles = ["E", "S", "M"],
@@ -58,25 +52,18 @@ const sides = ["U", "D", "F", "B", "L", "R"],
                 middles.forEach(middle => temp.push(middle + layer.toString()));
         } else throw "cube size must be 2, 3, or >3";
     })(),
-    turns = (() => {
-        let temp = [];
-        faces.forEach(face => 
+    calcTurns = sideList => {
+        let result = [];
+        sideList.forEach(face => 
             turnAmounts.forEach(
-                amount => temp.push({face, amount})
+                amount => result.push({face, amount})
             )
         );
-        return temp;
-    })(),
+        return result;
+    },
+    turns = calcTurns(faces),
     turnsLength = turns.length,
-    sideTurns = (() => {
-        let temp = [];
-        sides.forEach(face => 
-            turnAmounts.forEach(
-                amount => temp.push({face, amount})
-            )
-        );
-        return temp;
-    })(),
+    sideTurns = calcTurns(sides),
     sideTurnsLength = sideTurns.length,
     axes = [["U", "E", "D"], ["F", "S", "B"], ["L", "M", "R"]];
 
@@ -114,9 +101,9 @@ function deepCopy(array) {
     return JSON.parse(JSON.stringify(array));
 }
 
-function reorder(string, ...indexes) {
+function reorder(string, ...indices) {
     let newString = "";
-    for (let index of indexes)
+    for (const index of indices)
         newString += string[index];
     return newString;
 }
@@ -125,11 +112,11 @@ function randInt(n) {
     return Math.floor(Math.random() * n);
 }
 
-function permutations(array) {
+function permute(array) {
     //https://stackoverflow.com/questions/9960908/permutations-in-javascript
-    let length = array.length,
-        result = [array.slice()],
-        c = new Array(length).fill(0),
+    const length = array.length;
+    let result = [array.slice()],
+        c = Array(length).fill(0),
         i = 1, k, p;
 
     while (i < length) {
@@ -149,10 +136,14 @@ function permutations(array) {
     return result;
 }
 
+function eqarray(array1, array2) {
+    return (JSON.stringify(array1) === JSON.stringify(array2));
+}
 
-//cube functions
 
 
+
+/*
 function moveSets(n) {
     let indices = Array(n).fill(0);
     let length = faces.length;
@@ -201,4 +192,4 @@ function moveSets(n) {
             indices[i] = 0;
         }
     }
-}
+}*/

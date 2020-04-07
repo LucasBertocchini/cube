@@ -37,6 +37,19 @@ class Cube {
     turn(face, amount = 1) {this.pieces = Cube.turn(this.pieces, face, amount);}
     isSolved() {return Cube.isSolved(this.pieces);}
 
+    turns(turnString) {
+        const turnList = turnString.split(" ");
+        for (const turn of turnList) {
+            if (turn.length === 1) this.turn(turn);
+            else if (turn.length === 2) {
+                if (turn[1] === "'") this.turn(turn[0], -1);
+                else if (turn[1] === "2") this.turn(turn[0], 2);
+                else throw "turns failed: " + turn;
+            }
+            else throw "turns failed: " + turn;
+        }
+    }
+
     copy() {
         let cube = new Cube(cubeSize);
         cube.pieces = deepCopy(this.pieces);
