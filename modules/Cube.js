@@ -38,6 +38,7 @@ class Cube {
     isSolved() {return Cube.isSolved(this.pieces);}
 
     turns(turnString) {
+        if (!turnString) return;
         const turnList = turnString.split(" ");
         for (const turn of turnList) {
             if (turn.length === 1) this.turn(turn);
