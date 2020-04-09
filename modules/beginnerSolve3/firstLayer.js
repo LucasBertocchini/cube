@@ -81,7 +81,7 @@ function firstLayer(cube, mainColor, moves) {
 			}
 		}
 		movesList.push(fullSolution);
-		break
+		break;
 		console.log("\n");
 	}
 
@@ -94,26 +94,15 @@ function firstLayer(cube, mainColor, moves) {
 
 function solveCorner(cube, corner, centerColors, mainColor) {
 	const pos = findCorner(cube, corner);
-	const shouldBe = cornerShouldBe(cube, corner, centerColors);
-
-	let moves = "";
+	const shouldBe = cornerShouldBe(corner, centerColors);
 
 	if (pos[0] === 0) { //corner is on U
-		const dpos = [pos.slice(1), shouldBe.slice(1)],
-			stringedPos = JSON.stringify(dpos),
-			amount = amounts[stringedPos];
-
-		if (amount === undefined) throw "amount not found";
-
-		if (amount) {
-			if (amount === 1)
-				moves += "U";
-			else if (amount === -1)
-				moves += "U'";
-			else if (amount === 2)
-				moves += "U2";
-		}
-
+		return solveCornerOnU(cube, corner, centerColors, mainColor, pos, shouldBe);
+	} else if (eqarray(pos, shouldBe)) { //corner is in place, needs orientation
+		const i = centerIndices.D;
+		if (corner[0] === cube.pieces[i[0]][i[1]][i[2]])
+			return "";
+		
 		for (const indicesFaces of indicesFacesList) {
 			const indices = indicesFaces.indices;
 
@@ -122,35 +111,40 @@ function solveCorner(cube, corner, centerColors, mainColor) {
 					f0 = faces[0],
 					f1 = faces[1];
 
-				if (moves) moves += " ";
-
-				switch(corner[0]) {
+				switch (corner[0]) {
 					case centerColors[f0]:
-						moves += `${f0} U ${f0}'`;
-						break;
+						return `${f0} U' ${f0}' ${f1}' U' ${f1}`;
 					case centerColors[f1]:
-						moves += `${f1}' U' ${f1}`;
-						break;
-					case mainColor:
-						moves += `${f0} U2 ${f0}' U' ${f0} U ${f0}'`;
-						break;
+						return `${f1}' U ${f1} ${f0} U ${f0}'`;
 					default:
-						throw "corner not the right color";
+						throw "corner not the right color: " + corner[0];
 				}
-
-				break;
 			}
 		}
-	} else {
-		const i = centerIndices.D;
-		if (eqarray(pos, shouldBe) &&
-			corner[0] === cube.pieces[i[0]][i[1]][i[2]])
-			return "";
-		
-		console.log(corner, pos, shouldBe)
-	}
+	} else { //corner is in D out of place
+		console.log(corner, pos, shouldBe);
 
-	return moves;
+		let moves = "";
+
+		for (const indicesFaces of indicesFacesList) {
+			const indices = indicesFaces.indices;
+
+			if (eqarray(pos, indices)) {
+				const face = indicesFaces.faces[0];
+				moves += `${face} U ${face}'`;
+			}
+		}
+
+		let copy = cube.copy();
+		copy.turns(moves);
+		const newPos = findCorner(copy, corner),
+			orderedCorner = orderCorner(copy.pieces, corner);
+
+		if (moves) moves += " ";
+		moves += solveCornerOnU(copy, orderedCorner, centerColors, mainColor, newPos, shouldBe);
+		console.log(moves)
+		return moves;
+	}
 }
 
 
@@ -193,7 +187,7 @@ function calcCenterColors(cube) {
 	return centerColors;
 }
 
-function cornerShouldBe(cube, corner, centerColors) {
+function cornerShouldBe(corner, centerColors) {
 	let faceList = [];
 	for (const [face, color] of Object.entries(centerColors))
 		if (corner.includes(color))
@@ -225,4 +219,53 @@ function orderCorner(pieces, corner) {
 	}
 
 	throw "corner not found";
+}
+
+function solveCornerOnU(cube, corner, centerColors, mainColor, pos, shouldBe) {
+	const dpos = [pos.slice(1), shouldBe.slice(1)],
+		stringedPos = JSON.stringify(dpos),
+		amount = amounts[stringedPos];
+
+	if (amount === undefined) throw "amount not found";
+
+	let moves = "";
+
+	if (amount) {
+		if (amount === 1)
+			moves += "U";
+		else if (amount === -1)
+			moves += "U'";
+		else if (amount === 2)
+			moves += "U2";
+	}
+
+	for (const indicesFaces of indicesFacesList) {
+		const indices = indicesFaces.indices;
+
+		if (eqarray(shouldBe, indices)) {
+			const faces = indicesFaces.faces,
+				f0 = faces[0],
+				f1 = faces[1];
+
+			if (moves) moves += " ";
+
+			switch(corner[0]) {
+				case centerColors[f0]:
+					moves += `${f0} U ${f0}'`;
+					break;
+				case centerColors[f1]:
+					moves += `${f1}' U' ${f1}`;
+					break;
+				case mainColor:
+					moves += `${f0} U2 ${f0}' U' ${f0} U ${f0}'`;
+					break;
+				default:
+					throw "corner not the right color: " + corner[0];
+			}
+
+			return moves;
+		}
+	}
+
+	throw "solve corner on U failed";
 }

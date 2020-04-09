@@ -70,14 +70,8 @@ const sides = ["U", "D", "F", "B", "L", "R"],
 window.onload = () => {
     displaySetup();
     
-    mainCube.pieces = [[["goy","bo","wrg"],["og","y","yr"],["brw","oy","ryb"]],[["gr","g","yb"],["o","","r"],["br","b","gy"]],[["ybo","rw","ogw"],["wo","w","wg"],["owb","wb","ryg"]]];
-    mainCube.turn("D");
-    // mainCube.turn("R", 2);
-    // mainCube.turn("D");
-    // mainCube.turn("L", 2);
-    // mainCube.turn("U");
-    // mainCube.turn("R", 2);
-    // mainCube.pieces = [[["ogw","og","bwo"],["rw","w","by"],["gyo","ry","oby"]],[["yo","g","wo"],["r","","o"],["yg","b","rg"]],[["brw","gw","yrg"],["rb","y","bw"],["rwg","bo","byr"]]]
+    mainCube.pieces = [[["ybr","yr","gry"],["rg","o","wg"],["ybo","ob","grw"]],[["yg","y","rw"],["g","","b"],["oy","w","go"]],[["gow","wo","bow"],["bw","r","by"],["wrb","br","yog"]]];
+
     console.time();
     beginnerSolve3();
     console.timeEnd();
