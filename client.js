@@ -65,19 +65,104 @@ const sides = ["U", "D", "F", "B", "L", "R"],
     turnsLength = turns.length,
     sideTurns = calcTurns(sides),
     sideTurnsLength = sideTurns.length,
-    axes = [["U", "E", "D"], ["F", "S", "B"], ["L", "M", "R"]];
+    axes = [["U", "E", "D"], ["F", "S", "B"], ["L", "M", "R"]],
+    centerIndices = {
+        "U": [0, 1, 1],
+        "D": [2, 1, 1],
+        "F": [1, 2, 1],
+        "B": [1, 0, 1],
+        "L": [1, 1, 0],
+        "R": [1, 1, 2]
+    },
+    faceIndices = {
+        "U": 0, "D": 0,
+        "F": 1, "B": 1,
+        "L": 2, "R": 2
+    },
+    amounts = {
+        //same
+        "[[0,0],[0,0]]": 0,
+        "[[0,2],[0,2]]": 0,
+        "[[2,0],[2,0]]": 0,
+        "[[2,2],[2,2]]": 0,
+
+        //three in a row
+        "[[2,0],[0,0]]": 1,
+        "[[0,0],[0,2]]": 1,
+        "[[2,2],[2,0]]": 1,
+        "[[0,2],[2,2]]": 1,
+
+        //three not in a row
+        "[[0,2],[0,0]]": -1,
+        "[[2,2],[0,2]]": -1,
+        "[[0,0],[2,0]]": -1,
+        "[[2,0],[2,2]]": -1,
+
+        //two of each number; inverses of eachother
+        "[[2,2],[0,0]]": 2,
+        "[[2,0],[0,2]]": 2,
+        "[[0,2],[2,0]]": 2,
+        "[[0,0],[2,2]]": 2,
+    },
+    indicesFacesList = [
+        {indices: [0, 0], faces: ["L", "B"]},
+        {indices: [0, 2], faces: ["B", "R"]},
+        {indices: [2, 2], faces: ["R", "F"]},
+        {indices: [2, 0], faces: ["F", "L"]}
+    ],
+    clockwiseSides = {
+        B: 0,
+        R: 1,
+        F: 2,
+        L: 3
+    },
+    oppositeSide = {
+        U: "D", D: "U",
+        B: "F", F: "B",
+        L: "R", R: "L"
+    },
+    ccSide = {
+        B: "L", F: "R",
+        L: "F", R: "B"
+    };
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 window.onload = () => {
     displaySetup();
     
-    mainCube.pieces = [[["ybr","yr","gry"],["rg","o","wg"],["ybo","ob","grw"]],[["yg","y","rw"],["g","","b"],["oy","w","go"]],[["gow","wo","bow"],["bw","r","by"],["wrb","br","yog"]]];
+    mainCube.pieces = [[["bow","yr","owg"],["oy","b","wo"],["ryg","gr","ybr"]],[["gw","o","bw"],["w","","y"],["rw","r","yb"]],[["ybo","rb","ygo"],["go","g","gy"],["wgr","bo","wbr"]]]
 
-    console.time();
+    const start = Date.now();
+
+
+
+
     beginnerSolve3();
-    console.timeEnd();
 
+
+
+
+
+    const end = Date.now();
+    console.log(end - start + " ms")
     display();
 }
+
+
+
+
 
 
 
@@ -134,6 +219,13 @@ function eqarray(array1, array2) {
     return (JSON.stringify(array1) === JSON.stringify(array2));
 }
 
+function sharesValues(array1, array2, n) {
+    let count = 0;
+    for (const i in array1)
+        if (array1[i] === array2[i])
+            count++;
+    return (count === n);
+}
 
 
 

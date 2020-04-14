@@ -29,13 +29,23 @@ function displaySetup() {
                 face.appendChild(piece);
             }
         }
-        face.style = `grid-template-columns: ${"auto ".repeat(cubeSize)};`;
+        face.style = `grid-template-columns: ${"auto ".repeat(cubeSize).slice(0, -1)};`;
         cubeContainer.appendChild(face);
     }
     
     
     
     
+
+    let scrambleAndSolveButton = document.createElement("button");
+    scrambleAndSolveButton.innerHTML = "scramble and solve";
+    scrambleAndSolveButton.onclick = e => {
+        mainCube.scramble();
+        beginnerSolve3(mainCube.pieces);
+    }
+    document.body.appendChild(scrambleAndSolveButton);
+
+    addBreak();
     
     for (let face of faces.concat(["y", "z", "x"])) {
         let turnButton = document.createElement("button");
@@ -88,13 +98,13 @@ function displaySetup() {
     beginnerSolve3Button.onclick = e => beginnerSolve3(mainCube.pieces);
     document.body.appendChild(beginnerSolve3Button);
 
-    let scrambleAndSolveButton = document.createElement("button");
-    scrambleAndSolveButton.innerHTML = "scramble and solve";
-    scrambleAndSolveButton.onclick = e => {
-        mainCube.scramble();
-        beginnerSolve3(mainCube.pieces);
+    let copyPiecesButton = document.createElement("button");
+    copyPiecesButton.innerHTML = "copy pieces";
+    copyPiecesButton.onclick = e => {
+        const text = JSON.stringify(mainCube.pieces);
+        console.log(text);
     }
-    document.body.appendChild(scrambleAndSolveButton);
+    document.body.appendChild(copyPiecesButton);
     
     addBreak();
     

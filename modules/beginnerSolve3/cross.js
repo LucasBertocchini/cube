@@ -18,12 +18,12 @@ const sidesSans = sides.filter(side => side !== "D"),
         return result;
     })(),
     turnsSansLength = turnsSans.length,
-    positions = (() => {
-        let result = [];
-        for (let side of sideIndices)
-            result.push(side.indices);
-        return result;
-    })();
+    positions = [
+        [0, 1],
+        [1, 0],
+        [1, 2],
+        [2, 1]
+    ];
 
 function cross(cube, mainColor, moves) {
     if (crossSolved(cube.pieces, mainColor, 2)) return;
@@ -49,10 +49,12 @@ function cross(cube, mainColor, moves) {
                     bruteForce3.pop();
                     bruteForce1.shift();
 
-                    if (netAmount % 4 === 0) {
+                    if (netAmount % 4 !== 0) {
                         const effectiveAmount = (() => {
                             switch(netAmount) {
-                                case 1, 2, -1:
+                                case 1:
+                                case 2:
+                                case -1:
                                     return netAmount;
                                 case -2:
                                     return 2;
@@ -80,20 +82,12 @@ function cross(cube, mainColor, moves) {
         }
     else throw "brute force edges failed";
 
-    for (const turn of turnSet) {
-        moves.push(turn);
-        cube.turn(turn.face, turn.amount);
-    }
+    moves.turn(turnSet);
 
     const lastMove = turnSet[turnSet.length - 1];
 
     const toD = bringToD(cube, lastMove);
-    if (toD)
-        for (const turn of toD) {
-            moves.push(turn);
-            cube.turn(turn.face, turn.amount);
-        }
-    else throw "bringing to D failed";
+    moves.turn(toD);
 }
 
 
@@ -276,7 +270,7 @@ function bringToD(cube, lastMove) {
         value.color = color;
         colorsSans.push(color);
     };
-
+    
     let movesSet = [];
     const permutations = permute(colorsSans);
 
@@ -336,4 +330,6 @@ function bringToD(cube, lastMove) {
         if (turns.length === minimumLength)
             return turns;
     }
+
+    throw "bringing to D failed";
 }

@@ -97,7 +97,56 @@ class Cube {
         }
     }
 
-    
+    static turnsToTurn(turns) {
+        const turnsList = turns.split(" ");
+
+        let turnList = [];
+
+        for (const turn of turnsList) {
+            if (turn.length > 1) {
+                switch (turn.slice(-1)) {
+                    case "'":
+                        turnList.push({
+                            face: turn[0],
+                            amount: -1
+                        });
+                        break;
+                    case "2":
+                        turnList.push({
+                            face: turn[0],
+                            amount: 2
+                        });
+                        break;
+                    default:
+                        throw "amount not ' or 2";
+                }
+            } else turnList.push({
+                face: turn,
+                amount: 1
+            });
+        }
+
+        return turnList;
+    }
+
+    static turnToTurns(turn) {
+        let amountSymbol;
+
+        switch(turn.amount) {
+            case 1:
+                return turn.face;
+            case -1:
+                amountSymbol = "'"
+                break;
+            case 2:
+                amountSymbol = "2"
+                break;
+            default:
+                throw "turn amount must be 1, -1, or 2";
+        }
+
+        return turn.face + amountSymbol;
+    }
 }
 
 class Edges {
