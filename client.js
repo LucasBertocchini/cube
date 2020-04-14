@@ -65,15 +65,15 @@ const sides = ["U", "D", "F", "B", "L", "R"],
     turnsLength = turns.length,
     sideTurns = calcTurns(sides),
     sideTurnsLength = sideTurns.length,
+
+
+
+
+
+
+
+
     axes = [["U", "E", "D"], ["F", "S", "B"], ["L", "M", "R"]],
-    centerIndices = {
-        "U": [0, 1, 1],
-        "D": [2, 1, 1],
-        "F": [1, 2, 1],
-        "B": [1, 0, 1],
-        "L": [1, 1, 0],
-        "R": [1, 1, 2]
-    },
     faceIndices = {
         "U": 0, "D": 0,
         "F": 1, "B": 1,
@@ -130,6 +130,21 @@ const sides = ["U", "D", "F", "B", "L", "R"],
 
 
 
+
+const cube3 = {
+    centerIndices: {
+        "U": [0, 1, 1],
+        "D": [2, 1, 1],
+        "F": [1, 2, 1],
+        "B": [1, 0, 1],
+        "L": [1, 1, 0],
+        "R": [1, 1, 2]
+    },
+    centerColor: (cube, face) => {
+        const indices = cube3.centerIndices[face];
+        return cube.indices(indices);
+    }
+};
 
 
 
@@ -226,56 +241,3 @@ function sharesValues(array1, array2, n) {
             count++;
     return (count === n);
 }
-
-
-
-/*
-function moveSets(n) {
-    let indices = Array(n).fill(0);
-    let length = faces.length;
-    let turnAmounts = [1, -1, 2];
-    for (let i = n; i >= 0;) {
-        
-        function sameIndices() {
-            for (let j = 1; j < n; j++) {
-                if (indices[j] === indices[j - 1])
-                    return true;
-            }
-        }
-        if (!sameIndices()) {
-            let indices2 = Array(n).fill(0);
-            for (let j = n; j >= 0;) {
-                
-                let cube = deepCopy(mainCube);
-                let moves = [];
-                for (let k = 0; k < n; k++) {
-                    let index1 = indices[k];
-                    let index2 = indices2[k];
-                    let side = faces[index1];
-                    let amount = turnAmounts[index2];
-                    moves.push({side, amount});
-                }
-                let solved = false;
-                //while (!solved) {
-                    
-                //}
-                
-                for (j = n; j--;) {
-                    if (indices2[j] < 3 - 1) {
-                        indices2[j]++;
-                        break;
-                    }
-                    indices2[j] = 0;
-                }
-            }
-        }
-        
-        for (i = n; i--;) {
-            if (indices[i] < length - 1) {
-                indices[i]++;
-                break;
-            }
-            indices[i] = 0;
-        }
-    }
-}*/

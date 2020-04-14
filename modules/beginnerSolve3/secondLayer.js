@@ -2,7 +2,10 @@
 
 // this file mimics the structure of firstLayer.js
 
-function secondLayer(cube, mainColor, moves) {
+function secondLayer(moves, solveFrom) {
+    let cube = moves.cube;
+    const mainColor = solveFrom.color.main;
+    
 	const fourEdges = (() => {
 		let result = [];
 		cube.pieces.forEach(
@@ -10,7 +13,7 @@ function secondLayer(cube, mainColor, moves) {
 				line => line.forEach(
 					piece => {
 						if (piece.length === 2 && !piece.includes(mainColor)) {
-							const i = centerIndices.U,
+							const i = cube3.centerIndices.U,
 								Ucolor = cube.pieces[i[0]][i[1]][i[2]];
 							if (!piece.includes(Ucolor))
 								result.push(piece);
@@ -89,7 +92,7 @@ function solveEdge(cube, edge, centerColors, mainColor) {
 	} else if (pos[0] === 1) //edge is on E
 		if (eqarray(pos, shouldBe)) { //edge is in place, needs orientation
 			let sideList = [];
-			for (const [side, indices] of Object.entries(centerIndices))
+			for (const [side, indices] of Object.entries(cube3.centerIndices))
 				if (sharesValues(indices, shouldBe, 2))
 					sideList.push(side);
 
@@ -192,7 +195,7 @@ function edgeShouldBe(edge, centerColors) {
 
 	let result = [1]; // 1 is the first index and the index of E
 	for (const face of faceList) {
-		const indices = centerIndices[face],
+		const indices = cube3.centerIndices[face],
 			index = faceIndices[face];
 		result.push(indices[index]);
 	}
@@ -201,7 +204,7 @@ function edgeShouldBe(edge, centerColors) {
 
 function calcCenterColors(cube) {
 	let centerColors = {};
-	for (const [face, i] of Object.entries(centerIndices)) {
+	for (const [face, i] of Object.entries(cube3.centerIndices)) {
 		const color = cube.pieces[i[0]][i[1]][i[2]];
 		centerColors[face] = color;
 	}
@@ -221,7 +224,7 @@ function solveEdgeOnU(cube, edge, centerColors, pos, shouldBe) {
 		})(),
 		c0 = clockwiseSides[s0],
 		c1 = clockwiseSides[s1],
-		reducedCenterIndices = centerIndices[s0].slice(1),
+		reducedCenterIndices = cube3.centerIndices[s0].slice(1),
 		reducedEdgeIndices = pos.slice(1);
 
 	if (eqarray(reducedEdgeIndices, reducedCenterIndices)) {
@@ -234,7 +237,7 @@ function solveEdgeOnU(cube, edge, centerColors, pos, shouldBe) {
 		let firstTurn;
 
 		for (const amount of turnAmounts) {
-			const turned = Cube.turn(cube.pieces, "U", amount),
+			const turned = Cube.turn(cube.pieces, {face: "U", amount}),
 				newPos = findEdge(turned, edge);
 
 			if (eqarray(newPos.slice(1), reducedCenterIndices)) {
@@ -251,4 +254,3 @@ function solveEdgeOnU(cube, edge, centerColors, pos, shouldBe) {
 			return `${firstTurn} ${s0} U2 ${s0}' U2 ${s1}' U' ${s1}`;
 	}
 }
-

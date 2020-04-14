@@ -3,7 +3,10 @@
 Cube.turn = cubeTurn;
 Edges.turn = edgesTurn;
 
-function cubeTurn(pieces, face, amount) {
+function cubeTurn(pieces, turn) {
+	const face = turn.face;
+	let amount = turn.amount;
+
 	// conjugate the direction for opposite sides
 	if (["D", "B", "R"].includes(face) && amount !== 2)
 	    amount *= -1;
@@ -150,7 +153,7 @@ function calcIndices(amount, i, j, iPrime, jPrime) {
 	    case 2:
 	        return [iPrime, jPrime];
 	    default:
-	    	throw "amount must be 1, -1, or 2";
+	    	throw "amount must be 1, -1, or 2: " + amount;
     }
 }
 
@@ -165,7 +168,10 @@ function calcPieces(amount, newPieceFunction) {
     }
 }
 
-function edgesTurn(pieces, face, amount) {
+function edgesTurn(pieces, turn) {
+	const face = turn.face;
+	let amount = turn.amount;
+	
 	// conjugate the direction for opposite sides
 	if (["D", "B", "R"].includes(face) && amount !== 2)
 	    amount *= -1;

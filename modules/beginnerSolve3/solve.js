@@ -1,32 +1,22 @@
 "use strict";
 
 class Moves {
-    constructor(cube, mainColor) {
+    constructor(cube) {
         this.list = [];
         this.string = "";
         this.cube = cube;
-        this.mainColor = mainColor
     }
+    
+    turn(...turns) {
+        for (const turn of turns) {
+            const turnString = Cube.turnToTurns(turn);
+            if (this.string) this.string += " ";
+            this.string += turnString;
 
-    movesSingular(turn) {
-        const turnString = Cube.turnToTurns(turn);
-        if (this.string) this.string += " ";
-        this.string += turnString;
+            this.list.push(turn)
 
-        this.list.push(turn)
-
-        this.cube.turn(turn.face, turn.amount);
-    }
-
-    turn(turns) {
-        if (Array.isArray(turns)) {
-            if (!turns.length) return;
-
-            for (const turn of turns)
-                this.movesSingular(turn)
+            this.cube.turn(turn);
         }
-        else
-            this.movesSingular(turns)
     }
 
     turns(turns) {
@@ -47,16 +37,22 @@ function beginnerSolve3(displayCube = true) {
     if (cubeSize !== 3) throw "cube size must be 3 for beginnerSolve3";
 
     let cube = mainCube.copy();
-    const mainColor = "w";
+    const solveFrom = {
+        side: "U",
+        color: {
+            main: "w",
+            opposite: "y"
+        },
+    }
         
-    let moves = new Moves(cube, mainColor);
+    let moves = new Moves(cube);
 
 
-    orient(cube, mainColor, moves);
-    cross(moves.cube, mainColor, moves);
-    firstLayer(moves.cube, mainColor, moves);
-    secondLayer(moves.cube, mainColor, moves);
-    Ucross(moves.cube, mainColor, moves);
+    orient(moves, solveFrom);
+    cross(moves, solveFrom);
+    firstLayer(moves, solveFrom);
+    secondLayer(moves, solveFrom);
+    Ucross(moves, solveFrom);
     
     //return
     if (displayCube) {
@@ -65,5 +61,6 @@ function beginnerSolve3(displayCube = true) {
     }
     
     console.log(moves.string)
+    console.log(moves.list.length + " moves")
     return moves;
 }

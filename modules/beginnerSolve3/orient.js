@@ -1,19 +1,34 @@
 "use strict";
 
-function orient(cube, mainColor, moves) {
-    const orientations = [
-        {indices: [0, 1, 1], turn: {face: "M", amount: 2}},  //U
-        {indices: [1, 2, 1], turn: {face: "M", amount: 1}},  //F
-        {indices: [1, 0, 1], turn: {face: "M", amount: -1}}, //B
-        {indices: [1, 1, 0], turn: {face: "S", amount: -1}}, //L
-        {indices: [1, 1, 2], turn: {face: "S", amount: 1}}   //R
-    ];
+const orientations = [
+    {face: "U", turn: "M2"},
+    {face: "B", turn: "M'"},
+    {face: "F", turn: "M"},
+    {face: "L", turn: "S'"},
+    {face: "R", turn: "S"}
+];
+
+function orient(moves, solveFrom) {
+    const
+    cube = moves.cube,
+    mainColor = solveFrom.color.main;
+    
     for (const orientation of orientations) {
-        const i = orientation.indices;
-        if (cube.pieces[i[0]][i[1]][i[2]] === mainColor) {
+        const
+        face = orientation.face,
+        indices = cube3.centerIndices[face],
+        color = cube.indices(indices);
+
+        if (color === mainColor) {
             const turn = orientation.turn;
-            moves.turn(turn);
+            moves.turns(turn);
             return;
         }
     }
+
+    const
+    indicesD = cube3.centerIndices.D,
+    colorD = cube.indices(indicesD);
+    if (colorD !== mainColor)
+        throw "orientation failed";
 }

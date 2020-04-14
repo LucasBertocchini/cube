@@ -1,6 +1,9 @@
 "use strict";
 
-function Ucross(cube, mainColor, moves) {
+function Ucross(moves, solveFrom) {
+    let cube = moves.cube;
+    const mainColor = solveFrom.color.main;
+    
 	const count = countU(cube.pieces, "y");
 
     switch (count) {
@@ -70,7 +73,7 @@ function indicesU(pieces, color) {
     }
 
     function findSide(indexList) {
-        for (const [side, indices] of Object.entries(centerIndices))
+        for (const [side, indices] of Object.entries(cube3.centerIndices))
             if (eqarray(indexList, indices))
                 return side;
         throw "side not found";
@@ -100,7 +103,7 @@ function colinear(indices) {
 }
 
 function findSide(indexList) {
-    for (const [side, indices] of Object.entries(centerIndices))
+    for (const [side, indices] of Object.entries(cube3.centerIndices))
         if (eqarray(indexList, indices))
             return side;
     throw "side not found";

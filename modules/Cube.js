@@ -34,21 +34,14 @@ class Cube {
         this.pieces = cube;
     }
     
-    turn(face, amount = 1) {this.pieces = Cube.turn(this.pieces, face, amount);}
+    turn(turn) {this.pieces = Cube.turn(this.pieces, turn);}
     isSolved() {return Cube.isSolved(this.pieces);}
 
     turns(turnString) {
         if (!turnString) return;
-        const turnList = turnString.split(" ");
-        for (const turn of turnList) {
-            if (turn.length === 1) this.turn(turn);
-            else if (turn.length === 2) {
-                if (turn[1] === "'") this.turn(turn[0], -1);
-                else if (turn[1] === "2") this.turn(turn[0], 2);
-                else throw "turns failed: " + turn;
-            }
-            else throw "turns failed: " + turn;
-        }
+        const turnList = Cube.turnsToTurn(turnString);
+        for (const turn of turnList)
+            this.turn(turn);
     }
 
     copy() {
@@ -89,7 +82,7 @@ class Cube {
                     (turn.amount === prev.amount && turn.face !== prev.face)
                     ) {
                     if (log) console.log(turn);
-                    this.turn(turn.face, turn.amount);
+                    this.turn(turn);
                     turnsList.push(turn);
                     found = true;
                 }
@@ -142,11 +135,14 @@ class Cube {
                 amountSymbol = "2"
                 break;
             default:
-                throw "turn amount must be 1, -1, or 2";
+                throw "turn amount must be 1, -1, or 2: " + turn.amount;
         }
 
         return turn.face + amountSymbol;
     }
+
+    indices(i) {return this.pieces[i[0]][i[1]][i[2]];}
+    static indices(pieces, i) {return pieces[i[0]][i[1]][i[2]];}
 }
 
 class Edges {
@@ -179,7 +175,7 @@ class Edges {
         }
     }
 
-    turn(face, amount = 1) {this.pieces = edgesTurn(this.pieces, face, amount);}
+    turn(turn) {this.pieces = edgesTurn(this.pieces, turn);}
 
 
     copy() {

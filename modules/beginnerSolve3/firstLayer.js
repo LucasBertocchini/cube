@@ -1,6 +1,9 @@
 "use strict";
 
-function firstLayer(cube, mainColor, moves) {
+function firstLayer(moves, solveFrom) {
+    let cube = moves.cube;
+    const mainColor = solveFrom.color.main;
+    
 	const fourCorners = (() => {
 		let result = [];
 		cube.pieces.forEach(
@@ -64,7 +67,7 @@ function solveCorner(cube, corner, centerColors, mainColor) {
 	if (pos[0] === 0) { //corner is on U
 		return solveCornerOnU(cube, corner, centerColors, mainColor, pos, shouldBe);
 	} else if (eqarray(pos, shouldBe)) { //corner is in place, needs orientation
-		const i = centerIndices.D;
+		const i = cube3.centerIndices.D;
 		if (corner[0] === cube.pieces[i[0]][i[1]][i[2]])
 			return "";
 		
@@ -143,7 +146,7 @@ function cornerShouldBe(corner, centerColors) {
 
 	let result = [];
 	for (const face of faceList) {
-		const indices = centerIndices[face],
+		const indices = cube3.centerIndices[face],
 			index = faceIndices[face];
 		result.push(indices[index]);
 	}
@@ -157,7 +160,7 @@ function isSamePiece(piece1, piece2) {
 
 function calcCenterColors(cube) {
 	let centerColors = {};
-	for (const [face, i] of Object.entries(centerIndices)) {
+	for (const [face, i] of Object.entries(cube3.centerIndices)) {
 		const color = cube.pieces[i[0]][i[1]][i[2]];
 		centerColors[face] = color;
 	}
