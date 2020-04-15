@@ -8,6 +8,7 @@ class Moves {
     }
     
     turn(...turns) {
+        //change to use cube.turnToTurns
         for (const turn of turns) {
             const turnString = Cube.turnToTurns(turn);
             if (this.string) this.string += " ";
@@ -38,8 +39,11 @@ function beginnerSolve3(displayCube = true) {
 
     let cube = mainCube.copy();
     const solveFrom = {
-        side: "U",
-        color: {
+        faces: {
+            main: "U",
+            opposite: "D"
+        },
+        colors: {
             main: "w",
             opposite: "y"
         },
@@ -50,9 +54,9 @@ function beginnerSolve3(displayCube = true) {
 
     orient(moves, solveFrom);
     cross(moves, solveFrom);
-    firstLayer(moves, solveFrom);
-    secondLayer(moves, solveFrom);
-    Ucross(moves, solveFrom);
+    // firstLayer(moves, solveFrom);
+    // secondLayer(moves, solveFrom);
+    // Ucross(moves, solveFrom);
     
     //return
     if (displayCube) {

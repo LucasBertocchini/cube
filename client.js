@@ -133,17 +133,23 @@ const sides = ["U", "D", "F", "B", "L", "R"],
 
 const cube3 = {
     centerIndices: {
-        "U": [0, 1, 1],
-        "D": [2, 1, 1],
-        "F": [1, 2, 1],
-        "B": [1, 0, 1],
-        "L": [1, 1, 0],
-        "R": [1, 1, 2]
+        U: [0, 1, 1],
+        D: [2, 1, 1],
+        F: [1, 2, 1],
+        B: [1, 0, 1],
+        L: [1, 1, 0],
+        R: [1, 1, 2]
     },
     centerColor: (cube, face) => {
         const indices = cube3.centerIndices[face];
         return cube.indices(indices);
-    }
+    },
+    edgeIndices: [
+        [0, 1],
+        [1, 2],
+        [2, 1],
+        [1, 0]
+    ],
 };
 
 
@@ -157,7 +163,7 @@ const cube3 = {
 window.onload = () => {
     displaySetup();
     
-    mainCube.pieces = [[["bow","yr","owg"],["oy","b","wo"],["ryg","gr","ybr"]],[["gw","o","bw"],["w","","y"],["rw","r","yb"]],[["ybo","rb","ygo"],["go","g","gy"],["wgr","bo","wbr"]]]
+    mainCube.pieces = [[["goy","yg","gry"],["yb","b","yo"],["yrb","wo","grw"]],[["rb","r","yr"],["y","","w"],["rw","o","bo"]],[["obw","bw","oby"],["og","g","rg"],["ogw","gw","rwb"]]]
 
     const start = Date.now();
 
@@ -235,6 +241,14 @@ function eqarray(array1, array2) {
 }
 
 function sharesValues(array1, array2, n) {
+    let count = 0;
+    for (const i in array1)
+        if (array1[i] === array2[i])
+            count++;
+    return (count === n);
+}
+
+function sharesElements(array1, array2, n) {
     let count = 0;
     for (const i in array1)
         if (array1[i] === array2[i])

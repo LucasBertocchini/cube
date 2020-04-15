@@ -1,5 +1,5 @@
 "use strict";
-
+//mAKE THIS AN OBJECT
 const orientations = [
     {face: "U", turn: "M2"},
     {face: "B", turn: "M'"},
@@ -11,7 +11,7 @@ const orientations = [
 function orient(moves, solveFrom) {
     const
     cube = moves.cube,
-    mainColor = solveFrom.color.main;
+    mainColor = solveFrom.colors.main;
     
     for (const orientation of orientations) {
         const

@@ -53,13 +53,13 @@ function displaySetup() {
         turnButton.onclick = e => {
             let turn = {face, amount: 1};
             console.log(turn);
-            mainCube.turn(face);
+            mainCube.turn(turn);
             display();
         }
         turnButton.oncontextmenu = e => {
             let turn = {face, amount: -1};
             console.log(turn);
-            mainCube.turn(face, -1);
+            mainCube.turn(turn);
             display();
             return false;
         }

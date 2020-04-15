@@ -1,83 +1,139 @@
 "use strict";
 
-const
-turnsSansD = calcTurns(
+const turnsSansD = calcTurns(
     sides.filter(side => side !== "D")
-),
-positions = [
-    [0, 1],
-    [1, 0],
-    [1, 2],
-    [2, 1]
-];
+);
 
 function cross(moves, solveFrom) {
     const
     cube = moves.cube,
-    mainColor = solveFrom.color.main;
+    mainColor = solveFrom.colors.main;
 
     if (crossSolved(cube.pieces, mainColor, 2)) return;
 
     const edges = new Edges(cube.pieces);
-    const bruteForce3 = bruteForceEdges(edges.pieces, cross3, 5, mainColor);
 
-    let turnSet;
-    if (bruteForce3)
-        if (bruteForce3.length) {
-            let copy = edges.copy();
-            for (const turn of bruteForce3)
-                copy.turn(turn);
+    const cross1 = (pieces, mainColor) => countU(pieces, mainColor) >= 1;
+    const cross2 = (pieces, mainColor) => countU(pieces, mainColor) >= 2;
+    const cross3 = (pieces, mainColor) => countU(pieces, mainColor) >= 3;
+    const cross4 = (pieces, mainColor) => countU(pieces, mainColor) >= 4;
 
-            const bruteForce1 = bruteForceEdges(copy.pieces, crossSolved, 4, mainColor);
-            if (bruteForce1) {
-                const lastMove3 = bruteForce3[bruteForce3.length - 1],
-                    firstMove1 = bruteForce1[0];
-                let repeatedFace = (lastMove3.face === firstMove1.face);
 
-                if (repeatedFace) {
-                    const netAmount = lastMove3.amount + firstMove1.amount;
-                    bruteForce3.pop();
-                    bruteForce1.shift();
 
-                    if (netAmount % 4 !== 0) {
-                        const effectiveAmount = (() => {
-                            switch(netAmount) {
-                                case 1:
-                                case 2:
-                                case -1:
-                                    return netAmount;
-                                case -2:
-                                    return 2;
-                                case 3:
-                                    return -1;
-                                default:
-                                    throw "unexpected net amount: " + netAmount;
+    let count = countU(edges.pieces, mainColor);
+
+
+    let turnList = [];
+
+// the problem is that there needs to be an if (bruteForceN.length) 
+// that leads to a non-for-loop version of the code
+    if (count === 0) {
+        const bruteForce1 = bruteForceEdges(edges.pieces, cross1, 2, mainColor);
+
+        for (const turns1 of bruteForce1) {
+            const copy1 = edges.copy();
+            copy1.turn(...turns1);
+
+            const bruteForce2 = bruteForceEdges(copy1.pieces, cross2, 2, mainColor);
+
+            for (const turns2 of bruteForce2) {
+                const copy2 = copy1.copy();
+                copy2.turn(...turns2);
+
+                const bruteForce3 = bruteForceEdges(copy2.pieces, cross3, 2, mainColor);
+
+                if (bruteForce3)
+                    for (const turns3 of bruteForce3) {
+                        const copy3 = copy2.copy();
+                        copy3.turn(...turns3);
+
+                        const bruteForce4 = bruteForceEdges(copy3.pieces, cross4, 3, mainColor);
+                        
+                        if (bruteForce4)
+                            for (const turns4 of bruteForce4) {
+                                const fullTurnList = turns1.concat(turns2).concat(turns3).concat(turns4);
+                                turnList.push(fullTurnList);
                             }
-                        })();
-                        bruteForce3.push({
-                            face: lastMove3.face,
-                            amount: effectiveAmount
-                        });
+                        else {
+                            const
+                            f0 = (() => {
+                                const edgeArray = [0, 1, 2];
+
+                                for (const i of edgeArray) {
+                                    const plane = copy3.pieces[i];
+                                    for (const j of edgeArray) {
+                                        const line = plane[j];
+                                        for (const k of edgeArray) {
+                                            const piece = line[k];
+
+                                            if (piece && piece[1] === mainColor) {
+                                                const indices = [i, j, k];
+
+                                                for (const [face, centerIndices] of Object.entries(cube3.centerIndices))
+                                                    if (sharesElements(indices, centerIndices, 2)) {
+                                                        const faces = Object.values(solveFrom.faces);
+                                                        if (!faces.includes(face)) return face;
+                                                    }
+                                            }
+                                        }
+                                    }
+                                }
+                            })(),
+                            f1 = Cube.clockwiseFace(solveFrom.faces.main, f0),
+                            turns4 = Cube.turnsToTurn(`U2 ${f0} U ${f1}'`),
+                            fullTurnList = turns1.concat(turns2).concat(turns3).concat(turns4);
+                            
+                            turnList.push(fullTurnList);
+                        }
                     }
+                else {
+                    const
+                    f0 = (() => {
+                        const edgeArray = [0, 1, 2];
+
+                        for (const i of edgeArray) {
+                            const plane = copy2.pieces[i];
+                            for (const j of edgeArray) {
+                                const line = plane[j];
+                                for (const k of edgeArray) {
+                                    const piece = line[k];
+
+                                    if (piece && piece[1] === mainColor) {
+                                        const indices = [i, j, k];
+
+                                        for (const [face, centerIndices] of Object.entries(cube3.centerIndices))
+                                            if (sharesElements(indices, centerIndices, 2)) {
+                                                const faces = Object.values(solveFrom.faces);
+                                                if (!faces.includes(face)) return face;
+                                            }
+                                    }
+                                }
+                            }
+                        }
+                    })(),
+                    f1 = Cube.clockwiseFace(solveFrom.faces.main, f0),
+                    f2 = Cube.counterclockwiseFace(solveFrom.faces.main, f0),
+                    turns3 = Cube.turnsToTurn(`${f0} U ${f1}' ${f2}`),
+                    fullTurnList = turns1.concat(turns2).concat(turns3);
+
+                    turnList.push(fullTurnList);
                 }
-
-                const bruteForceMoves = bruteForce3.concat(bruteForce1);
-                turnSet = bruteForceMoves;
-            } else throw "brute force edges failed";
-        } else {
-            const bruteForce1 = bruteForceEdges(edges.pieces, crossSolved, 4, mainColor);
-            if (bruteForce1)
-                turnSet = bruteForce1;
-            else throw "brute force edges failed";
+            }
         }
-    else throw "brute force edges failed";
+    }
 
-    moves.turn(...turnSet);
+    console.log(turnList)
 
-    const lastMove = turnSet[turnSet.length - 1];
+    const shortestTurnList = turnList.reduce(
+        (a, b) => (a.length - b.length > 0) ? b : a
+    );
 
-    const toD = bringToD(cube, lastMove);
-    moves.turn(...toD);
+    moves.turn(...shortestTurnList);
+
+    // const lastMove = turnSet[turnSet.length - 1];
+
+    // const toD = bringToD(cube, lastMove);
+    // moves.turn(...toD);
 }
 
 
@@ -86,11 +142,15 @@ function bruteForceEdges(edges, solveFunction, order, mainColor) {
     if (solveFunction(edges, mainColor)) return [];
     if (order < 1) throw "brute force order must be an integer >= 1";
 
+    let turnSet = [];
+
     for (const turn of turnsSansD) {
         const cube = Edges.turn(edges, turn);
         if (solveFunction(cube, mainColor))
-            return [turn];
+            turnSet.push([turn]);
     }
+
+    if (turnSet.length) return turnSet;
 
     if (order >= 2) {
         for (const turn1 of turnsSansD) {
@@ -100,10 +160,12 @@ function bruteForceEdges(edges, solveFunction, order, mainColor) {
                 const cube = Edges.turn(cube1, turn2);
 
                 if (solveFunction(cube, mainColor))
-                    return [turn1, turn2];
+                    turnSet.push([turn1, turn2])
             }
         }
     }
+
+    if (turnSet.length) return turnSet;
 
     for (let suborder = 3; suborder <= order; suborder++) {
         const s = suborder - 1,
@@ -134,7 +196,7 @@ function bruteForceEdges(edges, solveFunction, order, mainColor) {
                         const turn = turnsSansD[index];
                         moves.push(turn);
                     }
-                    return moves;
+                    turnSet.push(moves);
                 }
             }
 
@@ -157,6 +219,7 @@ function bruteForceEdges(edges, solveFunction, order, mainColor) {
         }
     }
 
+    if (turnSet.length) return turnSet;
     return null;
 }
 
@@ -224,7 +287,7 @@ function UOrToUEveryTwoMoves(suborder, indices, cubeList, mainColor) {
 function countU(pieces, mainColor) {
     const U = pieces[0];
     let count = 0;
-    for (let [i, j] of positions) {
+    for (let [i, j] of cube3.edgeIndices) {
         const line = U[i],
             piece = line[j],
             color1 = piece[0];
@@ -239,7 +302,7 @@ function cross3(pieces, mainColor) {
 
 function crossSolved(pieces, mainColor, layer = 0) {
     const face = pieces[layer];
-    for (let [i, j] of positions) {
+    for (let [i, j] of cube3.edgeIndices) {
         const line = face[i],
             piece = line[j],
             color1 = piece[0];

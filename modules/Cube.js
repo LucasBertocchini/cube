@@ -34,7 +34,10 @@ class Cube {
         this.pieces = cube;
     }
     
-    turn(turn) {this.pieces = Cube.turn(this.pieces, turn);}
+    turn(...turns) {
+        for (const turn of turns)
+            this.pieces = Cube.turn(this.pieces, turn);
+    }
     isSolved() {return Cube.isSolved(this.pieces);}
 
     turns(turnString) {
@@ -143,6 +146,32 @@ class Cube {
 
     indices(i) {return this.pieces[i[0]][i[1]][i[2]];}
     static indices(pieces, i) {return pieces[i[0]][i[1]][i[2]];}
+
+    static clockwiseFace(reference, face) {
+        if (reference !== "U") throw "not set up for references other than U";
+
+        if (face === "B")
+            return "R";
+        if (face === "R")
+            return "F";
+        if (face === "F")
+            return "L";
+        if (face === "L")
+            return "B";
+    }
+
+    static counterclockwiseFace(reference, face) {
+        if (reference !== "U") throw "not set up for references other than U";
+
+        if (face === "B")
+            return "L";
+        if (face === "L")
+            return "F";
+        if (face === "F")
+            return "R";
+        if (face === "R")
+            return "B";
+    }
 }
 
 class Edges {
@@ -175,8 +204,17 @@ class Edges {
         }
     }
 
-    turn(turn) {this.pieces = edgesTurn(this.pieces, turn);}
+    turn(...turns) {
+        for (const turn of turns)
+            this.pieces = edgesTurn(this.pieces, turn);
+    }
 
+    turns(turnString) {
+        if (!turnString) return;
+        const turnList = Cube.turnsToTurn(turnString);
+        for (const turn of turnList)
+            this.turn(turn);
+    }
 
     copy() {
         let cube = new Edges;

@@ -46,7 +46,7 @@ function Ucross(moves, solveFrom) {
 function countU(pieces, color) {
     const U = pieces[0];
     let count = 0;
-    for (const [i, j] of positions) {
+    for (const [i, j] of cube3.edgeIndices) {
         const line = U[i],
             piece = line[j],
             color1 = piece[0];
