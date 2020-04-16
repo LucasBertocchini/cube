@@ -163,7 +163,9 @@ const cube3 = {
 window.onload = () => {
     displaySetup();
     
-    mainCube.pieces = [[["goy","yg","gry"],["yb","b","yo"],["yrb","wo","grw"]],[["rb","r","yr"],["y","","w"],["rw","o","bo"]],[["obw","bw","oby"],["og","g","rg"],["ogw","gw","rwb"]]]
+    //mainCube.pieces = [[["goy","yg","gry"],["yb","b","yo"],["yrb","wo","grw"]],[["rb","r","yr"],["y","","w"],["rw","o","bo"]],[["obw","bw","oby"],["og","g","rg"],["ogw","gw","rwb"]]]
+
+    mainCube.pieces = [[["rgy","og","gyo"],["ry","b","rg"],["byr","yb","rwg"]],[["ob","r","wo"],["y","","w"],["yg","o","wr"]],[["ybo","oy","bwr"],["wg","g","br"],["wbo","bw","gow"]]];
 
     const start = Date.now();
 

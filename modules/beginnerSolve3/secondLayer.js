@@ -149,7 +149,7 @@ function solveEdge(cube, edge, centerColors, mainColor) {
 	return "";
 }
 
-function findEdge(pieces, edge) {
+function findEdge1(pieces, edge) {
 	const edgeArray = [0, 1, 2];
 
 	for (const i of edgeArray) {

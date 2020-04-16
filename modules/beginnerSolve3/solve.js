@@ -59,7 +59,7 @@ function beginnerSolve3(displayCube = true) {
     // Ucross(moves, solveFrom);
     
     //return
-    if (displayCube) {
+    if (!displayCube) {
         mainCube = cube;
         display();
     }

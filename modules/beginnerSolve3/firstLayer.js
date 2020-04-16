@@ -153,7 +153,7 @@ function cornerShouldBe(corner, centerColors) {
 	return result;
 }
 
-function isSamePiece(piece1, piece2) {
+function isSamePiece1(piece1, piece2) {
 	const colors = piece => piece.split("").sort().join("");
 	return (colors(piece1) === colors(piece2));
 }

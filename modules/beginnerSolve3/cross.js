@@ -20,13 +20,9 @@ function cross(moves, solveFrom) {
 
 
 
-    let count = countU(edges.pieces, mainColor);
-
-
+    const count = countU(edges.pieces, mainColor);
     let turnList = [];
 
-// the problem is that there needs to be an if (bruteForceN.length) 
-// that leads to a non-for-loop version of the code
     if (count === 0) {
         const bruteForce1 = bruteForceEdges(edges.pieces, cross1, 2, mainColor);
 
@@ -41,94 +37,152 @@ function cross(moves, solveFrom) {
                 copy2.turn(...turns2);
 
                 const bruteForce3 = bruteForceEdges(copy2.pieces, cross3, 2, mainColor);
-
+                
                 if (bruteForce3)
                     for (const turns3 of bruteForce3) {
                         const copy3 = copy2.copy();
                         copy3.turn(...turns3);
-
-                        const bruteForce4 = bruteForceEdges(copy3.pieces, cross4, 3, mainColor);
-                        
-                        if (bruteForce4)
-                            for (const turns4 of bruteForce4) {
-                                const fullTurnList = turns1.concat(turns2).concat(turns3).concat(turns4);
-                                turnList.push(fullTurnList);
-                            }
-                        else {
-                            const
-                            f0 = (() => {
-                                const edgeArray = [0, 1, 2];
-
-                                for (const i of edgeArray) {
-                                    const plane = copy3.pieces[i];
-                                    for (const j of edgeArray) {
-                                        const line = plane[j];
-                                        for (const k of edgeArray) {
-                                            const piece = line[k];
-
-                                            if (piece && piece[1] === mainColor) {
-                                                const indices = [i, j, k];
-
-                                                for (const [face, centerIndices] of Object.entries(cube3.centerIndices))
-                                                    if (sharesElements(indices, centerIndices, 2)) {
-                                                        const faces = Object.values(solveFrom.faces);
-                                                        if (!faces.includes(face)) return face;
-                                                    }
-                                            }
-                                        }
-                                    }
-                                }
-                            })(),
-                            f1 = Cube.clockwiseFace(solveFrom.faces.main, f0),
-                            turns4 = Cube.turnsToTurn(`U2 ${f0} U ${f1}'`),
-                            fullTurnList = turns1.concat(turns2).concat(turns3).concat(turns4);
-                            
-                            turnList.push(fullTurnList);
-                        }
+                        // console.log(turns1.concat(turns2).concat(turns3))
                     }
                 else {
-                    const
-                    f0 = (() => {
-                        const edgeArray = [0, 1, 2];
+                    mainCube.pieces = copy2.pieces;
+                    display()
 
-                        for (const i of edgeArray) {
-                            const plane = copy2.pieces[i];
-                            for (const j of edgeArray) {
-                                const line = plane[j];
-                                for (const k of edgeArray) {
-                                    const piece = line[k];
+                    const offendingEdges = findOffendingEdges(copy2.pieces, mainColor, solveFrom);
+                    const inPlaceEdges = findInPlaceEdges(copy2.pieces, mainColor);
 
-                                    if (piece && piece[1] === mainColor) {
-                                        const indices = [i, j, k];
+                    console.log(offendingEdges)
+                    console.log(inPlaceEdges)
 
-                                        for (const [face, centerIndices] of Object.entries(cube3.centerIndices))
-                                            if (sharesElements(indices, centerIndices, 2)) {
-                                                const faces = Object.values(solveFrom.faces);
-                                                if (!faces.includes(face)) return face;
-                                            }
-                                    }
-                                }
-                            }
-                        }
-                    })(),
-                    f1 = Cube.clockwiseFace(solveFrom.faces.main, f0),
-                    f2 = Cube.counterclockwiseFace(solveFrom.faces.main, f0),
-                    turns3 = Cube.turnsToTurn(`${f0} U ${f1}' ${f2}`),
-                    fullTurnList = turns1.concat(turns2).concat(turns3);
+                    //if ()
 
-                    turnList.push(fullTurnList);
+                    // for (const piece of offendingPieces) {
+                    //     if (piece.indices[0] === 2) {
+                    //         if (piece.face === "F") {
+                    //             const
+                    //             turns12 = turns1.concat(turns2),
+                    //             turns3c = Cube.turnsToTurn(`F' U' R`),
+                    //             turns3cc = Cube.turnsToTurn(`F U L'`);
+
+                    //             turnList.push(turns12.concat(turns3c));
+                    //             turnList.push(turns12.concat(turns3cc));
+                    //         }
+                    //     }
+                    // }
                 }
             }
         }
-    }
+    } else throw "1";
 
+// the problem is that there needs to be an if (bruteForceN.length) 
+// that leads to a non-for-loop version of the code
+    // if (count === 0) {
+    //     const bruteForce1 = bruteForceEdges(edges.pieces, cross1, 2, mainColor);
+
+    //     for (const turns1 of bruteForce1) {
+    //         const copy1 = edges.copy();
+    //         copy1.turn(...turns1);
+
+    //         const bruteForce2 = bruteForceEdges(copy1.pieces, cross2, 2, mainColor);
+
+    //         for (const turns2 of bruteForce2) {
+    //             const copy2 = copy1.copy();
+    //             copy2.turn(...turns2);
+
+    //             const bruteForce3 = bruteForceEdges(copy2.pieces, cross3, 2, mainColor);
+
+    //             if (bruteForce3)
+    //                 for (const turns3 of bruteForce3) {
+    //                     const copy3 = copy2.copy();
+    //                     copy3.turn(...turns3);
+
+    //                     const bruteForce4 = bruteForceEdges(copy3.pieces, cross4, 3, mainColor);
+                        
+    //                     if (bruteForce4)
+    //                         for (const turns4 of bruteForce4) {
+    //                             const fullTurnList = turns1.concat(turns2).concat(turns3).concat(turns4);
+    //                             turnList.push(fullTurnList);
+    //                         }
+    //                     else {
+    //                         const
+    //                         f0 = (() => {
+    //                             const edgeArray = [0, 1, 2];
+
+    //                             for (const i of edgeArray) {
+    //                                 const plane = copy3.pieces[i];
+    //                                 for (const j of edgeArray) {
+    //                                     const line = plane[j];
+    //                                     for (const k of edgeArray) {
+    //                                         const piece = line[k];
+
+    //                                         if (piece && piece[1] === mainColor) {
+    //                                             const indices = [i, j, k];
+
+    //                                             for (const [face, centerIndices] of Object.entries(cube3.centerIndices))
+    //                                                 if (sharesElements(indices, centerIndices, 2)) {
+    //                                                     const faces = Object.values(solveFrom.faces);
+    //                                                     if (!faces.includes(face)) return face;
+    //                                                 }
+    //                                         }
+    //                                     }
+    //                                 }
+    //                             }
+    //                         })(),
+    //                         f1 = Cube.clockwiseFace(solveFrom.faces.main, f0),
+    //                         turns4 = Cube.turnsToTurn(`U2 ${f0} U ${f1}'`),
+    //                         fullTurnList = turns1.concat(turns2).concat(turns3).concat(turns4);
+                            
+    //                         console.log(turns1.concat(turns2).concat(turns3), turns4)
+
+    //                         turnList.push(fullTurnList);
+    //                     }
+    //                 }
+    //             else {
+    //                 const
+    //                 f0 = (() => {
+    //                     const edgeArray = [0, 1, 2];
+
+    //                     for (const i of edgeArray) {
+    //                         const plane = copy2.pieces[i];
+    //                         for (const j of edgeArray) {
+    //                             const line = plane[j];
+    //                             for (const k of edgeArray) {
+    //                                 const piece = line[k];
+
+    //                                 if (piece && piece[1] === mainColor) {
+    //                                     const indices = [i, j, k];
+
+    //                                     for (const [face, centerIndices] of Object.entries(cube3.centerIndices))
+    //                                         if (sharesElements(indices, centerIndices, 2)) {
+    //                                             const faces = Object.values(solveFrom.faces);
+    //                                             if (!faces.includes(face)) return face;
+    //                                         }
+    //                                 }
+    //                             }
+    //                         }
+    //                     }
+    //                 })(),
+    //                 f1 = Cube.clockwiseFace(solveFrom.faces.main, f0),
+    //                 f2 = Cube.counterclockwiseFace(solveFrom.faces.main, f0),
+    //                 turns3 = Cube.turnsToTurn(`${f0} U ${f1}' ${f2}`),
+    //                 fullTurnList = turns1.concat(turns2).concat(turns3);
+
+    //                 console.log(turns1.concat(turns2), turns3)
+
+    //                 turnList.push(fullTurnList);
+    //             }
+    //         }
+    //     }
+    // }
+//d
     console.log(turnList)
 
-    const shortestTurnList = turnList.reduce(
-        (a, b) => (a.length - b.length > 0) ? b : a
-    );
-
-    moves.turn(...shortestTurnList);
+    if (turnList.length) {
+        const shortestTurnList = turnList.reduce(
+            (a, b) => (a.length - b.length > 0) ? b : a
+        );
+        moves.turn(...shortestTurnList);
+    }
 
     // const lastMove = turnSet[turnSet.length - 1];
 
@@ -136,6 +190,50 @@ function cross(moves, solveFrom) {
     // moves.turn(...toD);
 }
 
+
+function findOffendingEdges(pieces, mainColor, solveFrom) {
+    const edgeArray = [0, 1, 2];
+    let offendingEdges = [];
+
+    for (const i of edgeArray) {
+        const plane = pieces[i];
+        for (const j of edgeArray) {
+            const line = plane[j];
+            for (const k of edgeArray) {
+                const piece = line[k];
+
+                if (piece && piece[1] === mainColor) {
+                    const indices = [i, j, k];
+                    for (const [face, centerIndices] of Object.entries(cube3.centerIndices))
+                        if (sharesElements(indices, centerIndices, 2)) {
+                            const faces = Object.values(solveFrom.faces);
+                            if (!faces.includes(face))
+                                offendingEdges.push({piece, indices, face});
+                        }
+                }
+            }
+        }
+    }
+    return offendingEdges;
+}
+
+function findInPlaceEdges(pieces, mainColor) {
+    const edgeArray = [0, 1, 2];
+    let inPlaceEdges = [];
+
+    for (const j of edgeArray) {
+        const line = pieces[0][j];
+        for (const k of edgeArray) {
+            const piece = line[k];
+
+            if (piece && piece[0] === mainColor) {
+                const indices = [0, j, k];
+                inPlaceEdges.push({piece, indices});
+            }
+        }
+    }
+    return inPlaceEdges;
+}
 
 
 function bruteForceEdges(edges, solveFunction, order, mainColor) {
@@ -296,9 +394,6 @@ function countU(pieces, mainColor) {
     return count;
 }
 
-function cross3(pieces, mainColor) {
-    return (countU(pieces, mainColor) >= 3);
-}
 
 function crossSolved(pieces, mainColor, layer = 0) {
     const face = pieces[layer];
