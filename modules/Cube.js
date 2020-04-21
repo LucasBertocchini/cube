@@ -60,15 +60,6 @@ class Cube {
         if (clear) console.clear();
     }
 
-    sameAxis(face1, face2) {
-        let axis = face => {
-            for (let i = 0; i < 3; i++)
-                if (axes[i].includes(face[0])) return i;
-            throw "face must have axis";
-        }
-        if (axis(face1) === axis(face2)) return true;
-        return false;
-    }
 
     scramble(order = 100, log = false) {
         let turnsList = [];
@@ -78,10 +69,10 @@ class Cube {
 
             let found = false;
             while (!found) {
-                const index = randInt(turnsLength),
-                    turn = turns[index];
+                const index = randInt(turns.all.length),
+                    turn = turns.all[index];
                 if (!prev ||
-                    !this.sameAxis(turn.face, prev.face) ||
+                    !faces.sameAxis(turn.face, prev.face) ||
                     (turn.amount === prev.amount && turn.face !== prev.face)
                     ) {
                     if (log) console.log(turn);
@@ -94,10 +85,10 @@ class Cube {
     }
 
     static turnsToTurn(turns) {
+        if (!turns) return [];
+
         const turnsList = turns.split(" ");
-
         let turnList = [];
-
         for (const turn of turnsList) {
             if (turn.length > 1) {
                 switch (turn.slice(-1)) {
@@ -172,6 +163,29 @@ class Cube {
         if (face === "R")
             return "B";
     }
+
+    static angleBetweenFaces(reference, face1, face2) {
+        if (reference !== "U") throw "not set up for references other than U";
+
+        if (face1 === face2)
+            return 0;
+        if (Cube.clockwiseFace(reference, face1) === face2)
+            return 1;
+        if (Cube.counterclockwiseFace(reference, face1) === face2)
+            return -1;
+        if (oppositeSide[face1] === face2)
+            return 2;
+
+        throw "faces not on same plane";
+    }
+
+    static faces(indices) {
+        let faceList = [];
+        for (const [face, centerIndices] of Object.entries(cube3.centerIndices))
+            if (sharesElements(indices, centerIndices, 2))
+                faceList.push(face);
+        return faceList;
+    }
 }
 
 class Edges {
@@ -221,4 +235,5 @@ class Edges {
         cube.pieces = deepCopy(this.pieces);
         return cube;
     }
+    indices(i) {return this.pieces[i[0]][i[1]][i[2]];}
 }

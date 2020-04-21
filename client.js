@@ -22,10 +22,13 @@
 */
 
 const cubeSize = 3;
+const mainCube = new Cube(cubeSize);
 
-let mainCube = new Cube(cubeSize);
-
-const colors = {
+const faces = {
+    sides: ["U", "D", "B", "F", "L", "R"],
+    middles: ["E", "S", "M"],
+    amounts: [1, -1, 2],
+    colors: {
         y: "yellow",
         w: "white",
         g: "green",
@@ -34,97 +37,97 @@ const colors = {
         r: "red",
         G: "gray"
     },
-    layers = {
-        U: 0, E: 1, D: 2,
-        B: 0, S: 1, F: 2,
-        L: 0, M: 1, R: 2
-    };
+    sameAxis: (face1, face2) => {
+        const axis = face => {
+            for (const axis of cube3.axes)
+                if (axis.includes(face[0])) return axis;
+            throw "face must have axis";
+        }
+        if (axis(face1) === axis(face2)) return true;
+        return false;
+    },
+}
+faces.all = ((sides, middles) => {
+    if (cubeSize === 3) return sides.concat(middles);
+    else if (cubeSize === 2) return sides;
+    else if (cubeSize > 3) {
+        let temp = [];
+        for (let layer = 1; layer < cubeSize - 1; layer++)
+            middles.forEach(middle => temp.push(middle + layer.toString()));
+    } else throw "cube size must be 2, 3, or >3";
+})(faces.sides, faces.middles);
 
-const sides = ["U", "D", "F", "B", "L", "R"],
-    middles = ["E", "S", "M"],
-    turnAmounts = [1, -1, 2],
-    faces = (() => {
-        if (cubeSize === 3) return sides.concat(middles);
-        else if (cubeSize === 2) return sides;
-        else if (cubeSize > 3) {
-            let temp = [];
-            for (let layer = 1; layer < cubeSize - 1; layer++)
-                middles.forEach(middle => temp.push(middle + layer.toString()));
-        } else throw "cube size must be 2, 3, or >3";
-    })(),
-    calcTurns = sideList => {
+const turns = {
+    calcTurns: faceList => {
         let result = [];
-        sideList.forEach(face => 
-            turnAmounts.forEach(
+        faceList.forEach(face => 
+            faces.amounts.forEach(
                 amount => result.push({face, amount})
             )
         );
         return result;
     },
-    turns = calcTurns(faces),
-    turnsLength = turns.length,
-    sideTurns = calcTurns(sides),
-    sideTurnsLength = sideTurns.length,
+}
+turns.all = turns.calcTurns(faces.all);
+turns.sides = turns.calcTurns(faces.sides);
+
+Object.freeze(faces);
+Object.freeze(turns);
+
+const
+faceIndices = {
+    "U": 0, "D": 0,
+    "F": 1, "B": 1,
+    "L": 2, "R": 2
+},
+amounts = {
+    //same
+    "[[0,0],[0,0]]": 0,
+    "[[0,2],[0,2]]": 0,
+    "[[2,0],[2,0]]": 0,
+    "[[2,2],[2,2]]": 0,
+
+    //three in a row
+    "[[2,0],[0,0]]": 1,
+    "[[0,0],[0,2]]": 1,
+    "[[2,2],[2,0]]": 1,
+    "[[0,2],[2,2]]": 1,
+
+    //three not in a row
+    "[[0,2],[0,0]]": -1,
+    "[[2,2],[0,2]]": -1,
+    "[[0,0],[2,0]]": -1,
+    "[[2,0],[2,2]]": -1,
+
+    //two of each number; inverses of eachother
+    "[[2,2],[0,0]]": 2,
+    "[[2,0],[0,2]]": 2,
+    "[[0,2],[2,0]]": 2,
+    "[[0,0],[2,2]]": 2,
+},
+indicesFacesList = [
+    {indices: [0, 0], faces: ["L", "B"]},
+    {indices: [0, 2], faces: ["B", "R"]},
+    {indices: [2, 2], faces: ["R", "F"]},
+    {indices: [2, 0], faces: ["F", "L"]}
+],
+clockwiseSides = {
+    B: 0,
+    R: 1,
+    F: 2,
+    L: 3
+},
+oppositeSide = {
+    U: "D", D: "U",
+    B: "F", F: "B",
+    L: "R", R: "L"
+},
+ccSide = {
+    B: "L", F: "R",
+    L: "F", R: "B"
+};
 
 
-
-
-
-
-
-
-    axes = [["U", "E", "D"], ["F", "S", "B"], ["L", "M", "R"]],
-    faceIndices = {
-        "U": 0, "D": 0,
-        "F": 1, "B": 1,
-        "L": 2, "R": 2
-    },
-    amounts = {
-        //same
-        "[[0,0],[0,0]]": 0,
-        "[[0,2],[0,2]]": 0,
-        "[[2,0],[2,0]]": 0,
-        "[[2,2],[2,2]]": 0,
-
-        //three in a row
-        "[[2,0],[0,0]]": 1,
-        "[[0,0],[0,2]]": 1,
-        "[[2,2],[2,0]]": 1,
-        "[[0,2],[2,2]]": 1,
-
-        //three not in a row
-        "[[0,2],[0,0]]": -1,
-        "[[2,2],[0,2]]": -1,
-        "[[0,0],[2,0]]": -1,
-        "[[2,0],[2,2]]": -1,
-
-        //two of each number; inverses of eachother
-        "[[2,2],[0,0]]": 2,
-        "[[2,0],[0,2]]": 2,
-        "[[0,2],[2,0]]": 2,
-        "[[0,0],[2,2]]": 2,
-    },
-    indicesFacesList = [
-        {indices: [0, 0], faces: ["L", "B"]},
-        {indices: [0, 2], faces: ["B", "R"]},
-        {indices: [2, 2], faces: ["R", "F"]},
-        {indices: [2, 0], faces: ["F", "L"]}
-    ],
-    clockwiseSides = {
-        B: 0,
-        R: 1,
-        F: 2,
-        L: 3
-    },
-    oppositeSide = {
-        U: "D", D: "U",
-        B: "F", F: "B",
-        L: "R", R: "L"
-    },
-    ccSide = {
-        B: "L", F: "R",
-        L: "F", R: "B"
-    };
 
 
 
@@ -150,7 +153,37 @@ const cube3 = {
         [2, 1],
         [1, 0]
     ],
+    layers: {
+        U: 0, E: 1, D: 2,
+        B: 0, S: 1, F: 2,
+        L: 0, M: 1, R: 2
+    },
+    axes: [
+        ["U", "E", "D"],
+        ["B", "S", "F"],
+        ["L", "M", "R"]
+    ],
 };
+
+
+
+function oppositeAmount(amount) {
+    return (amount === 2) ? 2 : -amount;
+}
+
+
+
+function isSamePiece(piece1, piece2) {
+    if (piece1 === piece2 ||
+        piece1.split("").sort().join("") === piece2
+        ) return true;
+    return false;
+}
+
+
+
+
+
 
 
 
@@ -165,7 +198,7 @@ window.onload = () => {
     
     //mainCube.pieces = [[["goy","yg","gry"],["yb","b","yo"],["yrb","wo","grw"]],[["rb","r","yr"],["y","","w"],["rw","o","bo"]],[["obw","bw","oby"],["og","g","rg"],["ogw","gw","rwb"]]]
 
-    mainCube.pieces = [[["rgy","og","gyo"],["ry","b","rg"],["byr","yb","rwg"]],[["ob","r","wo"],["y","","w"],["yg","o","wr"]],[["ybo","oy","bwr"],["wg","g","br"],["wbo","bw","gow"]]];
+    mainCube.pieces = [[["bwr","wb","bwo"],["by","r","rg"],["wgo","wo","goy"]],[["yo","y","gy"],["b","","g"],["wr","w","ry"]],[["byr","og","yob"],["bo","o","wg"],["gyr","rb","rgw"]]]
 
     const start = Date.now();
 
@@ -173,7 +206,6 @@ window.onload = () => {
 
 
     beginnerSolve3();
-
 
 
 

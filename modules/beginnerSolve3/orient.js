@@ -1,26 +1,24 @@
 "use strict";
-//mAKE THIS AN OBJECT
-const orientations = [
-    {face: "U", turn: "M2"},
-    {face: "B", turn: "M'"},
-    {face: "F", turn: "M"},
-    {face: "L", turn: "S'"},
-    {face: "R", turn: "S"}
-];
+
+const orientations = {
+    "U": "M2",
+    "B": "M'",
+    "F": "M" ,
+    "L": "S'",
+    "R": "S" ,
+};
 
 function orient(moves, solveFrom) {
     const
     cube = moves.cube,
     mainColor = solveFrom.colors.main;
     
-    for (const orientation of orientations) {
+    for (const [face, turn] of Object.entries(orientations)) {
         const
-        face = orientation.face,
         indices = cube3.centerIndices[face],
         color = cube.indices(indices);
 
         if (color === mainColor) {
-            const turn = orientation.turn;
             moves.turns(turn);
             return;
         }
@@ -29,6 +27,7 @@ function orient(moves, solveFrom) {
     const
     indicesD = cube3.centerIndices.D,
     colorD = cube.indices(indicesD);
+    
     if (colorD !== mainColor)
         throw "orientation failed";
 }

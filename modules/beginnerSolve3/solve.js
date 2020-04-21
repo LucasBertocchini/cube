@@ -4,7 +4,7 @@ class Moves {
     constructor(cube) {
         this.list = [];
         this.string = "";
-        this.cube = cube;
+        if (cube) this.cube = cube;
     }
     
     turn(...turns) {
@@ -57,10 +57,11 @@ function beginnerSolve3(displayCube = true) {
     // firstLayer(moves, solveFrom);
     // secondLayer(moves, solveFrom);
     // Ucross(moves, solveFrom);
+
     
     //return
-    if (!displayCube) {
-        mainCube = cube;
+    if (displayCube) {
+        mainCube.pieces = cube.pieces;
         display();
     }
     

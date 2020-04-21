@@ -47,7 +47,7 @@ function displaySetup() {
 
     addBreak();
     
-    for (let face of faces.concat(["y", "z", "x"])) {
+    for (let face of faces.all.concat(["y", "z", "x"])) {
         let turnButton = document.createElement("button");
         turnButton.innerHTML = face;
         turnButton.onclick = e => {
@@ -122,7 +122,7 @@ function display() {
     function colorPiece(face, row, col, color) {
         let faceElement = document.getElementById(face);
         let piece = faceElement.children[col + cubeSize * row];
-        piece.style.backgroundColor = colors[color];
+        piece.style.backgroundColor = faces.colors[color];
     }
     
     

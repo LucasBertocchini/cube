@@ -11,7 +11,7 @@ function cubeTurn(pieces, turn) {
 	if (["D", "B", "R"].includes(face) && amount !== 2)
 	    amount *= -1;
 
-	let layer = layers[face];
+	let layer = cube3.layers[face];
 	if (layer === undefined) layer = parseInt(face.slice(1));
 
 	let after = deepCopy(pieces);
@@ -176,7 +176,7 @@ function edgesTurn(pieces, turn) {
 	if (["D", "B", "R"].includes(face) && amount !== 2)
 	    amount *= -1;
 
-	let layer = layers[face];
+	let layer = cube3.layers[face];
 	if (layer === undefined) layer = parseInt(face.slice(1));
 
 	let after = deepCopy(pieces);
@@ -254,6 +254,55 @@ function edgesTurn(pieces, turn) {
 			    }
 		    });
 		    break;
+
+		case "y": 
+		    for (let layer = 0; layer < cubeSize; layer++) {
+			    calcPieces(amount, (i, j, indices) => {
+			    	let newPiece = pieces[layer][indices[0]][indices[1]];
+
+			    	if (newPiece) {
+			    		if (newPiece.length === 2 && amount !== 2 &&
+				        	layer !== 0 && layer !== cubeSize - 1)
+				            newPiece = reorder(newPiece, 1, 0);
+
+				    	after[layer][i][j] = newPiece;
+				    }
+			    });
+			}
+		    break;
+		
+		case "z":
+		    for (let layer = 0; layer < cubeSize; layer++) {
+			    calcPieces(amount, (i, j, indices) => {
+			    	let newPiece = pieces[indices[0]][layer][indices[1]];
+
+			    	if (newPiece) {
+				    	if (newPiece.length === 2 && amount !== 2)
+			            	newPiece = reorder(newPiece, 1, 0);
+
+				    	after[i][layer][j] = newPiece;
+				    }
+			    });
+			}
+		    break;
+		
+		case "x":
+		    for (let layer = 0; layer < cubeSize; layer++) {
+			    calcPieces(amount, (i, j, indices) => {
+			    	let newPiece = pieces[indices[0]][indices[1]][layer];
+
+					if (newPiece) {
+				    	if (newPiece.length === 2 && amount !== 2 &&
+				        	layer !== 0 && layer !== cubeSize - 1)
+			            	newPiece = reorder(newPiece, 1, 0);
+
+				    	after[i][j][layer] = newPiece;
+				    }
+			    });
+			}
+		    break;
+
+
 		
 		default:
 		    throw "face must be U, D, L, R, F, B, E(n), S(n), M(n), y, z, or x";
