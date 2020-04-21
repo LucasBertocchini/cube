@@ -21,8 +21,9 @@
 ]
 */
 
-const cubeSize = 3;
-const mainCube = new Cube(cubeSize);
+const
+cubeSize = 3,
+mainCube = new Cube(cubeSize);
 
 const faces = {
     sides: ["U", "D", "B", "F", "L", "R"],
@@ -35,7 +36,6 @@ const faces = {
         b: "blue",
         o: "orange",
         r: "red",
-        G: "gray"
     },
     sameAxis: (face1, face2) => {
         const axis = face => {
@@ -46,19 +46,86 @@ const faces = {
         if (axis(face1) === axis(face2)) return true;
         return false;
     },
-}
+    opposite: {
+        U: "D", D: "U",
+        B: "F", F: "B",
+        L: "R", R: "L"
+    },
+    index: {
+        U: 0, D: 0,
+        F: 1, B: 1,
+        L: 2, R: 2
+    },
+    clockwise: {
+        U: {B: "R", R: "F", F: "L", L: "B"},
+    },
+    counterclockwise: {
+        U: {B: "L", L: "F", F: "R", R: "B"},
+    },
+    angle: (reference) => (face1, face2) => {
+        if (face1 === face2)
+            return 0;
+        if (faces.clockwise[reference][face1] === face2)
+            return 1;
+        if (faces.counterclockwise[reference][face1] === face2)
+            return -1;
+        if (faces.opposite[face1] === face2)
+            return 2;
+
+        throw "faces not on same plane";
+    },
+    indices: indices => {
+        let faceList = [];
+        for (const [face, centerIndices] of Object.entries(cube3.centerIndices))
+            if (sharesElements(indices, centerIndices, 2))
+                faceList.push(face);
+        return faceList;
+    },
+};
 faces.all = ((sides, middles) => {
     if (cubeSize === 3) return sides.concat(middles);
-    else if (cubeSize === 2) return sides;
-    else if (cubeSize > 3) {
+    if (cubeSize === 2) return sides;
+    if (cubeSize > 3) {
         let temp = [];
         for (let layer = 1; layer < cubeSize - 1; layer++)
             middles.forEach(middle => temp.push(middle + layer.toString()));
-    } else throw "cube size must be 2, 3, or >3";
+    }
+
+    throw "cube size must be 2, 3, or >3";
 })(faces.sides, faces.middles);
 
-const turns = {
-    calcTurns: faceList => {
+class Turns {
+    constructor(cube) {
+        this.list = [];
+        this.string = "";
+        if (cube) this.cube = cube;
+    }
+    turn(...turnList) {
+        //change to use cube.turnToTurns
+        for (const turn of turnList) {
+            const turnString = Turns.turnToTurns(turn);
+            if (this.string) this.string += " ";
+            this.string += turnString;
+
+            this.list.push(turn)
+
+            this.cube.turn(turn);
+        }
+    }
+    turns(turns) {
+        if (!turns) return;
+
+        const turnList = Turns.turnsToTurn(turns);
+        for (const turn of turnList)
+            this.list.push(turn);
+
+        if (this.string) this.string += " ";
+        this.string += turns;
+
+        this.cube.turns(turns);
+    }
+
+    static calcTurns(faceList) {
         let result = [];
         faceList.forEach(face => 
             faces.amounts.forEach(
@@ -66,73 +133,59 @@ const turns = {
             )
         );
         return result;
-    },
+    }
+    static oppositeAmount(amount) {return (amount === 2) ? 2 : -amount}
+    static turnsToTurn(turns) {
+        if (!turns) return [];
+
+        const turnsList = turns.split(" ");
+        let turnList = [];
+        for (const turn of turnsList) {
+            if (turn.length > 1) {
+                switch (turn.slice(-1)) {
+                    case "'":
+                        turnList.push({
+                            face: turn[0],
+                            amount: -1
+                        });
+                        break;
+                    case "2":
+                        turnList.push({
+                            face: turn[0],
+                            amount: 2
+                        });
+                        break;
+                    default:
+                        throw "amount not ' or 2";
+                }
+            } else turnList.push({
+                face: turn,
+                amount: 1
+            });
+        }
+
+        return turnList;
+    }
+    static turnToTurns(turn) {
+        let amountSymbol;
+
+        switch(turn.amount) {
+            case 1:
+                return turn.face;
+            case -1:
+                amountSymbol = "'"
+                break;
+            case 2:
+                amountSymbol = "2"
+                break;
+            default:
+                throw "turn amount must be 1, -1, or 2: " + turn.amount;
+        }
+
+        return turn.face + amountSymbol;
+    }
 }
-turns.all = turns.calcTurns(faces.all);
-turns.sides = turns.calcTurns(faces.sides);
-
-Object.freeze(faces);
-Object.freeze(turns);
-
-const
-faceIndices = {
-    "U": 0, "D": 0,
-    "F": 1, "B": 1,
-    "L": 2, "R": 2
-},
-amounts = {
-    //same
-    "[[0,0],[0,0]]": 0,
-    "[[0,2],[0,2]]": 0,
-    "[[2,0],[2,0]]": 0,
-    "[[2,2],[2,2]]": 0,
-
-    //three in a row
-    "[[2,0],[0,0]]": 1,
-    "[[0,0],[0,2]]": 1,
-    "[[2,2],[2,0]]": 1,
-    "[[0,2],[2,2]]": 1,
-
-    //three not in a row
-    "[[0,2],[0,0]]": -1,
-    "[[2,2],[0,2]]": -1,
-    "[[0,0],[2,0]]": -1,
-    "[[2,0],[2,2]]": -1,
-
-    //two of each number; inverses of eachother
-    "[[2,2],[0,0]]": 2,
-    "[[2,0],[0,2]]": 2,
-    "[[0,2],[2,0]]": 2,
-    "[[0,0],[2,2]]": 2,
-},
-indicesFacesList = [
-    {indices: [0, 0], faces: ["L", "B"]},
-    {indices: [0, 2], faces: ["B", "R"]},
-    {indices: [2, 2], faces: ["R", "F"]},
-    {indices: [2, 0], faces: ["F", "L"]}
-],
-clockwiseSides = {
-    B: 0,
-    R: 1,
-    F: 2,
-    L: 3
-},
-oppositeSide = {
-    U: "D", D: "U",
-    B: "F", F: "B",
-    L: "R", R: "L"
-},
-ccSide = {
-    B: "L", F: "R",
-    L: "F", R: "B"
-};
-
-
-
-
-
-
-
+const allTurns = Turns.calcTurns(faces.all);
 
 const cube3 = {
     centerIndices: {
@@ -165,11 +218,64 @@ const cube3 = {
     ],
 };
 
+Object.freeze(faces);
+Object.freeze(cube3);
+
+// const
+// amounts = {
+//     //same
+//     "[[0,0],[0,0]]": 0,
+//     "[[0,2],[0,2]]": 0,
+//     "[[2,0],[2,0]]": 0,
+//     "[[2,2],[2,2]]": 0,
+
+//     //three in a row
+//     "[[2,0],[0,0]]": 1,
+//     "[[0,0],[0,2]]": 1,
+//     "[[2,2],[2,0]]": 1,
+//     "[[0,2],[2,2]]": 1,
+
+//     //three not in a row
+//     "[[0,2],[0,0]]": -1,
+//     "[[2,2],[0,2]]": -1,
+//     "[[0,0],[2,0]]": -1,
+//     "[[2,0],[2,2]]": -1,
+
+//     //two of each number; inverses of eachother
+//     "[[2,2],[0,0]]": 2,
+//     "[[2,0],[0,2]]": 2,
+//     "[[0,2],[2,0]]": 2,
+//     "[[0,0],[2,2]]": 2,
+// },
+// indicesFacesList = [
+//     {indices: [0, 0], faces: ["L", "B"]},
+//     {indices: [0, 2], faces: ["B", "R"]},
+//     {indices: [2, 2], faces: ["R", "F"]},
+//     {indices: [2, 0], faces: ["F", "L"]}
+// ],
+// clockwiseSides = {
+//     B: 0,
+//     R: 1,
+//     F: 2,
+//     L: 3
+// },
+// ccSide = {
+//     B: "L", F: "R",
+//     L: "F", R: "B"
+// };
 
 
-function oppositeAmount(amount) {
-    return (amount === 2) ? 2 : -amount;
-}
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,44 +1,12 @@
 "use strict";
 
-class Moves {
-    constructor(cube) {
-        this.list = [];
-        this.string = "";
-        if (cube) this.cube = cube;
-    }
-    
-    turn(...turns) {
-        //change to use cube.turnToTurns
-        for (const turn of turns) {
-            const turnString = Cube.turnToTurns(turn);
-            if (this.string) this.string += " ";
-            this.string += turnString;
-
-            this.list.push(turn)
-
-            this.cube.turn(turn);
-        }
-    }
-
-    turns(turns) {
-        if (!turns) return;
-
-        const turnList = Cube.turnsToTurn(turns);
-        for (const turn of turnList)
-            this.list.push(turn);
-
-        if (this.string) this.string += " ";
-        this.string += turns;
-
-        this.cube.turns(turns);
-    }
-}
-
 function beginnerSolve3(displayCube = true) {
     if (cubeSize !== 3) throw "cube size must be 3 for beginnerSolve3";
 
     let cube = mainCube.copy();
     const solveFrom = {
+        //the notation may be confusing; the main color is
+        //actually solved onto the opposite face, and vice versa
         faces: {
             main: "U",
             opposite: "D"
@@ -49,14 +17,14 @@ function beginnerSolve3(displayCube = true) {
         },
     }
         
-    let moves = new Moves(cube);
+    let turns = new Turns(cube);
 
-
-    orient(moves, solveFrom);
-    cross(moves, solveFrom);
-    // firstLayer(moves, solveFrom);
-    // secondLayer(moves, solveFrom);
-    // Ucross(moves, solveFrom);
+    solveFrom.faces.opposite = "L"
+    orient(turns, solveFrom);
+    // cross(turns, solveFrom);
+    // firstLayer(turns, solveFrom);
+    // secondLayer(turns, solveFrom);
+    // Ucross(turns, solveFrom);
 
     
     //return
@@ -65,7 +33,7 @@ function beginnerSolve3(displayCube = true) {
         display();
     }
     
-    console.log(moves.string)
-    console.log(moves.list.length + " moves")
-    return moves;
+    console.log(turns.string);
+    console.log(turns.list.length + " turns");
+    return turns;
 }
