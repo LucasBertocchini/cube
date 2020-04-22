@@ -7,10 +7,7 @@ function beginnerSolve3(displayCube = true) {
     const solveFrom = {
         //the notation may be confusing; the main color is
         //actually solved onto the opposite face, and vice versa
-        faces: {
-            main: "U",
-            opposite: "D"
-        },
+        mainFace: "U",
         colors: {
             main: "w",
             opposite: "y"
@@ -19,7 +16,6 @@ function beginnerSolve3(displayCube = true) {
         
     let turns = new Turns(cube);
 
-    solveFrom.faces.opposite = "L"
     orient(turns, solveFrom);
     // cross(turns, solveFrom);
     // firstLayer(turns, solveFrom);

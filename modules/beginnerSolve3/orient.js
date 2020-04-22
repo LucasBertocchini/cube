@@ -1,83 +1,59 @@
 "use strict";
 
-const orientations = {
-    U: {
-        U: null,
-        D: "M2",
-        B: "M" ,
-        F: "M'",
-        L: "S" ,
-        R: "S'"
-    },
-    D: {
-        U: "M2",
-        D: null,
-        B: "M'",
-        F: "M" ,
-        L: "S'",
-        R: "S"
-    },
-    B: {
-        U: "M'",
-        D: "M" ,
-        B: null,
-        F: "M2",
-        L: "E" ,
-        R: "E'"
-    },
-    F: {
-        U: "M" ,
-        D: "M'",
-        B: "M2",
-        F: null,
-        L: "E'",
-        R: "E"
-    },
-    L: {
-        U: "S'",
-        D: "S" ,
-        B: "E'",
-        F: "E" ,
-        L: null,
-        R: "E2"
-    },
-    R: {
-        U: "S" ,
-        D: "S'",
-        B: "E" ,
-        F: "E'",
-        L: "E2",
-        R: null
+function calcOrientations(mainFace) {
+    let orientations = {};
+
+    const
+    oppositeFace = faces.opposite[mainFace],
+    coaxialMiddle = (() => {
+        for (const middle of faces.middles)
+            if (!faces.sameAxis(mainFace, middle))
+                return middle;
+    })(),
+    index = faces.index[mainFace],
+    reducedEdgeArray = cube3.edgeArray.filter(i => i !== index);
+
+    orientations[mainFace] = null;
+    orientations[oppositeFace] = `${coaxialMiddle}2`;
+
+    for (const i of [0, 1]) {
+        const
+        faceList = keysByValue(faces.index, reducedEdgeArray[i]),
+        iPrime = 1 - i,
+        middle = faces.middles[reducedEdgeArray[iPrime]];
+
+        for (const face of faceList) {
+            const conditions = [
+                !(
+                    faces.sameAxis(mainFace, faces.middles[1]) &&
+                    faces.sameAxis(face, faces.middles[0])
+                ),
+                faces.sameAxis(mainFace, faces.middles[2]),
+                cube2.layers[face],
+                cube2.layers[mainFace]
+            ];
+            if (XOR(...conditions))
+                orientations[face] = middle;
+            else
+                orientations[face] = `${middle}'`;
+        }
     }
-};
 
-console.log(orientations)
+    return orientations;
+}
 
-let orientations2 = {};
-let face = "U";
-let opposite = "D";
-
-let face2 = (() => {
-    for (const middle of faces.middles)
-        if (!faces.sameAxis(face, middle))
-            return middle;
-})();
-
-orientations2[face] = null;
-orientations2[opposite] = `${face2}2`;
-
-console.log(orientations2);
 
 function orient(turns, solveFrom) {
     const
     cube = turns.cube,
     mainColor = solveFrom.colors.main,
-    oppositeFace = solveFrom.faces.opposite,
-    orientationList = Object.entries(orientations[oppositeFace]);
+    mainFace = solveFrom.mainFace,
+    orientations = calcOrientations(mainFace);
     
-    for (const [face, turn] of orientationList) {
+    for (const face in orientations) {
         const color = cube3.centerColor(cube, face);
         if (color === mainColor) {
+            const turn = orientations[face];
             if (turn) turns.turns(turn);
             return;
         }

@@ -216,10 +216,20 @@ const cube3 = {
         ["B", "S", "F"],
         ["L", "M", "R"]
     ],
+    edgeArray: [0, 1, 2],
+};
+
+const cube2 = {
+    layers: {
+        U: 0, D: 1,
+        B: 0, F: 1,
+        L: 0, R: 1
+    },
 };
 
 Object.freeze(faces);
 Object.freeze(cube3);
+Object.freeze(cube2);
 
 // const
 // amounts = {
@@ -380,13 +390,6 @@ function eqarray(array1, array2) {
     return (JSON.stringify(array1) === JSON.stringify(array2));
 }
 
-function sharesValues(array1, array2, n) {
-    let count = 0;
-    for (const i in array1)
-        if (array1[i] === array2[i])
-            count++;
-    return (count === n);
-}
 
 function sharesElements(array1, array2, n) {
     let count = 0;
@@ -394,4 +397,18 @@ function sharesElements(array1, array2, n) {
         if (array1[i] === array2[i])
             count++;
     return (count === n);
+}
+function keysByValue(object, value) {
+    let keys = [];
+    for (const [key, val] of Object.entries(object))
+        if (val === value)
+            keys.push(key);
+    return keys;
+}
+function XOR(...conditions) {
+    let count = 0;
+    for (const condition of conditions)
+        if (condition)
+            count++;
+    return count % 2 === 1;
 }
