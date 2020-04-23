@@ -1,8 +1,23 @@
 "use strict";
 
-function calcOrientations(mainFace) {
-    let orientations = {};
+function orient(turns, mainFace, mainColor,) {
+    const
+    cube = turns.cube,
+    orientations = calcOrientations(mainFace);
+    
+    for (const face in orientations) {
+        const color = cube3.centerColor(cube, face);
+        if (color === mainColor) {
+            const turn = orientations[face];
+            if (turn) turns.turns(turn);
+            return;
+        }
+    }
 
+    throw "orientation failed";
+}
+
+function calcOrientations(mainFace) {
     const
     oppositeFace = faces.opposite[mainFace],
     coaxialMiddle = (() => {
@@ -13,8 +28,9 @@ function calcOrientations(mainFace) {
     index = faces.index[mainFace],
     reducedEdgeArray = cube3.edgeArray.filter(i => i !== index);
 
-    orientations[mainFace] = null;
-    orientations[oppositeFace] = `${coaxialMiddle}2`;
+    let orientations = {};
+    orientations[mainFace] = `${coaxialMiddle}2`;
+    orientations[oppositeFace] = null;
 
     for (const i of [0, 1]) {
         const
@@ -32,32 +48,10 @@ function calcOrientations(mainFace) {
                 cube2.layers[face],
                 cube2.layers[mainFace]
             ];
-            if (XOR(...conditions))
-                orientations[face] = middle;
-            else
-                orientations[face] = `${middle}'`;
+            
+            orientations[face] = XOR(...conditions) ? `${middle}'` : middle;
         }
     }
 
     return orientations;
-}
-
-
-function orient(turns, solveFrom) {
-    const
-    cube = turns.cube,
-    mainColor = solveFrom.colors.main,
-    mainFace = solveFrom.mainFace,
-    orientations = calcOrientations(mainFace);
-    
-    for (const face in orientations) {
-        const color = cube3.centerColor(cube, face);
-        if (color === mainColor) {
-            const turn = orientations[face];
-            if (turn) turns.turns(turn);
-            return;
-        }
-    }
-
-    throw "orientation failed";
 }

@@ -114,14 +114,14 @@ class Edges {
         }
     }
 
-    turn(...turns) {
-        for (const turn of turns)
+    turn(...turnList) {
+        for (const turn of turnList)
             this.pieces = edgesTurn(this.pieces, turn);
     }
 
-    turns(turnString) {
-        if (!turnString) return;
-        const turnList = turns.turnsToTurn(turnString);
+    turns(turns) {
+        if (!turns) return;
+        const turnList = Turns.turnsToTurn(turns);
         this.turn(...turnList);
     }
 

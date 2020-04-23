@@ -58,9 +58,19 @@ const faces = {
     },
     clockwise: {
         U: {B: "R", R: "F", F: "L", L: "B"},
+        D: {B: "L", L: "F", F: "R", R: "B"},
+        B: {U: "L", L: "D", D: "R", R: "U"},
+        F: {U: "R", R: "D", D: "L", L: "U"},
+        L: {U: "F", F: "D", D: "B", B: "U"},
+        R: {U: "B", B: "D", D: "F", F: "U"}
     },
     counterclockwise: {
         U: {B: "L", L: "F", F: "R", R: "B"},
+        D: {B: "R", R: "F", F: "L", L: "B"},
+        B: {U: "R", R: "D", D: "L", L: "U"},
+        F: {U: "L", L: "D", D: "R", R: "U"},
+        L: {U: "B", B: "D", D: "F", F: "U"},
+        R: {U: "F", F: "D", D: "B", B: "U"}
     },
     angle: (reference) => (face1, face2) => {
         if (face1 === face2)
@@ -80,6 +90,13 @@ const faces = {
             if (sharesElements(indices, centerIndices, 2))
                 faceList.push(face);
         return faceList;
+    },
+    findColor: (indices, piece, face) => {
+        const faceList = faces.indices(indices);
+        faceList.sort((a, b) => faces.index[a] - faces.index[b]);
+
+        const index = faceList.indexOf(face);
+        return piece[index];
     },
 };
 faces.all = ((sides, middles) => {
@@ -125,7 +142,7 @@ class Turns {
         this.cube.turns(turns);
     }
 
-    static calcTurns(faceList) {
+    static calc(faceList) {
         let result = [];
         faceList.forEach(face => 
             faces.amounts.forEach(
@@ -185,7 +202,7 @@ class Turns {
         return turn.face + amountSymbol;
     }
 }
-const allTurns = Turns.calcTurns(faces.all);
+const allTurns = Turns.calc(faces.all);
 
 const cube3 = {
     centerIndices: {
@@ -291,7 +308,7 @@ Object.freeze(cube2);
 
 function isSamePiece(piece1, piece2) {
     if (piece1 === piece2 ||
-        piece1.split("").sort().join("") === piece2
+        piece1.split("").sort().join("") === piece2.split("").sort().join("")
         ) return true;
     return false;
 }

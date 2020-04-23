@@ -4,23 +4,21 @@ function beginnerSolve3(displayCube = true) {
     if (cubeSize !== 3) throw "cube size must be 3 for beginnerSolve3";
 
     let cube = mainCube.copy();
-    const solveFrom = {
-        //the notation may be confusing; the main color is
-        //actually solved onto the opposite face, and vice versa
-        mainFace: "U",
-        colors: {
-            main: "w",
-            opposite: "y"
-        },
-    }
+
+    //the notation may be confusing; the main color is
+    //actually solved onto the opposite face, and vice versa
+    const
+    mainFace = "U",
+    mainColor = "w";
+    
         
     let turns = new Turns(cube);
 
-    orient(turns, solveFrom);
-    // cross(turns, solveFrom);
-    // firstLayer(turns, solveFrom);
-    // secondLayer(turns, solveFrom);
-    // Ucross(turns, solveFrom);
+    orient(turns, mainFace, mainColor);
+    cross(turns, mainFace, mainColor);
+    // firstLayer(turns, mainFace, mainColor);
+    // secondLayer(turns, mainFace, mainColor);
+    // Ucross(turns, mainFace, mainColor);
 
     
     //return
