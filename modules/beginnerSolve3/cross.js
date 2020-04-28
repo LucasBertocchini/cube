@@ -7,8 +7,6 @@ function cross(turns, mainFace, mainColor) {
     count = countMainColorOnMainFace(edges, mainFace, mainColor);
 
     let turnList = [];
-    
-    console.log({count})
 
     switch (count) {
         case 0:
@@ -37,22 +35,22 @@ function cross(turns, mainFace, mainColor) {
             turns.turn(...shortestTurnList);
     }
 
-    // const
-    // toD = bringToD(cube, mainFace, mainColor),
-    // shortestToD = toD.reduce(
-    //     (a, b) => (a.length - b.length > 0) ? b : a
-    // );
-    // turns.turn(...shortestToD);
+    const
+    toOppositeMainFace = bringToOppositeMainFace(cube, mainFace, mainColor),
+    shortestToOppositeMainFace = toOppositeMainFace.reduce(
+        (a, b) => (a.length - b.length > 0) ? b : a
+    );
+    turns.turn(...shortestToOppositeMainFace);
 }
 
 function countMainColorOnMainFace(edges, mainFace, mainColor) {
     const
     layer = cube3.layers[mainFace],
-    index = faces.index[mainFace];
+    index = cube2.index[mainFace];
 
     let count = 0;
 
-    for (let [i, j] of cube3.edgeIndices) {
+    for (const [i, j] of cube3.edgeIndices) {
         let indices = [i, j];
         indices.splice(index, 0, layer);
 
@@ -103,42 +101,44 @@ function cross3(edges, mainFace, mainColor, turnList, turnList12 = []) {
         fourEdges = calcFourEdges(edges.pieces, mainFace, mainColor),
         offendingEdges = orderEdges(fourEdges.offending, mainFace),
         inPlaceEdges = orderEdges(fourEdges.inPlace, mainFace),
+        condition = face => cube3.sameAxis(face, faces.orthogonal[mainFace]),
         inPlaceLine = (() => {
             const
             i0 = inPlaceEdges[0].indices,
             i1 = inPlaceEdges[1].indices;
 
             if (sharesElements(i0, i1, 2))
-                if (inPlaceEdges[0].face === "L")
-                    return "horizontal";
-                else
-                    return "vertical";
-
+                return (condition(inPlaceEdges[0].face)) ? "horizontal" : "vertical";
             return false;
         })(),
         offendingLine = (() => {
             const
             i0 = offendingEdges[0].indices,
             i1 = offendingEdges[1].indices,
-            sharesEdgeElement = (i0, i1) => {
-                for (let i = 0; i < 3; i++)
+            sharesEdgeElement = ((i0, i1) => {
+                for (const i of cube3.edgeArray)
                     if (i0[i] === 1 && i0[i] === i1[i])
                         return true;
                 return false;
-            };
+            })(i0, i1);
 
-            if (sharesEdgeElement(i0, i1))
-                if (offendingEdges[0].face === "L")
-                    return "horizontal";
-                else
-                    return "vertical";
-
+            if (sharesEdgeElement)
+                return (condition(offendingEdges[0].face)) ? "horizontal" : "vertical";
             return false;
         })(),
+        mf = mainFace,
         f0 = offendingEdges[0].face,
         f1 = offendingEdges[1].face,
-        top0 = offendingEdges[0].indices[0] === 0,
-        top1 = offendingEdges[1].indices[0] === 0;
+        index = cube2.index[mainFace],
+        main0 = offendingEdges[0].indices[index] === cube3.layers[mainFace],
+        main1 = offendingEdges[1].indices[index] === cube3.layers[mainFace],
+        axis = (() => {
+            const orthogonalFace = faces.orthogonal[mainFace];
+            for (const axis of cube2.axes)
+                if (axis.includes(orthogonalFace))
+                    return axis;
+            throw "axis not found";
+        })();
 
         let turns3;
 
@@ -148,40 +148,40 @@ function cross3(edges, mainFace, mainColor, turnList, turnList12 = []) {
                 c0 = faces.clockwise[mainFace][f0],
                 c1 = faces.clockwise[mainFace][f1];
 
-                if (top0)
-                    if (top1)
-                        turns3 = `${f0} ${f1} ${mainFace} ${c0} ${c1}`;
+                if (main0)
+                    if (main1)
+                        turns3 = `${f0} ${f1} ${mf} ${c0} ${c1}`;
                     else if (f0 === f1)
-                        turns3 = `${f0} ${mainFace} ${c0}' ${faces.opposite[c0]}`;
+                        turns3 = `${f0} ${mf} ${c0}' ${faces.opposite[c0]}`;
                     else
-                        turns3 = `${f0}' ${f1} ${mainFace} ${c0}' ${c1}'`;
-                else if (top1)
+                        turns3 = `${f0}' ${f1} ${mf} ${c0}' ${c1}'`;
+                else if (main1)
                     if (f0 === f1)
-                        turns3 = `${f0} ${mainFace} ${c0}' ${faces.opposite[c0]}`;
+                        turns3 = `${f0} ${mf} ${c0}' ${faces.opposite[c0]}`;
                     else
-                        turns3 = `${f0} ${f1}' ${mainFace} ${c0}' ${c1}'`;
+                        turns3 = `${f0} ${f1}' ${mf} ${c0}' ${c1}'`;
                 else
-                    switch(f0 === "L" || f0 === "R") {
+                    switch(axis.includes(f0)) {
                         case (inPlaceLine === "vertical"):
-                            turns3 = `${f0} ${f1} ${mainFace} ${c0}' ${c1}'`;
+                            turns3 = `${f0} ${f1} ${mf} ${c0}' ${c1}'`;
                             break;
                         default:
                             turns3 = `${f0} ${c0}' ${f0}' ${f1} ${c1}' ${f1}'`;
                     }
-            } else if (top0)
-                turns3 = `${f0}' ${mainFace}' ${f1}' ${mainFace} ${f0}`;
-            else if (top1)
-                turns3 = `${f1} ${mainFace} ${f0} ${mainFace}' ${f1}'`;
+            } else if (main0)
+                turns3 = `${f0}' ${mf}' ${f1}' ${mf} ${f0}`;
+            else if (main1)
+                turns3 = `${f1} ${mf} ${f0} ${mf}' ${f1}'`;
             else
-                switch (f0 === "L" || f0 === "R") {
+                switch (axis.includes(f0)) {
                     case (inPlaceLine === "vertical"):
-                        turns3 = `${f0} ${mainFace}' ${f1}' ${mainFace} ${f0}`;
+                        turns3 = `${f0} ${mf}' ${f1}' ${mf} ${f0}`;
                         break;
                     default:
-                        turns3 = `${f1}' ${mainFace} ${f0} ${mainFace}' ${f1}'`;
+                        turns3 = `${f1}' ${mf} ${f0} ${mf}' ${f1}'`;
                 }
         else
-            turns3 = `${mainFace}2 ${f0} ${f1}' ${f0}`;
+            turns3 = `${mf}2 ${f0} ${f1}' ${f0}`;
 
         const turnList3 = Turns.turnsToTurn(turns3);
         turnList.push(turnList12.concat(turnList3));
@@ -190,11 +190,17 @@ function cross3(edges, mainFace, mainColor, turnList, turnList12 = []) {
 function cross4(edges, mainFace, mainColor, turnList, turnList123 = []) {
     const
     openSpot = (edges => {
-        for (const i of cube3.edgeIndices) {
+        for (const [i, j] of cube3.edgeIndices) {
             const
-            indices = [0, ...i],
+            layer = cube3.layers[mainFace],
+            index = cube2.index[mainFace];
+
+            let indices = [i, j];
+            indices.splice(index, 0, layer);
+
+            const
             piece = edges.indices(indices),
-            color = piece[0];
+            color = faces.findColor(indices, piece, mainFace);
 
             if (color !== mainColor)
                 for (const [face, centerIndices] of Object.entries(cube3.centerIndices))
@@ -215,43 +221,49 @@ function cross4(edges, mainFace, mainColor, turnList, turnList123 = []) {
 
                     if (!piece) continue;
 
-                    if (piece.includes(mainColor))
-                        if (!(piece[0] === mainColor && i === 0)) {
-                            const
-                            indices = [i, j, k],
-                            omit = [mainFace, faces.opposite[mainFace]];
+                    if (piece.includes(mainColor)) {
+                        const
+                        indices = [i, j, k],
+                        color = faces.findColor(indices, piece, mainFace),
+                        faceList = faces.indices(indices);
 
-                            let faceList = faces.indices(indices)
-                                .filter(face => !omit.includes(face));
+                        if (!(color === mainColor && faceList.includes(mainFace))) {
+                            const omit = [mainFace, faces.opposite[mainFace]];
 
-                            if (faceList.length > 1) {
+                            let reducedFaceList = faceList.filter(face => !omit.includes(face));
+
+                            if (reducedFaceList.length > 1) {
                                 const
-                                f0 = faceList[0],
-                                f1 = faceList[1],
-                                condition1 = faces.indices[f0] > faces.indices[f1],
-                                condition2 = piece[0] === mainColor;
+                                f0 = reducedFaceList[0],
+                                f1 = reducedFaceList[1],
+                                firstFaceColor = faces.findColor(indices, piece, f0);
 
-                                if (!condition1 && !condition2)
-                                    faceList = [f1, f0];
+                                if (firstFaceColor !== mainColor)
+                                    reducedFaceList = [f1, f0];
                             }
 
-                            return {indices, faces: faceList, piece};
+                            return {indices, faces: reducedFaceList, piece};
                         }
+                    }
                 }
             }
         }
     })(edges.pieces),
+    mf = mainFace,
     f0 = openSpot.face,
     f1 = offendingPiece.faces[0],
-    layer = offendingPiece.indices[0],
-    angle = faces.angle(mainFace)(f0, f1); 
+    angle = faces.angle(mainFace)(f0, f1),
+    index = cube2.index[mainFace];
+
+    let layer = offendingPiece.indices[index];
+    if (cube2.layers[mainFace]) layer = 2 - layer;
 
     let turns4;
 
     switch (layer) {
         case 0:
             const cc0 = faces.counterclockwise[mainFace][f0];
-            turns4 = `${f0} ${mainFace}' ${cc0}`;
+            turns4 = `${f0} ${mf}' ${cc0}`;
             break;
 
         case 1:
@@ -261,28 +273,16 @@ function cross4(edges, mainFace, mainColor, turnList, turnList123 = []) {
 
             switch(angle) {
                 case 0:
-                    if (f2 === c0)
-                        turns4 = `${mainFace} ${f2}'`;
-                    else
-                        turns4 = `${mainFace}' ${f2}`;
+                    turns4 = (f2 === c0) ? `${mf} ${f2}'` : `${mf}' ${f2}`;
                     break;
                 case 1:
-                    if (f2 === f0)
-                        turns4 = `${f0}`;
-                    else
-                        turns4 = `${mainFace}2 ${faces.opposite[f0]}'`;
+                    turns4 = (f2 === f0) ? `${f0}` : `${mf}2 ${faces.opposite[f0]}'`;
                     break;
                 case -1:
-                    if (f2 === f0)
-                        turns4 = `${f0}'`;
-                    else
-                        turns4 = `${mainFace}2 ${faces.opposite[f0]}`;
+                    turns4 = (f2 === f0) ? `${f0}'` : `${mf}2 ${faces.opposite[f0]}`;
                     break;
                 case 2:
-                    if (f2 === c0)
-                        turns4 = `${mainFace} ${f2}`;
-                    else
-                        turns4 = `${mainFace}' ${f2}'`;
+                    turns4 = (f2 === c0) ? `${mf} ${f2}` : `${mf}' ${f2}'`;
                     break;
                 default:
                     throw "wrong angle between faces";
@@ -290,9 +290,11 @@ function cross4(edges, mainFace, mainColor, turnList, turnList123 = []) {
             break;
         
         case 2:
-            const
-            c1 = faces.clockwise[mainFace][f1],
-            color = offendingPiece.piece[0];
+            const color = faces.findColor(
+                edges.findEdge(offendingPiece.piece),
+                offendingPiece.piece,
+                mainFace
+            );
 
             if (color === mainColor)
                 switch (angle) {
@@ -300,21 +302,22 @@ function cross4(edges, mainFace, mainColor, turnList, turnList123 = []) {
                         turns4 = `${f1}2`;
                         break;
                     case 1:
-                        turns4 = `${mainFace} ${f1}2`;
+                        turns4 = `${mf} ${f1}2`;
                         break;
                     case -1:
-                        turns4 = `${mainFace}' ${f1}2`;
+                        turns4 = `${mf}' ${f1}2`;
                         break;
                     case 2:
-                        turns4 = `${mainFace}2 ${f1}2`;
+                        turns4 = `${mf}2 ${f1}2`;
                         break;
                     default:
                         throw "wrong angle";
                 }
-            else
+            else {
+                const c1 = faces.clockwise[mainFace][f1];
                 switch (angle) {
                     case 0:
-                        turns4 = `${f1} ${mainFace} ${c1}'`;
+                        turns4 = `${f1} ${mf} ${c1}'`;
                         break;
                     case 1:
                         turns4 = `${f1}' ${f0} ${f1}`;
@@ -323,11 +326,13 @@ function cross4(edges, mainFace, mainColor, turnList, turnList123 = []) {
                         turns4 = `${f1} ${f0}' ${f1}'`;
                         break;
                     case 2:
-                        turns4 = `${mainFace}2 ${f1} ${mainFace} ${c1}'`;
+                        turns4 = `${mf}2 ${f1} ${mf} ${c1}'`;
                         break;
                     default:
                         throw "wrong angle";
                 }
+            }
+
             break;
 
         default:
@@ -394,21 +399,14 @@ function calcFourEdges(pieces, mainFace, mainColor) {
                     omit = [mainFace, faces.opposite[mainFace]];
 
                     for (const face of faceList)
-                        if (!omit.includes(face))
-                            if (faces.findColor(indices, piece, face) === mainColor && i === 0)
+                        if (!omit.includes(face)) {
+                            const color = faces.findColor(indices, piece, mainFace);
+                            if (color === mainColor && faceList.includes(mainFace))
                                 fourEdges.inPlace.push({piece, indices, face});
                             else
                                 fourEdges.offending.push({piece, indices, face});
+                        }
                 }
-
-                // (
-                //                     (i === 0            && mainFace === "U") ||
-                //                     (i === cubeSize - 1 && mainFace === "D") ||
-                //                     (j === 0            && mainFace === "B") ||
-                //                     (j === cubeSize - 1 && mainFace === "F") ||
-                //                     (k === 0            && mainFace === "L") ||
-                //                     (k === cubeSize - 1 && mainFace === "R")
-                //                 )
             }
         }
     }
@@ -416,7 +414,6 @@ function calcFourEdges(pieces, mainFace, mainColor) {
     return fourEdges;
 }
 function orderEdges(edgeList, mainFace) {
-    console.log(edgeList)
     const
     p0 = edgeList[0],
     p1 = edgeList[1],
@@ -428,20 +425,25 @@ function orderEdges(edgeList, mainFace) {
         return edgeList;
     if (faces.counterclockwise[mainFace][f0] === f1)
         return oppositeOrder;
-    if (f0 === "B" || f0 === "L")
+
+    const faceList = Object.entries(cube3.layers)
+        .filter(([face, index]) => index === 0 && face !== mainFace)
+        .map(([face, index]) => face);
+
+    if (faceList.includes(f0))
         return edgeList;
     return oppositeOrder;
 }
 
-function bringToD(cube, mainFace, mainColor) {
+function bringToOppositeMainFace(edges, mainFace, mainColor) {
     const
     facesSans = faces.sides.filter(
         side => ![mainFace, faces.opposite[mainFace]].includes(side)
     ),
-    colorsSans = (faces => {
+    colorsSans = (faceList => {
         let colorsSans = [];
-        for (const face of faces) {
-            const color = cube3.centerColor(cube, face);
+        for (const face of faceList) {
+            const color = cube3.centerColor(edges, face);
             colorsSans.push(color);
         }
         return colorsSans;
@@ -453,29 +455,28 @@ function bringToD(cube, mainFace, mainColor) {
     for (const i in permutations) {
         const
         permutation = permutations[i],
-        copy = cube.copy();
+        copy = edges.copy();
         turnsList.push([]);
 
         for (const centerColor of permutation) {
             const
             centerFace = (centerColor => {
                 for (const face of faces.sides) {
-                    const color = cube3.centerColor(cube, face);
+                    const color = cube3.centerColor(edges, face);
                     if (centerColor === color)
                         return face;
                 }
             })(centerColor),
             edge = (() => {
-                const edgeArray = [0, 1, 2];
-                for (const i of edgeArray) {
+                for (const i of cube3.edgeArray) {
                     const plane = copy.pieces[i];
-                    for (const j of edgeArray) {
+                    for (const j of cube3.edgeArray) {
                         const line = plane[j]
-                        for (const k of edgeArray) {
+                        for (const k of cube3.edgeArray) {
                             const piece = line[k];
 
                             if (!piece) continue;
-                            if (isSamePiece(piece, centerColor + mainColor))
+                            if (colors.isSamePiece(piece, centerColor + mainColor))
                                 return {piece, indices: [i, j, k]};
                         }
                     }

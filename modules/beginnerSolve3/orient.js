@@ -22,10 +22,10 @@ function calcOrientations(mainFace) {
     oppositeFace = faces.opposite[mainFace],
     coaxialMiddle = (() => {
         for (const middle of faces.middles)
-            if (!faces.sameAxis(mainFace, middle))
+            if (!cube3.sameAxis(mainFace, middle))
                 return middle;
     })(),
-    index = faces.index[mainFace],
+    index = cube2.index[mainFace],
     reducedEdgeArray = cube3.edgeArray.filter(i => i !== index);
 
     let orientations = {};
@@ -34,17 +34,17 @@ function calcOrientations(mainFace) {
 
     for (const i of [0, 1]) {
         const
-        faceList = keysByValue(faces.index, reducedEdgeArray[i]),
+        faceList = keysByValue(cube2.index, reducedEdgeArray[i]),
         iPrime = 1 - i,
         middle = faces.middles[reducedEdgeArray[iPrime]];
 
         for (const face of faceList) {
             const conditions = [
                 !(
-                    faces.sameAxis(mainFace, faces.middles[1]) &&
-                    faces.sameAxis(face, faces.middles[0])
+                    cube3.sameAxis(mainFace, faces.middles[1]) &&
+                    cube3.sameAxis(face, faces.middles[0])
                 ),
-                faces.sameAxis(mainFace, faces.middles[2]),
+                cube3.sameAxis(mainFace, faces.middles[2]),
                 cube2.layers[face],
                 cube2.layers[mainFace]
             ];

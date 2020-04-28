@@ -1,10 +1,9 @@
 "use strict";
 
-function firstLayer(moves, solveFrom) {
-    let cube = moves.cube;
-    const mainColor = solveFrom.color.main;
-    
-	const fourCorners = (() => {
+function firstLayer(turns, mainFace, mainColor) {
+    const
+    cube = turns.cube,
+	fourCorners = (() => {
 		let result = [];
 		cube.pieces.forEach(
 			plane => plane.forEach(
@@ -18,125 +17,110 @@ function firstLayer(moves, solveFrom) {
 		);
 		return result;
 	})(),
-		centerColors = calcCenterColors(cube),
-		permutations = permute(fourCorners);
+	centerColors = calcCenterColors(cube),
+	permutations = permute(fourCorners);
 
-	let movesList = [];
+	let turnList = [];
 
 	for (const permutation of permutations) {
-		let copy = cube.copy(),
-			fullSolution = "";
+		const
+		copy = cube.copy(),
+		fullSolution = new Turns(copy);
 
 		for (const corner of permutation) {
-			const orderedCorner = orderCorner(copy.pieces, corner),
-				solution = solveCorner(copy, orderedCorner, centerColors, mainColor);
+			const
+			orderedCorner = orderCorner(copy.pieces, corner),
+			solution = solveCorner(copy, orderedCorner, centerColors, mainFace, mainColor);
 
-			if (solution) {
-				if (fullSolution) fullSolution += " ";
-				fullSolution += solution;
-				copy.turns(solution);
-			}
+			fullSolution.turns(solution);
 		}
-		movesList.push(fullSolution);
+
+		turnList.push(fullSolution.list);
 	}
 
-	let min = movesList[0].length;
-	for (const turns of movesList) {
-		const turnList = turns.split(" "),
-			length = turnList.length;
-		if (length < min) min = length;
-	}
-
-	for (const turns of movesList) {
-		const turnList = turns.split(" "),
-			length = turnList.length;
-		if (length === min) {
-			moves.turns(turns)
-			return;
-		}
-	}
+	const shortestTurnList = turnList.reduce(
+        (a, b) => (a.length - b.length > 0) ? b : a
+    );
+    if (shortestTurnList.length)
+    	turns.turn(...shortestTurnList);
 }
 
 
 
 
-function solveCorner(cube, corner, centerColors, mainColor) {
-	const pos = findCorner(cube, corner);
-	const shouldBe = cornerShouldBe(corner, centerColors);
+function solveCorner(cube, corner, centerColors, mainFace, mainColor) {
+	const
+	pos = cube.findCorner(corner),
+	shouldBe = cornerShouldBe(corner, centerColors),
+	index = cube2.index[mainFace],
+	layer = cube3.layers[mainFace],
+	color = faces.findColor(pos, corner, mainFace);
 
-	if (pos[0] === 0) { //corner is on U
-		return solveCornerOnU(cube, corner, centerColors, mainColor, pos, shouldBe);
-	} else if (eqarray(pos, shouldBe)) { //corner is in place, needs orientation
-		const i = cube3.centerIndices.D;
-		if (corner[0] === cube.pieces[i[0]][i[1]][i[2]])
+
+
+	if (pos[index] === layer)
+		//corner is on mainFace
+		return solveCornerOnmainFace(cube, corner, centerColors, mainFace, mainColor, pos, shouldBe);
+	else if (eqarray(pos, shouldBe)) {
+		//corner is in place, needs orientation
+		const i = cube3.centerIndices[faces.opposite[mainFace]];
+		if (color === cube.indices(i))
 			return "";
 		
-		for (const indicesFaces of indicesFacesList) {
+		for (const indicesFaces of indicesFacesList(mainFace)) {
 			const indices = indicesFaces.indices;
 
-			if (eqarray(shouldBe.slice(1), indices)) {
-				const faces = indicesFaces.faces,
-					f0 = faces[0],
-					f1 = faces[1];
 
-				switch (corner[0]) {
+			let shouldBePrime = [...shouldBe];
+			shouldBePrime.splice(index, 1);
+
+			if (eqarray(shouldBePrime, indices)) {
+				const
+				faceList = indicesFaces.faces,
+				conjugate = faces.conjugate.includes(mainFace),
+				f0 = faceList[conjugate ? 1 : 0],
+				f1 = faceList[conjugate ? 0 : 1];
+
+				switch (color) {
 					case centerColors[f0]:
-						return `${f0} U' ${f0}' ${f1}' U' ${f1}`;
+						return `${f0} ${mainFace}' ${f0}' ${f1}' ${mainFace}' ${f1}`;
 					case centerColors[f1]:
-						return `${f1}' U ${f1} ${f0} U ${f0}'`;
+						return `${f1}' ${mainFace} ${f1} ${f0} ${mainFace} ${f0}'`;
 					default:
-						throw "corner not the right color: " + corner[0];
+						throw "corner not the right color: " + color;
 				}
 			}
 		}
-	} else { //corner is in D out of place
-		let moves = "";
+	} else {
+		//corner is on opposite face out of place
+		let turns = "";
 
-		for (const indicesFaces of indicesFacesList) {
+		for (const indicesFaces of indicesFacesList(mainFace)) {
 			const indices = indicesFaces.indices;
 
-			if (eqarray(pos.slice(1), indices)) {
-				const face = indicesFaces.faces[0];
-				moves += `${face} U ${face}'`;
+			let reducedPos = [...pos];
+			reducedPos.splice(index, 1);
+
+			if (eqarray(reducedPos, indices)) {
+				const
+				conjugate = faces.conjugate.includes(mainFace),
+				face = conjugate ? indicesFaces.faces[1] : indicesFaces.faces[0];
+				turns += `${face} ${mainFace} ${face}'`;
 			}
 		}
 
 		let copy = cube.copy();
-		copy.turns(moves);
-		const newPos = findCorner(copy, corner),
+		copy.turns(turns);
+		const newPos = copy.findCorner(corner),
 			orderedCorner = orderCorner(copy.pieces, corner);
 
-		if (moves) moves += " ";
-		moves += solveCornerOnU(copy, orderedCorner, centerColors, mainColor, newPos, shouldBe);
-		return moves;
+		if (turns) turns += " ";
+		turns += solveCornerOnmainFace(copy, orderedCorner, centerColors, mainFace, mainColor, newPos, shouldBe);
+		return turns;
 	}
 }
 
 
-
-
-
-
-
-
-function findCorner(cube, corner) {
-	const edgeArray = [0, 2];
-
-	for (const i of edgeArray) {
-		const plane = cube.pieces[i];
-		for (const j of edgeArray) {
-			const line = plane[j];
-			for (const k of edgeArray) {
-				const piece = line[k];
-
-				if (isSamePiece(corner, piece))
-					return [i, j, k];
-			}
-		}
-	}
-
-	throw "corner not found";
-}
 
 function cornerShouldBe(corner, centerColors) {
 	let faceList = [];
@@ -147,15 +131,10 @@ function cornerShouldBe(corner, centerColors) {
 	let result = [];
 	for (const face of faceList) {
 		const indices = cube3.centerIndices[face],
-			index = faceIndices[face];
+			index = cube2.index[face];
 		result.push(indices[index]);
 	}
 	return result;
-}
-
-function isSamePiece1(piece1, piece2) {
-	const colors = piece => piece.split("").sort().join("");
-	return (colors(piece1) === colors(piece2));
 }
 
 function calcCenterColors(cube) {
@@ -168,16 +147,14 @@ function calcCenterColors(cube) {
 }
 
 function orderCorner(pieces, corner) {
-	const edgeArray = [0, 2];
-
-	for (const i of edgeArray) {
+	for (const i of cube3.cornerArray) {
 		const plane = pieces[i];
-		for (const j of edgeArray) {
+		for (const j of cube3.cornerArray) {
 			const line = plane[j];
-			for (const k of edgeArray) {
+			for (const k of cube3.cornerArray) {
 				const piece = line[k];
 
-				if (isSamePiece(corner, piece))
+				if (colors.isSamePiece(corner, piece))
 					return piece;
 			}
 		}
@@ -186,51 +163,86 @@ function orderCorner(pieces, corner) {
 	throw "corner not found";
 }
 
-function solveCornerOnU(cube, corner, centerColors, mainColor, pos, shouldBe) {
-	const dpos = [pos.slice(1), shouldBe.slice(1)],
-		stringedPos = JSON.stringify(dpos),
-		amount = amounts[stringedPos];
+function solveCornerOnmainFace(cube, corner, centerColors, mainFace, mainColor, pos, shouldBe) {
+	const index = cube2.index[mainFace];
 
-	if (amount === undefined) throw "amount not found";
+	const
+	posPrime = [...pos],
+	shouldBePrime = [...shouldBe];
+	posPrime.splice(index, 1);
+	shouldBePrime.splice(index, 1);
 
-	let moves = "";
+	const
+	dpos = [posPrime, shouldBePrime],
+	stringedPos = JSON.stringify(dpos),
+	color = faces.findColor(pos, corner, mainFace);
 
-	if (amount) {
-		if (amount === 1)
-			moves += "U";
-		else if (amount === -1)
-			moves += "U'";
-		else if (amount === 2)
-			moves += "U2";
-	}
+	let amount = amounts[stringedPos];
+	if (Math.abs(amount) === 1 && faces.conjugate.includes(mainFace))
+		amount *= -1;
 
-	for (const indicesFaces of indicesFacesList) {
+	const turns = new Turns();
+	if (amount) turns.turn({face: mainFace, amount});
+
+	for (const indicesFaces of indicesFacesList(mainFace)) {
 		const indices = indicesFaces.indices;
 
-		if (eqarray(shouldBe.slice(1), indices)) {
-			const faces = indicesFaces.faces,
-				f0 = faces[0],
-				f1 = faces[1];
+		if (eqarray(shouldBePrime, indices)) {
+			const
+			faceList = indicesFaces.faces,
+			conjugate = faces.conjugate.includes(mainFace),
+			f0 = faceList[conjugate ? 1 : 0],
+			f1 = faceList[conjugate ? 0 : 1];
 
-			if (moves) moves += " ";
-
-			switch(corner[0]) {
+			switch(color) {
 				case centerColors[f0]:
-					moves += `${f0} U ${f0}'`;
+					turns.turns(`${f0} ${mainFace} ${f0}'`);
 					break;
 				case centerColors[f1]:
-					moves += `${f1}' U' ${f1}`;
+					turns.turns(`${f1}' ${mainFace}' ${f1}`);
 					break;
 				case mainColor:
-					moves += `${f0} U2 ${f0}' U' ${f0} U ${f0}'`;
+					turns.turns(`${f0} ${mainFace}2 ${f0}' ${mainFace}' ${f0} ${mainFace} ${f0}'`);
 					break;
 				default:
-					throw "corner not the right color: " + corner[0];
+					throw "corner not the right color: " + color;
 			}
 
-			return moves;
+			return turns.string;
 		}
 	}
 
-	throw "solve corner on U failed";
+	throw "solve corner on mainFace failed";
 }
+
+function indicesFacesList(mainFace) {
+	const initialFaces = faces.sides.reduce(
+		(acc, side) => {
+			if (!cube3.sameAxis(side, mainFace) && !cube2.layers[side])
+				acc.push(side);
+			return acc;
+		}, []
+	),
+	conjugate = faces.conjugate.includes(mainFace),
+	f0 = initialFaces[1],
+	f1 = initialFaces[0],
+	f2 = faces[conjugate ? "counterclockwise" : "clockwise"][mainFace][f1],
+	f3 = faces[conjugate ? "clockwise" : "counterclockwise"][mainFace][f0],
+	faceList = [f0, f1, f2, f3];
+
+	let indicesFacesL = [];
+	for (let i = 0; i < 4; i++) {
+		const
+		indices = cube3.cornerIndices[i],
+		indicesFaces = {indices, faces: [faceList[i], faceList[(i + 1) % 4]]};
+		indicesFacesL.push(indicesFaces);
+	}
+	
+	return indicesFacesL;
+};
+
+console.log();
+
+
+
+

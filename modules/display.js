@@ -5,24 +5,24 @@ function displaySetup() {
         const br = document.createElement("br");
         document.body.appendChild(br);
     }
-    let cubeContainer = document.querySelector("#cube-container");
+    const cubeContainer = document.querySelector("#cube-container");
     cubeContainer.style = "grid-template-columns: auto auto auto;";
     
-    let gridItems = [
+    const gridItems = [
         null, "B", null,
         null, "U", null,
         "L" , "F", "R" ,
         null, "D", null
     ];
     
-    for (let gridItem of gridItems) {
-        let face = document.createElement("div");
+    for (const gridItem of gridItems) {
+        const face = document.createElement("div");
         face.className = "face";
         if (gridItem) {
             face.id = gridItem;
             
             for (let i = 0; i < cubeSize ** 2; i++) {
-                let piece = document.createElement("div");
+                const piece = document.createElement("div");
                 piece.className = "piece";
                 if (i === (cubeSize ** 2 - 1) / 2) piece.innerHTML = gridItem;
                 else piece.innerHTML = "&nbsp;";
@@ -37,27 +37,44 @@ function displaySetup() {
     
     
 
-    let scrambleAndSolveButton = document.createElement("button");
+    const scrambleAndSolveButton = document.createElement("button");
     scrambleAndSolveButton.innerHTML = "scramble and solve";
     scrambleAndSolveButton.onclick = e => {
+        console.log("\n");
+
         mainCube.scramble();
         beginnerSolve3(mainCube.pieces);
     }
     document.body.appendChild(scrambleAndSolveButton);
 
+    const scrambleSolveAndTimeButton = document.createElement("button");
+    scrambleSolveAndTimeButton.innerHTML = "scramble, solve, and time";
+    scrambleSolveAndTimeButton.onclick = e => {
+        console.log("\n");
+
+        mainCube.scramble();
+
+        const start = Date.now();
+        beginnerSolve3();
+        const end = Date.now();
+
+        console.log(end - start + " ms");
+    }
+    document.body.appendChild(scrambleSolveAndTimeButton);
+
     addBreak();
     
-    for (let face of faces.all.concat(["y", "z", "x"])) {
-        let turnButton = document.createElement("button");
+    for (const face of faces.all.concat(["y", "z", "x"])) {
+        const turnButton = document.createElement("button");
         turnButton.innerHTML = face;
         turnButton.onclick = e => {
-            let turn = {face, amount: 1};
+            const turn = {face, amount: 1};
             console.log(turn);
             mainCube.turn(turn);
             display();
         }
         turnButton.oncontextmenu = e => {
-            let turn = {face, amount: -1};
+            const turn = {face, amount: -1};
             console.log(turn);
             mainCube.turn(turn);
             display();
@@ -68,8 +85,8 @@ function displaySetup() {
     
     addBreak();
     
-    for (let i of [3, 4, 5, 10, 100]) {
-        let randomizeCubeButton = document.createElement("button");
+    for (const i of [3, 4, 5, 10, 100]) {
+        const randomizeCubeButton = document.createElement("button");
         randomizeCubeButton.innerHTML = "scramble " + i;
         randomizeCubeButton.onclick = e => {
             mainCube.scramble(i, true);
@@ -81,10 +98,10 @@ function displaySetup() {
     addBreak();
     
     for (let i = 1; i <= 4; i++) {
-        let bruteForceSolveButton = document.createElement("button");
+        const bruteForceSolveButton = document.createElement("button");
         bruteForceSolveButton.innerHTML = "brute force " + i;
         bruteForceSolveButton.onclick = e => {
-            let solve = mainCube.bruteForce(i);
+            const solve = mainCube.bruteForce(i);
             console.log(solve);
             display();
         }
@@ -93,12 +110,12 @@ function displaySetup() {
     
     addBreak();
     
-    let beginnerSolve3Button = document.createElement("button");
+    const beginnerSolve3Button = document.createElement("button");
     beginnerSolve3Button.innerHTML = "beginner solve 3";
     beginnerSolve3Button.onclick = e => beginnerSolve3(mainCube.pieces);
     document.body.appendChild(beginnerSolve3Button);
 
-    let copyPiecesButton = document.createElement("button");
+    const copyPiecesButton = document.createElement("button");
     copyPiecesButton.innerHTML = "copy pieces";
     copyPiecesButton.onclick = e => {
         const text = JSON.stringify(mainCube.pieces);
@@ -108,7 +125,7 @@ function displaySetup() {
     
     addBreak();
     
-    let resetButton = document.createElement("button");
+    const resetButton = document.createElement("button");
     resetButton.innerHTML = "reset";
     resetButton.onclick = e => {
         mainCube.reset();
@@ -120,16 +137,16 @@ function displaySetup() {
 function display() {
     
     function colorPiece(face, row, col, color) {
-        let faceElement = document.getElementById(face);
-        let piece = faceElement.children[col + cubeSize * row];
-        piece.style.backgroundColor = faces.colors[color];
+        const faceElement = document.getElementById(face);
+        const piece = faceElement.children[col + cubeSize * row];
+        piece.style.backgroundColor = colors[color];
     }
     
     
     for (let x = 0; x < cubeSize; x++) {
-        const plane = mainCube.pieces[x];
+        let plane = mainCube.pieces[x];
         for (let y = 0; y < cubeSize; y++) {
-            const line = plane[y];
+            let line = plane[y];
             for (let z = 0; z < cubeSize; z++) {
                 let piece = line[z];
                 

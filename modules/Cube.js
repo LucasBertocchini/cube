@@ -8,21 +8,23 @@ class Cube {
         let pieces = [];
         const s = size - 1;
 
-        for (let x = 0; x < size; x++) {
+        for (let i = 0; i < size; i++) {
             pieces.push([]);
-            let plane = pieces[x];
-            for (let y = 0; y < size; y++) {
+            let plane = pieces[i];
+            for (let j = 0; j < size; j++) {
                 plane.push([]);
-                let line = plane[y];
-                for (let z = 0; z < size; z++) {
+                let line = plane[j];
+                for (let k = 0; k < size; k++) {
                     let piece = "";
 
-                    if      (x === 0) piece += "y";
-                    else if (x === s) piece += "w";
-                    if      (y === 0) piece += "g";
-                    else if (y === s) piece += "b";
-                    if      (z === 0) piece += "o";
-                    else if (z === s) piece += "r";
+                    const
+                    indices = [i, j, k],
+                    faceList = faces.indices(indices);
+
+                    for (const face of faceList) {
+                        const color = colors.sides[face];
+                        piece += color;
+                    }
 
                     line.push(piece);
                 }
@@ -82,6 +84,23 @@ class Cube {
 
     indices(i) {return this.pieces[i[0]][i[1]][i[2]];}
     static indices(pieces, i) {return pieces[i[0]][i[1]][i[2]];}
+
+    findCorner(corner) {
+        for (const i of faces.cornerArray) {
+            const plane = this.pieces[i];
+            for (const j of faces.cornerArray) {
+                const line = plane[j];
+                for (const k of faces.cornerArray) {
+                    const piece = line[k];
+
+                    if (colors.isSamePiece(corner, piece))
+                        return [i, j, k];
+                }
+            }
+        }
+
+        throw "corner not found";
+    }
 }
 
 class Edges {
@@ -131,4 +150,25 @@ class Edges {
         return cube;
     }
     indices(i) {return this.pieces[i[0]][i[1]][i[2]];}
+
+    findEdge(edge) {
+        for (const i of faces.edgeArray) {
+            for (const j of faces.edgeArray) {
+                for (const k of faces.edgeArray) {
+                    const indices = [i, j, k];
+
+                    let count = 0;
+                    for (const index of indices)
+                        if (!faces.cornerArray.includes(index))
+                            count++;
+                    if (count !== 1) continue;
+
+                    if (colors.isSamePiece(edge, this.indices(indices)))
+                        return indices;
+                }
+            }
+        }
+
+        throw "edge not found";
+    }
 }
