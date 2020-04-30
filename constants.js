@@ -2,10 +2,9 @@
 
 const cubeSize = 3;
 
-const faces = {
-    sides: ["U", "D", "B", "F", "L", "R"],
-    middles: ["E", "S", "M"],
-    amounts: [1, -1, 2],
+
+const sides = {
+    all: ["U", "D", "B", "F", "L", "R"],
     opposite: {
         U: "D", D: "U",
         B: "F", F: "B",
@@ -30,11 +29,11 @@ const faces = {
     angle: (reference) => (face1, face2) => {
         if (face1 === face2)
             return 0;
-        if (faces.clockwise[reference][face1] === face2)
+        if (sides.clockwise[reference][face1] === face2)
             return 1;
-        if (faces.counterclockwise[reference][face1] === face2)
+        if (sides.counterclockwise[reference][face1] === face2)
             return -1;
-        if (faces.opposite[face1] === face2)
+        if (sides.opposite[face1] === face2)
             return 2;
 
         throw "faces not on same plane";
@@ -58,12 +57,12 @@ const faces = {
         return faceList;
     },
     findColor(indices, piece, face) {
-        const faceList = faces.indices(indices);
+        const faceList = sides.indices(indices);
         faceList.sort((a, b) => cube2.index[a] - cube2.index[b]);
 
         let index = faceList.indexOf(face)
         if (index === -1)
-            index = faceList.indexOf(faces.opposite[face]);
+            index = faceList.indexOf(sides.opposite[face]);
 
         return piece[index];
     },
@@ -75,6 +74,12 @@ const faces = {
         R: "B",
         B: "U",
     },
+    conjugate: ["D", "B", "R"],
+}
+
+const faces = {
+    middles: ["E", "S", "M"],
+    amounts: [1, -1, 2],
     cornerArray: [0, cubeSize - 1],
     edgeArray: [...Array(cubeSize).keys()],
     sameAxis: (face1, face2) => cube3.sameAxis(
@@ -86,7 +91,6 @@ const faces = {
         if (length === 1) return face;
         else return face[length - 1];
     },
-    conjugate: ["D", "B", "R"],
 };
 faces.all = ((sides, middles) => {
     if (cubeSize < 2 || cubeSize % 1 !== 0)
@@ -101,7 +105,7 @@ faces.all = ((sides, middles) => {
             for (let layer = 1; layer < cubeSize - 1; layer++)
                 middles.forEach(middle => temp.push(middle + layer.toString()));
     }
-})(faces.sides, faces.middles);
+})(sides.all, faces.middles);
 
 class Turns {
     constructor(cube) {
@@ -109,6 +113,7 @@ class Turns {
         this.string = "";
         if (cube) this.cube = cube;
     }
+    static get all() {return Turns.calc(faces.all);}
     turn(...turnList) {
         //change to use cube.turnToTurns
         for (const turn of turnList) {
@@ -194,7 +199,6 @@ class Turns {
         return turn.face + amountSymbol;
     }
 }
-const allTurns = Turns.calc(faces.all);
 
 const cube3 = {
     centerIndices: {
@@ -252,6 +256,9 @@ const cube2 = {
         F: 1, B: 1,
         L: 2, R: 2
     },
+    orthogonal: face => sides.all.filter(
+        side => !cube3.sameAxis(side, face)
+    ),
 };
 
 const colors = {
@@ -274,9 +281,26 @@ const colors = {
     isSamePiece(p1, p2) {
         const orderColors = piece => piece.split("").sort().join("");
         return (p1 === p2 || orderColors(p1) === orderColors(p2))
+    },
+    opposite: {
+        y: "w",
+        w: "y",
+        g: "b",
+        b: "g",
+        o: "r",
+        r: "o"
     }
 }
 
-Object.freeze(faces);
-Object.freeze(cube3);
-Object.freeze(cube2);
+function freezeObjects(...objects) {
+    for (const object of objects)
+        Object.freeze(object);
+}
+
+freezeObjects(
+    sides,
+    faces,
+    cube3,
+    cube2,
+    colors
+);

@@ -2,79 +2,67 @@
 
 // this file mimics the structure of firstLayer.js
 
-function secondLayer(moves, solveFrom) {
-    let cube = moves.cube;
-    const mainColor = solveFrom.color.main;
-    
-	const fourEdges = (() => {
+function secondLayer(turns, mainFace, mainColor) {
+    const cube = turns.cube,
+	fourEdges = (() => {
 		let result = [];
 		cube.pieces.forEach(
 			plane => plane.forEach(
 				line => line.forEach(
 					piece => {
-						if (piece.length === 2 && !piece.includes(mainColor)) {
-							const i = cube3.centerIndices.U,
-								Ucolor = cube.pieces[i[0]][i[1]][i[2]];
-							if (!piece.includes(Ucolor))
-								result.push(piece);
-						}
+						if (
+							piece.length === 2 &&
+							!piece.includes(mainColor) &&
+							!piece.includes(colors.opposite[mainColor])
+						)
+							result.push(piece);
 					}
 				)
 			)
 		);
 		return result;
 	})(),
-		centerColors = calcCenterColors(cube),
-		permutations = permute(fourEdges);
+	centerColors = calcCenterColors(cube),
+	permutations = permute(fourEdges);
 
-	let movesList = [];
+	let turnLists = [];
 
 	for (const permutation of permutations) {
-		let copy = cube.copy(),
-			fullSolution = "";
+		const
+		copy = cube.copy(),
+		fullSolution = new Turns(copy);
 
 		for (const edge of permutation) {
-			const orderedEdge = orderEdge(copy.pieces, edge),
-				solution = solveEdge(copy, orderedEdge, centerColors, mainColor);
+			const
+			orderedEdge = orderEdge(copy.pieces, edge),
+			solution = solveEdge(copy, orderedEdge, centerColors, mainFace, mainColor);
 
-			if (solution) {
-				if (fullSolution) fullSolution += " ";
-				fullSolution += solution;
-				copy.turns(solution);
-			}
+			fullSolution.turns(solution);
 		}
 
-		movesList.push(fullSolution);
+		turnLists.push(fullSolution.list);
 	}
 
-	let min = movesList[0].length;
-	for (const turns of movesList) {
-		const turnList = turns.split(" "),
-			length = turnList.length;
-		if (length < min) min = length;
-	}
-
-	for (const turns of movesList) {
-		const turnList = turns.split(" "),
-			length = turnList.length;
-		if (length === min) {
-			moves.turns(turns);
-			return;
-		}
-	}
+	const shortestTurnList = turnLists.reduce(
+        (a, b) => (a.length - b.length > 0) ? b : a
+    );
+    if (shortestTurnList.length)
+    	turns.turn(...shortestTurnList);
 }
 
-
-
-
-
-
-
+function calcCenterColors(cube) {
+	let centerColors = {};
+	for (const [face, indices] of Object.entries(cube3.centerIndices)) {
+		const color = cube.indices(indices);
+		centerColors[face] = color;
+	}
+	return centerColors;
+}
 function orderEdge(pieces, edge) {
 	for (const plane of pieces) {
 		for (const line of plane) {
 			for (const piece of line) {
-				if (isSamePiece(edge, piece))
+				if (colors.isSamePiece(edge, piece))
 					return piece;
 			}
 		}
@@ -83,174 +71,139 @@ function orderEdge(pieces, edge) {
 	throw "corner not found";
 }
 
-function solveEdge(cube, edge, centerColors, mainColor) {
-	const pos = findEdge(cube.pieces, edge);
-	const shouldBe = edgeShouldBe(edge, centerColors);
+function solveEdge(cube, edge, centerColors, mainFace, mainColor) {
+	const
+	pos = cube.findEdge(edge),
+	shouldBe = edgeShouldBe(edge, mainFace, centerColors),
+	index = cube2.index[mainFace],
+	layer = cube3.layers[mainFace];
 
-	if (pos[0] === 0) { //edge is on U
-		return solveEdgeOnU(cube, edge, centerColors, pos, shouldBe);
-	} else if (pos[0] === 1) //edge is on E
+	if (pos[index] === layer) { //edge is on ${mainFace}
+		return solveEdgeOnMainFace(cube, edge, centerColors, pos, shouldBe, mainFace);
+	} else if (pos[index] === 1) //edge is on E
 		if (eqarray(pos, shouldBe)) { //edge is in place, needs orientation
 			let sideList = [];
 			for (const [side, indices] of Object.entries(cube3.centerIndices))
-				if (sharesValues(indices, shouldBe, 2))
+				if (sharesElements(indices, shouldBe, 2))
 					sideList.push(side);
 
-			const firstSide = sideList.reduce(
-					(f0, f1) =>	(faceIndices[f0] <= faceIndices[f1]) ? f0 : f1,
-					"L"
-				),
-				firstSideColor = centerColors[firstSide];
+			const
+			arbitrarySide = sideList[0],
+			arbitrarySideColor = centerColors[arbitrarySide],
+			edgeColorOnArbitrarySide = sides.findColor(cube.findEdge(edge), edge, arbitrarySide);
 
-			if (edge[0] === firstSideColor) 
+			if (edgeColorOnArbitrarySide === arbitrarySideColor) 
 				return "";
 			else {
-				const s0 = sideList[0],
-					s1 = sideList[1],
-					c0 = clockwiseSides[s0],
-					c1 = clockwiseSides[s1],
-					firstSortedSide = (c0 < c1 && Math.max(c0, c1) - Math.min(c0, c1) === 1) ? s0 : s1,
-					sortedSideList = [
-						firstSortedSide,
-						sideList.filter(side => side !== firstSortedSide)[0]
-					],
-					f0 = sortedSideList[0],
-					f1 = sortedSideList[1];
+				const
+				s0 = sideList[0],
+				s1 = sideList[1],
+				firstSortedSide = (sides.clockwise[mainFace][s0] === s1) ? s0 : s1,
+				sortedSideList = [
+					firstSortedSide,
+					sideList.filter(side => side !== firstSortedSide)
+				],
+				f0 = sortedSideList[0],
+				f1 = sortedSideList[1],
+				mf = mainFace;
 
-				return `${f0} U2 ${f0}' U ${f0} U2 ${f0}' U ${f1}' U' ${f1}`;
+				return `${f0} ${mf}2 ${f0}' ${mf} ${f0} ${mf}2 ${f0}' ${mf} ${f1}' ${mf}' ${f1}`;
 			}
 		}
 		else { //edge is on E out of place
+			const indicesFacesList = calcIndicesFacesList(mainFace);
+
+			pos.splice(index, 1);
+
 			let moveList;
 
 			for (const indicesFaces of indicesFacesList) {
 				const indices = indicesFaces.indices;
 
-				if (eqarray(pos.slice(1), indices)) {
-					const faces = indicesFaces.faces,
-						f0 = faces[0],
-						f1 = faces[1];
+				if (eqarray(pos, indices)) {
+					const
+					faceList = indicesFaces.faces,
+					conjugate = sides.conjugate.includes(mainFace),
+					f0 = faceList[conjugate ? 1 : 0],
+					f1 = faceList[conjugate ? 0 : 1],
+					mf = mainFace;
 
-					moveList = `${f0} U' ${f0}' U' ${f1}' U ${f1}`;
+					moveList = `${f0} ${mf}' ${f0}' ${mf}' ${f1}' ${mf} ${f1}`;
 				}
 			}
 
 			let copy = cube.copy();
 			copy.turns(moveList);
 
-			const newPos = findEdge(copy.pieces, edge),
-				orderedEdge = orderEdge(copy.pieces, edge),
-				solution = solveEdgeOnU(copy, orderedEdge, centerColors, newPos, shouldBe);
+			const
+			newPos = copy.findEdge(edge),
+			orderedEdge = orderEdge(copy.pieces, edge),
+			solution = solveEdgeOnMainFace(copy, orderedEdge, centerColors, newPos, shouldBe, mainFace);
 
-			return moveList + " " + solution;
+			return `${moveList} ${solution}`;
 		}
 	else throw "edge in wrong position";
-
-	return "";
 }
 
-function findEdge1(pieces, edge) {
-	const edgeArray = [0, 1, 2];
-
-	for (const i of edgeArray) {
-		const plane = pieces[i];
-		for (const j of edgeArray) {
-			const line = plane[j];
-			for (const k of edgeArray) {
-				const piece = line[k];
-
-				if (isSamePiece(edge, piece))
-					return [i, j, k];
-			}
-		}
-	}
-
-	throw "edge not found";
-}
-
-function orderEdge(pieces, edge) {
-	const edgeArray = [0, 1, 2];
-
-	for (const i of edgeArray) {
-		const plane = pieces[i];
-		for (const j of edgeArray) {
-			const line = plane[j];
-			for (const k of edgeArray) {
-				const piece = line[k];
-
-				if (isSamePiece(edge, piece))
-					return piece;
-			}
-		}
-	}
-
-	throw "edge not found";
-}
-
-function edgeShouldBe(edge, centerColors) {
+function edgeShouldBe(edge, mainFace, centerColors) {
 	let faceList = [];
 	for (const [face, color] of Object.entries(centerColors))
 		if (edge.includes(color))
 			faceList.push(face);
 
-	let result = [1]; // 1 is the first index and the index of E
+	let result = [];
 	for (const face of faceList) {
-		const indices = cube3.centerIndices[face],
-			index = faceIndices[face];
-		result.push(indices[index]);
+		const
+		indices = cube3.centerIndices[face],
+		index = cube3.index[face];
+		result[index] = indices[index];
 	}
+
+	result[cube2.index[mainFace]] = 1;
 	return result;
 }
 
-function calcCenterColors(cube) {
-	let centerColors = {};
-	for (const [face, i] of Object.entries(cube3.centerIndices)) {
-		const color = cube.pieces[i[0]][i[1]][i[2]];
-		centerColors[face] = color;
-	}
-	return centerColors;
-}
+function solveEdgeOnMainFace(cube, edge, centerColors, pos, shouldBe, mainFace) {
+	const
+	index = cube2.index[mainFace],
+	color0 = sides.findColor(cube.findEdge(edge), edge, mainFace),
+	color1 = edge[edge[1] === color0 ? 0 : 1], //other color on edge
+	findSide = color => {
+		for (const side of cube2.orthogonal(mainFace))
+			if (color === centerColors[side])
+				return side;
+	},
+	s0 = findSide(color0),
+	s1 = findSide(color1),
+	mf = mainFace;
 
-function solveEdgeOnU(cube, edge, centerColors, pos, shouldBe) {
-	const s0 = (() => {
-			for (const side of ["B", "F", "L", "R"])
-				if (edge[0] === centerColors[side])
-					return side;
-		})(),
-		s1 = (() => {
-			for (const side of ["B", "F", "L", "R"])
-				if (edge[1] === centerColors[side])
-					return side;
-		})(),
-		c0 = clockwiseSides[s0],
-		c1 = clockwiseSides[s1],
-		reducedCenterIndices = cube3.centerIndices[s0].slice(1),
-		reducedEdgeIndices = pos.slice(1);
+	let
+	reducedCenterIndices = [...cube3.centerIndices[s0]],
+	reducedEdgeIndices = [...pos];
 
-	if (eqarray(reducedEdgeIndices, reducedCenterIndices)) {
-		//edge is on U in position to be hammered
-		if (c0 - 1 === c1 || (c0 === 0 && c1 === 3))
-			return `${s0}' U2 ${s0} U2 ${s1} U ${s1}'`;
-		else
-			return `${s0} U2 ${s0}' U2 ${s1}' U' ${s1}`;
-	} else { //edge is on U not in position to be hammered
-		let firstTurn;
+	reducedCenterIndices.splice(index, 1);
+	reducedEdgeIndices.splice(index, 1);
 
-		for (const amount of turnAmounts) {
-			const turned = Cube.turn(cube.pieces, {face: "U", amount}),
-				newPos = findEdge(turned, edge);
+	const turns = new Turns();
 
-			if (eqarray(newPos.slice(1), reducedCenterIndices)) {
-				if (amount === 1) firstTurn = "U";
-				else if (amount === -1) firstTurn = "U'";
-				else if (amount === 2) firstTurn = "U2";
+	if (!eqarray(reducedEdgeIndices, reducedCenterIndices))
+		for (const amount of faces.amounts) {
+			const turned = cube.copy();
+			turned.turn({face: mainFace, amount});
+
+			let newPos = turned.findEdge(edge);
+			newPos.splice(index, 1);
+
+			if (eqarray(newPos, reducedCenterIndices)) {
+				turns.turn({face: mainFace, amount});
 				break;
 			}
 		}
 
-		if (c0 - 1 === c1 || (c0 === 0 && c1 === 3))
-			return `${firstTurn} ${s0}' U2 ${s0} U2 ${s1} U ${s1}'`;
-		else
-			return `${firstTurn} ${s0} U2 ${s0}' U2 ${s1}' U' ${s1}`;
-	}
+	if (sides.counterclockwise[mainFace][s0] === s1)
+		turns.turns(`${s0}' ${mf}2 ${s0} ${mf}2 ${s1} ${mf} ${s1}'`);
+	else
+		turns.turns(`${s0} ${mf}2 ${s0}' ${mf}2 ${s1}' ${mf}' ${s1}`);
+
+	return turns.string;
 }

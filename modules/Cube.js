@@ -19,7 +19,7 @@ class Cube {
 
                     const
                     indices = [i, j, k],
-                    faceList = faces.indices(indices);
+                    faceList = sides.indices(indices);
 
                     for (const face of faceList) {
                         const color = colors.sides[face];
@@ -67,8 +67,8 @@ class Cube {
 
             let found = false;
             while (!found) {
-                const index = randInt(allTurns.length),
-                    turn = allTurns[index];
+                const index = randInt(Turns.all.length),
+                    turn = Turns.all[index];
                 if (!prev ||
                     !faces.sameAxis(turn.face, prev.face) ||
                     (turn.amount === prev.amount && turn.face !== prev.face)
@@ -100,6 +100,27 @@ class Cube {
         }
 
         throw "corner not found";
+    }
+
+    findEdge(edge) {
+        for (const i of faces.edgeArray) {
+            for (const j of faces.edgeArray) {
+                for (const k of faces.edgeArray) {
+                    const indices = [i, j, k];
+
+                    let count = 0;
+                    for (const index of indices)
+                        if (!faces.cornerArray.includes(index))
+                            count++;
+                    if (count !== 1) continue;
+
+                    if (colors.isSamePiece(edge, this.indices(indices)))
+                        return indices;
+                }
+            }
+        }
+
+        throw "edge not found";
     }
 }
 

@@ -21,71 +21,13 @@
 ];
 */
 
-
-
-const amounts = {
-    //same
-    "[[0,0],[0,0]]": 0,
-    "[[0,2],[0,2]]": 0,
-    "[[2,0],[2,0]]": 0,
-    "[[2,2],[2,2]]": 0,
-
-    //three in a row
-    "[[2,0],[0,0]]": 1,
-    "[[0,0],[0,2]]": 1,
-    "[[2,2],[2,0]]": 1,
-    "[[0,2],[2,2]]": 1,
-
-    //three not in a row
-    "[[0,2],[0,0]]": -1,
-    "[[2,2],[0,2]]": -1,
-    "[[0,0],[2,0]]": -1,
-    "[[2,0],[2,2]]": -1,
-
-    //two of each number; inverses of eachother
-    "[[2,2],[0,0]]": 2,
-    "[[2,0],[0,2]]": 2,
-    "[[0,2],[2,0]]": 2,
-    "[[0,0],[2,2]]": 2,
-};
-
-
-
-
-
-
-
-//const
-// clockwiseSides = {
-//     B: 0,
-//     R: 1,
-//     F: 2,
-//     L: 3
-// },
-// ccSide = {
-//     B: "L", F: "R",
-//     L: "F", R: "B"
-// };
-
-
-
-
-
-
-
-
-
-
-
-
-
 const mainCube = new Cube(cubeSize);
 
 
 window.onload = () => {
     displaySetup();
 
-    mainCube.pieces = [[["bwr","br","bwo"],["gr","y","gy"],["byr","by","gyr"]],[["wg","r","rw"],["g","","b"],["oy","o","go"]],[["boy","ry","rwg"],["wb","w","ob"],["ogw","wo","gyo"]]]
+    mainCube.pieces =[[["gwo","bo","brw"],["br","o","go"],["ryg","gr","grw"]],[["oy","w","by"],["b","","g"],["gy","y","rw"]],[["oyb","gw","bow"],["wo","r","ry"],["ybr","wb","gyo"]]]
 
     const start = Date.now();
 

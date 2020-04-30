@@ -1,6 +1,6 @@
 "use strict";
 
-function orient(turns, mainFace, mainColor,) {
+function orient(turns, mainFace, mainColor) {
     const
     cube = turns.cube,
     orientations = calcOrientations(mainFace);
@@ -9,7 +9,7 @@ function orient(turns, mainFace, mainColor,) {
         const color = cube3.centerColor(cube, face);
         if (color === mainColor) {
             const turn = orientations[face];
-            if (turn) turns.turns(turn);
+            turns.turns(turn);
             return;
         }
     }
@@ -19,7 +19,7 @@ function orient(turns, mainFace, mainColor,) {
 
 function calcOrientations(mainFace) {
     const
-    oppositeFace = faces.opposite[mainFace],
+    oppositeFace = sides.opposite[mainFace],
     coaxialMiddle = (() => {
         for (const middle of faces.middles)
             if (!cube3.sameAxis(mainFace, middle))

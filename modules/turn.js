@@ -8,7 +8,7 @@ function cubeTurn(pieces, turn) {
 	let amount = turn.amount;
 
 	// conjugate the direction for opposite sides
-	if (faces.conjugate.includes(face) && amount !== 2)
+	if (sides.conjugate.includes(face) && amount !== 2)
 	    amount *= -1;
 
 	let layer = cube3.layers[face];

@@ -20,25 +20,25 @@ function firstLayer(turns, mainFace, mainColor) {
 	centerColors = calcCenterColors(cube),
 	permutations = permute(fourCorners);
 
-	let turnList = [];
+	let turnLists = [];
 
 	for (const permutation of permutations) {
 		const
 		copy = cube.copy(),
-		fullSolution = new Turns(copy);
+		turns = new Turns(copy);
 
 		for (const corner of permutation) {
 			const
 			orderedCorner = orderCorner(copy.pieces, corner),
 			solution = solveCorner(copy, orderedCorner, centerColors, mainFace, mainColor);
 
-			fullSolution.turns(solution);
+			turns.turns(solution);
 		}
 
-		turnList.push(fullSolution.list);
+		turnLists.push(turns.list);
 	}
 
-	const shortestTurnList = turnList.reduce(
+	const shortestTurnList = turnLists.reduce(
         (a, b) => (a.length - b.length > 0) ? b : a
     );
     if (shortestTurnList.length)
@@ -54,20 +54,21 @@ function solveCorner(cube, corner, centerColors, mainFace, mainColor) {
 	shouldBe = cornerShouldBe(corner, centerColors),
 	index = cube2.index[mainFace],
 	layer = cube3.layers[mainFace],
-	color = faces.findColor(pos, corner, mainFace);
+	color = sides.findColor(pos, corner, mainFace),
+	indicesFacesList = calcIndicesFacesList(mainFace);
 
 
 
 	if (pos[index] === layer)
 		//corner is on mainFace
-		return solveCornerOnmainFace(cube, corner, centerColors, mainFace, mainColor, pos, shouldBe);
+		return solveCornerOnmainFace(cube, corner, centerColors, mainFace, mainColor, pos, shouldBe, indicesFacesList);
 	else if (eqarray(pos, shouldBe)) {
 		//corner is in place, needs orientation
-		const i = cube3.centerIndices[faces.opposite[mainFace]];
+		const i = cube3.centerIndices[sides.opposite[mainFace]];
 		if (color === cube.indices(i))
 			return "";
 		
-		for (const indicesFaces of indicesFacesList(mainFace)) {
+		for (const indicesFaces of indicesFacesList) {
 			const indices = indicesFaces.indices;
 
 
@@ -77,15 +78,16 @@ function solveCorner(cube, corner, centerColors, mainFace, mainColor) {
 			if (eqarray(shouldBePrime, indices)) {
 				const
 				faceList = indicesFaces.faces,
-				conjugate = faces.conjugate.includes(mainFace),
+				conjugate = sides.conjugate.includes(mainFace),
 				f0 = faceList[conjugate ? 1 : 0],
-				f1 = faceList[conjugate ? 0 : 1];
+				f1 = faceList[conjugate ? 0 : 1],
+				mf = mainFace;
 
 				switch (color) {
 					case centerColors[f0]:
-						return `${f0} ${mainFace}' ${f0}' ${f1}' ${mainFace}' ${f1}`;
+						return `${f0} ${mf}' ${f0}' ${f1}' ${mf}' ${f1}`;
 					case centerColors[f1]:
-						return `${f1}' ${mainFace} ${f1} ${f0} ${mainFace} ${f0}'`;
+						return `${f1}' ${mf} ${f1} ${f0} ${mf} ${f0}'`;
 					default:
 						throw "corner not the right color: " + color;
 				}
@@ -95,7 +97,7 @@ function solveCorner(cube, corner, centerColors, mainFace, mainColor) {
 		//corner is on opposite face out of place
 		let turns = "";
 
-		for (const indicesFaces of indicesFacesList(mainFace)) {
+		for (const indicesFaces of indicesFacesList) {
 			const indices = indicesFaces.indices;
 
 			let reducedPos = [...pos];
@@ -103,7 +105,7 @@ function solveCorner(cube, corner, centerColors, mainFace, mainColor) {
 
 			if (eqarray(reducedPos, indices)) {
 				const
-				conjugate = faces.conjugate.includes(mainFace),
+				conjugate = sides.conjugate.includes(mainFace),
 				face = conjugate ? indicesFaces.faces[1] : indicesFaces.faces[0];
 				turns += `${face} ${mainFace} ${face}'`;
 			}
@@ -115,7 +117,7 @@ function solveCorner(cube, corner, centerColors, mainFace, mainColor) {
 			orderedCorner = orderCorner(copy.pieces, corner);
 
 		if (turns) turns += " ";
-		turns += solveCornerOnmainFace(copy, orderedCorner, centerColors, mainFace, mainColor, newPos, shouldBe);
+		turns += solveCornerOnmainFace(copy, orderedCorner, centerColors, mainFace, mainColor, newPos, shouldBe, indicesFacesList);
 		return turns;
 	}
 }
@@ -163,46 +165,57 @@ function orderCorner(pieces, corner) {
 	throw "corner not found";
 }
 
-function solveCornerOnmainFace(cube, corner, centerColors, mainFace, mainColor, pos, shouldBe) {
-	const index = cube2.index[mainFace];
-
+function solveCornerOnmainFace(cube, corner, centerColors, mainFace, mainColor, pos, shouldBe, indicesFacesList) {
 	const
+	index = cube2.index[mainFace],
+	color = sides.findColor(pos, corner, mainFace),
 	posPrime = [...pos],
 	shouldBePrime = [...shouldBe];
+
 	posPrime.splice(index, 1);
 	shouldBePrime.splice(index, 1);
 
 	const
-	dpos = [posPrime, shouldBePrime],
-	stringedPos = JSON.stringify(dpos),
-	color = faces.findColor(pos, corner, mainFace);
+	amount = ((pos, shouldBe) => {
+		if (eqarray(pos, shouldBe))
+			return 0;
 
-	let amount = amounts[stringedPos];
-	if (Math.abs(amount) === 1 && faces.conjugate.includes(mainFace))
-		amount *= -1;
+		if (pos.concat(shouldBe).reduce(
+			(acc, val) => val ? ++acc : acc , 0
+		) === 2)
+			return 2;
 
-	const turns = new Turns();
+		switch (pos[1] === shouldBe[0]) {
+			case sides.conjugate.includes(mainFace):
+				return -1;
+			default:
+				return 1;
+		}
+	})(posPrime, shouldBePrime),
+	turns = new Turns();
+	
 	if (amount) turns.turn({face: mainFace, amount});
 
-	for (const indicesFaces of indicesFacesList(mainFace)) {
+	for (const indicesFaces of indicesFacesList) {
 		const indices = indicesFaces.indices;
 
 		if (eqarray(shouldBePrime, indices)) {
 			const
 			faceList = indicesFaces.faces,
-			conjugate = faces.conjugate.includes(mainFace),
+			conjugate = sides.conjugate.includes(mainFace),
 			f0 = faceList[conjugate ? 1 : 0],
-			f1 = faceList[conjugate ? 0 : 1];
+			f1 = faceList[conjugate ? 0 : 1],
+			mf = mainFace;
 
 			switch(color) {
 				case centerColors[f0]:
-					turns.turns(`${f0} ${mainFace} ${f0}'`);
+					turns.turns(`${f0} ${mf} ${f0}'`);
 					break;
 				case centerColors[f1]:
-					turns.turns(`${f1}' ${mainFace}' ${f1}`);
+					turns.turns(`${f1}' ${mf}' ${f1}`);
 					break;
 				case mainColor:
-					turns.turns(`${f0} ${mainFace}2 ${f0}' ${mainFace}' ${f0} ${mainFace} ${f0}'`);
+					turns.turns(`${f0} ${mf}2 ${f0}' ${mf}' ${f0} ${mf} ${f0}'`);
 					break;
 				default:
 					throw "corner not the right color: " + color;
@@ -215,34 +228,28 @@ function solveCornerOnmainFace(cube, corner, centerColors, mainFace, mainColor, 
 	throw "solve corner on mainFace failed";
 }
 
-function indicesFacesList(mainFace) {
-	const initialFaces = faces.sides.reduce(
+function calcIndicesFacesList(mainFace) {
+	const initialFaces = sides.all.reduce(
 		(acc, side) => {
 			if (!cube3.sameAxis(side, mainFace) && !cube2.layers[side])
 				acc.push(side);
 			return acc;
 		}, []
 	),
-	conjugate = faces.conjugate.includes(mainFace),
+	conjugate = sides.conjugate.includes(mainFace),
 	f0 = initialFaces[1],
 	f1 = initialFaces[0],
-	f2 = faces[conjugate ? "counterclockwise" : "clockwise"][mainFace][f1],
-	f3 = faces[conjugate ? "clockwise" : "counterclockwise"][mainFace][f0],
+	f2 = sides[conjugate ? "counterclockwise" : "clockwise"][mainFace][f1],
+	f3 = sides[conjugate ? "clockwise" : "counterclockwise"][mainFace][f0],
 	faceList = [f0, f1, f2, f3];
 
-	let indicesFacesL = [];
+	let indicesFacesList = [];
 	for (let i = 0; i < 4; i++) {
 		const
 		indices = cube3.cornerIndices[i],
 		indicesFaces = {indices, faces: [faceList[i], faceList[(i + 1) % 4]]};
-		indicesFacesL.push(indicesFaces);
+		indicesFacesList.push(indicesFaces);
 	}
 	
-	return indicesFacesL;
+	return indicesFacesList;
 };
-
-console.log();
-
-
-
-

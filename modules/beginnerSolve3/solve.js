@@ -8,7 +8,7 @@ function beginnerSolve3(displayCube = true) {
     //the notation may be confusing; the main color is
     //actually solved onto the opposite face, and vice versa
     const
-    mainFace = "B",
+    mainFace = "U",
     mainColor = "w";
     
         
@@ -17,8 +17,9 @@ function beginnerSolve3(displayCube = true) {
     orient(turns, mainFace, mainColor);
     cross(turns, mainFace, mainColor);
     firstLayer(turns, mainFace, mainColor);
-    // secondLayer(turns, mainFace, mainColor);
-    // Ucross(turns, mainFace, mainColor);
+    secondLayer(turns, mainFace, mainColor);
+    crossMainFace(turns, mainFace, mainColor);
+    OLL(turns, mainFace, mainColor);
 
     
 
