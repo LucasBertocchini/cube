@@ -8,6 +8,12 @@
     <body>
         <div id="cube-container"></div>
 
+        <!--
+            while the many script tags can be avoided with real modules,
+            this requires the project be accessed through protocol schemes
+            other than file (like http or https) meaning to test locally
+            would require a localhost
+        -->
         <script src="constants.js"></script>
         
         <script src="modules/Cube.js"></script>
@@ -24,6 +30,7 @@
         <script src="modules/beginnerSolve3/secondLayer.js"></script>
         <script src="modules/beginnerSolve3/crossMainFace.js"></script>
         <script src="modules/beginnerSolve3/OLL.js"></script>
+        <script src="modules/beginnerSolve3/PLL.js"></script>
         <script src="modules/beginnerSolve3/solve.js"></script>
     </body>
 </html>

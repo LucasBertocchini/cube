@@ -142,7 +142,7 @@ function cornerShouldBe(corner, centerColors) {
 function calcCenterColors(cube) {
 	let centerColors = {};
 	for (const [face, i] of Object.entries(cube3.centerIndices)) {
-		const color = cube.pieces[i[0]][i[1]][i[2]];
+		const color = cube.indices(i);
 		centerColors[face] = color;
 	}
 	return centerColors;

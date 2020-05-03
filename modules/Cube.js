@@ -122,6 +122,10 @@ class Cube {
 
         throw "edge not found";
     }
+
+    beginnerSolve3(standard_U_w, update) {
+        return cubeBeginnerSolve3(this, standard_U_w, update);
+    }
 }
 
 class Edges {

@@ -114,17 +114,16 @@ class Turns {
         if (cube) this.cube = cube;
     }
     static get all() {return Turns.calc(faces.all);}
+
     turn(...turnList) {
-        //change to use cube.turnToTurns
         for (const turn of turnList) {
             const turnString = Turns.turnToTurns(turn);
             if (this.string) this.string += " ";
             this.string += turnString;
-
-            this.list.push(turn)
-
-            if (this.cube) this.cube.turn(turn);
         }
+        this.list.push(...turnList)
+
+        if (this.cube) this.cube.turn(...turnList);
     }
     turns(turns) {
         if (!turns) return;
@@ -269,6 +268,8 @@ const colors = {
     o: "orange",
     r: "red",
     G: "gray",
+
+    all: ["y", "w", "g", "b", "o", "r"],
     
     sides: {
         U: "y",

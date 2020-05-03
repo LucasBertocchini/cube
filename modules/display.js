@@ -43,24 +43,9 @@ function displaySetup() {
         console.log("\n");
 
         mainCube.scramble();
-        beginnerSolve3(mainCube.pieces);
+        mainCube.beginnerSolve3();
     }
     document.body.appendChild(scrambleAndSolveButton);
-
-    const scrambleSolveAndTimeButton = document.createElement("button");
-    scrambleSolveAndTimeButton.innerHTML = "scramble, solve, and time";
-    scrambleSolveAndTimeButton.onclick = e => {
-        console.log("\n");
-
-        mainCube.scramble();
-
-        const start = Date.now();
-        beginnerSolve3();
-        const end = Date.now();
-
-        console.log(end - start + " ms");
-    }
-    document.body.appendChild(scrambleSolveAndTimeButton);
 
     addBreak();
     
@@ -112,7 +97,7 @@ function displaySetup() {
     
     const beginnerSolve3Button = document.createElement("button");
     beginnerSolve3Button.innerHTML = "beginner solve 3";
-    beginnerSolve3Button.onclick = e => beginnerSolve3(mainCube.pieces);
+    beginnerSolve3Button.onclick = e => mainCube.beginnerSolve3();
     document.body.appendChild(beginnerSolve3Button);
 
     const copyPiecesButton = document.createElement("button");

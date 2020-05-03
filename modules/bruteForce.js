@@ -4,6 +4,8 @@ function cubeBruteForce(pieces, order) {
     if (Cube.isSolved(pieces)) return [];
     if (order < 1) throw "brute force order must be an integer >= 1";
 
+    const allTurns = Turns.all;
+
     for (const turn of allTurns) {
         const cube = Cube.turn(pieces, turn);
         if (Cube.isSolved(cube)) return [turn];
@@ -26,7 +28,7 @@ function cubeBruteForce(pieces, order) {
         let cubeList = [pieces];
 
         for (let i = 0; i < subOrder - 1; i++)
-            cubeList.push(Cube.turn(cubeList[i], {face: "U", amount: 1}));
+            cubeList.push(Cube.turn(cubeList[i], {face: sides.all[0], amount: 1}));
 
         let indices = Array(subOrder).fill(0);
         for (let i = subOrder; i >= 0;) {
@@ -48,7 +50,7 @@ function cubeBruteForce(pieces, order) {
                     indices[i]++;
 
                     //assure there are no repeated faces
-                    //does not catch leading 0's or trailing {allTurns.length - 1}'s
+                    //does not catch leading 0's or trailing ${allTurns.length - 1}'s
                 	if (i === 0 || i === 1) {
                     	while (allTurns[indices[1]].face === allTurns[indices[0]].face &&
                     		indices[1] < allTurns.length - 1)

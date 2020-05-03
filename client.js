@@ -1,7 +1,9 @@
 "use strict";
-// TU resident: column0679dough
-// link: file:///C:/Users/User/Desktop/cube/index.html
-/* 3x3 cube = [
+
+const mainCube = new Cube(cubeSize);
+
+/*
+standard 3x3 cube: [
            L     M      R
     [  U
         ["ygo", "yg", "ygr"], B
@@ -21,45 +23,14 @@
 ];
 */
 
-const mainCube = new Cube(cubeSize);
-
-
 window.onload = () => {
     displaySetup();
 
-    mainCube.pieces =[[["gwo","bo","brw"],["br","o","go"],["ryg","gr","grw"]],[["oy","w","by"],["b","","g"],["gy","y","rw"]],[["oyb","gw","bow"],["wo","r","ry"],["ybr","wb","gyo"]]]
+    mainCube.scramble();
+    mainCube.beginnerSolve3(true, false);
 
-    const start = Date.now();
-
-
-    if (0)
-        for (let i = 1; i < 500; i++) {
-            mainCube.scramble();
-            beginnerSolve3();
-        }
-    else
-        beginnerSolve3();
-
-
-
-
-    const end = Date.now();
-    console.log(end - start + " ms");
     display();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -107,7 +78,6 @@ function eqarray(array1, array2) {
     return (JSON.stringify(array1) === JSON.stringify(array2));
 }
 
-
 function sharesElements(array1, array2, n) {
     let count = 0;
     for (const i in array1)
@@ -115,6 +85,7 @@ function sharesElements(array1, array2, n) {
             count++;
     return (count === n);
 }
+
 function keysByValue(object, value) {
     let keys = [];
     for (const [key, val] of Object.entries(object))
@@ -122,6 +93,13 @@ function keysByValue(object, value) {
             keys.push(key);
     return keys;
 }
+
+function keyByValue(object, value) {
+    for (const [key, val] of Object.entries(object))
+        if (val === value)
+            return key;
+}
+
 function XOR(...conditions) {
     let count = 0;
     for (const condition of conditions)
