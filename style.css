@@ -1,29 +1,14 @@
+html, body {
+    height: 100%;
+}
+
 * {
     margin: 0px;
     padding: 0px;
-    font-family: monospace/*Ubuntu*/;
+    font-family: monospace;
 }
 
-body {
-    padding: 20px;
-}
 
 #cube-container {
-    height: 500px;
-    display: grid;
-}
-
-.face {
-    display: grid;
-    padding: 10px;
-    text-align: center;
-}
-
-.piece {
-    border: 1px solid;
-}
-
-button {
-    margin: 5px;
-    padding: 5px;
+    height: 100%;
 }
