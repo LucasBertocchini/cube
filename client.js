@@ -24,16 +24,12 @@ standard 3x3 cube: [
 */
 
 window.onload = () => {
-    // displaySetup();
-
     display3DSetup();
 
-    mainCube.scramble();
-    mainCube.beginnerSolve3(true, false);
+    // mainCube.scramble();
+    // mainCube.beginnerSolve3(true);
 
     display3D();
-
-    // display();
 }
 
 

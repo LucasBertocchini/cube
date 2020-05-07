@@ -162,6 +162,7 @@ function calcPieces(amount, newPieceFunction) {
         const iPrime = cubeSize - 1 - i;
         for (let j = 0; j < cubeSize; j++) {
             const jPrime = cubeSize - 1 - j;
+            
             let indices = calcIndices(amount, i, j, iPrime, jPrime);
             newPieceFunction(i, j, indices);
         }

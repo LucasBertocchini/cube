@@ -46,10 +46,8 @@ function cubeBeginnerSolve3(cube, standard_U_w = false, update = true) {
 
         const end = Date.now();
 
-        if (update) {
+        if (update)
             cube.pieces = copy.pieces;
-            display();
-        }
 
         console.log(turns.string);
         console.log(`${turns.list.length} turns in ${end - start} ms`);
