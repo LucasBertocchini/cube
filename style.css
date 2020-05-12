@@ -1,3 +1,7 @@
+:root {
+    --angle: 12deg;
+}
+
 html, body {
     height: 100%;
 }
@@ -6,14 +10,113 @@ html, body {
     margin: 0px;
     padding: 0px;
     font-family: monospace;
+
+    min-width: 0;
+    min-height: 0;
+
+    user-select: none;
 }
 
+#cube-area {
+    padding: 2%;
+}
 
 #cube-container {
-    height: 70%;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: stretch;
+}
+
+#main-cube {
+    flex: 1.618;
+}
+
+#mini-cube-container {
+    flex: 1;
+    display: flex;
+    flex-flow: column;
+}
+
+#mini-cube {
+    flex: 1.618;
+}
+
+#button-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    flex-flow: column;
+    align-items: stretch;
+}
+
+.row {
+    display: flex;
+    justify-content: space-around;
+    flex: 1;
 }
 
 button {
-	padding: 5px;
-	margin: 2px 5px 2px 5px;
+    flex: 1;
 }
+
+
+
+
+#chevron {
+    position: relative;
+    text-align: center;
+    margin-bottom: 6px;
+    width: 40px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#chevron:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 50%;
+    transform: skew(0deg, calc(-1 * var(--angle)));
+
+    background: lightgray;
+    border-top: 3px solid lightgray;
+    border-bottom: 3px solid lightgray;
+    border-radius: 3px 0 0 3px;
+}
+
+#chevron:after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: 50%;
+    transform: skew(0deg, var(--angle));
+
+    background: lightgray;
+    border-top: 3px solid lightgray;
+    border-bottom: 3px solid lightgray;
+    border-radius: 0 3px 3px 0;
+}
+
+#collapsible-container {
+    position: relative;
+}
+
+#collapsible {
+    width: 100%;
+    height: 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 0;
+    left: 0;
+    background-color: rgba();
+    overflow-x: hidden;
+    transition: 0.5s;
+    padding-left: 60px;
+}
+

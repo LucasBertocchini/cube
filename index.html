@@ -6,13 +6,25 @@
         <link rel="stylesheet" href="style.css">
     </head>
     <body>
-        <div id="cube-container"></div>
+        <div id="cube-area">
+            <div id="cube-container">
+                <canvas id="main-cube"></canvas>
+                <div id="mini-cube-container">
+                    <canvas id="mini-cube"></canvas>
+                    <div id="button-container"></div>
+                </div>
+            </div>
+        </div>
+        <div id="chevron"></div>
+        <div id="collapsible-container">
+            <div id="collapsible"></div>
+        </div>
 
         <!--
-            while the many script tags can be avoided with real modules,
-            this requires the project be accessed through protocol schemes
-            other than file (like http or https) meaning to test locally
-            would require a localhost
+while the many script tags can be avoided with real modules,
+this requires the project be accessed through protocol schemes
+other than file (like http or https) meaning to test locally
+would require a localhost
         -->
         <script src="constants.js"></script>
         
@@ -23,7 +35,6 @@
         <script src="modules/display.js"></script>
 
         <script src="gl-matrix/dist/gl-matrix-min.js"></script>
-        <script type="x-shader/x-vertex" src="modules/display3D/vert.glsl"></script>
 
         <script src="modules/display3D/display3D.js"></script>
         

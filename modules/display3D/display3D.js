@@ -1,119 +1,232 @@
 "use strict";
 
+let sArray = [];
+for (let i = -cubeSize; i <= cubeSize; i += 2)
+	sArray.push(i / cubeSize);
+
+let positions = []
+
+for (const side of sides.all) {
+	const sign = cube2.layers[side] ? -1 : 1;
+	const index = [1, 2, 0][cube2.index[side]];
+
+	for (let i = 0; i < cubeSize; i++) {
+		const
+		i0 = sArray[i],
+		i1 = sArray[i + 1];
+		for (let j = 0; j < cubeSize; j++) {
+			const
+			j0 = sArray[j],
+			j1 = sArray[j + 1];
+
+			const jiArray = ["U", "F", "R"].includes(side) ?
+				[
+					[j0, i0],
+					[j0, i1],
+					[j1, i1],
+					[j1, i0]
+				] : [
+					[j0, i1],
+					[j1, i1],
+					[j1, i0],
+					[j0, i0]
+				];
+
+			jiArray.forEach(array => array.splice(index, 0, sign));
+			const columnated = jiArray.flat();
+			
+			positions.push(...columnated);
+		}
+	}
+}
+
+
+const mat4 = glMatrix.mat4;
+
+Math.HALF_PI = Math.PI / 2;
+Math.QUARTER_PI = Math.PI / 4;
+
+let
+rotation = {
+	yaw: -Math.PI / 6,
+	pitch: Math.PI / 6
+},
+dragging = false,
+prevPos = {
+	x: 0,
+	y: 0
+};
+
+
 function display3DSetup() {
     const
     cubeContainer = document.querySelector("#cube-container"),
-	canvas = document.createElement("canvas"),
+	canvas = cubeContainer.querySelector("#main-cube"),
 	gl = canvas.getContext("webgl");
-
-	canvas.width = cubeContainer.clientWidth;
-	canvas.height = cubeContainer.clientHeight;
-
-    cubeContainer.appendChild(canvas);
 
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
-
-
     const
-    canvas2 = document.createElement("canvas"),
+    miniCubeContainer = cubeContainer.querySelector("#mini-cube-container"),
+    canvas2 = miniCubeContainer.querySelector("#mini-cube"),
 	gl2 = canvas2.getContext("webgl");
 
-	canvas2.width = cubeContainer.clientWidth;
-	canvas2.height = cubeContainer.clientHeight;
+    gl2.viewport(0, 0, gl2.canvas.width, gl2.canvas.height);
 
-    cubeContainer.appendChild(canvas2);
+    const buttonContainer = document.querySelector("#button-container");
 
+    for (const axis of [
+    	["U", "E", "D", "y"],
+    	["F", "S", "B", "z"],
+    	["R", "M", "L", "x"]
+    ]) {
+    	const row = document.createElement("div");
+    	row.classList.add("row");
+    	for (const face of axis) {
 
+	        const turnButton = document.createElement("button");
+	        turnButton.innerHTML = face;
+	        turnButton.onclick = e => {
+	            const turn = {face, amount: e.shiftKey ? 2 : 1};
+	            mainCube.turn(turn);
+	        }
 
+	        turnButton.oncontextmenu = e => {
+	            const turn = {face, amount: e.shiftKey ? 2 : -1};
+	            mainCube.turn(turn);
+	            return false;
+	        }
+	        row.appendChild(turnButton);
+	    }
+        buttonContainer.appendChild(row);
+    }
 
+    let sensitivity;
 
-	const mat4 = glMatrix.mat4
-	
-	const sensitivity = 2 * Math.PI / Math.sqrt(canvas.width ** 2 + canvas.height ** 2);
+	function resize(e) {
+		const
+		cubeArea = document.querySelector("#cube-area"),
+		cubeAreaStyle = window.getComputedStyle(cubeArea),
+		padding = parseInt(cubeAreaStyle.padding),
 
-	let
-	rotation = {
-		yaw: -Math.PI / 6,
-		pitch: Math.PI / 6
-	},
-	dragging = false,
-	prevPos = {
-		x: 0,
-		y: 0
+		bodyStyle = window.getComputedStyle(document.body),
+		width = parseInt(bodyStyle.width) - 2*padding,
+		height = parseInt(bodyStyle.height) - 2*padding,
+		landscape = width > height,
+		[Phi, phi] = landscape ? [1.618, .618] : [.618, 1.618];
+
+		cubeContainer.style.flexFlow = landscape ? "row" : "column";
+		miniCubeContainer.style.flexFlow = landscape ? "column" : "row";
+
+		if (width > Phi * height) {
+			cubeArea.style.width = `${height * Phi}px`;
+			cubeArea.style.height = `${height}px`;
+		} else {
+			cubeArea.style.width = `${width}px`;
+			cubeArea.style.height = `${width * phi}px`;
+		}
+		
+		const
+		style = window.getComputedStyle(canvas),
+		style2 = window.getComputedStyle(miniCubeContainer),
+		scale = 1;
+
+		canvas.width = scale * parseInt(style.width);
+		canvas.height = scale * parseInt(style.height);
+		canvas2.width = scale * parseInt(style2.width);
+		canvas2.height = scale * parseInt(style.height);
+
+	    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+	    gl2.viewport(0, 0, gl2.canvas.width, gl2.canvas.height);
+
+	    sensitivity = {
+			main: Math.SQRT2 * Math.PI / Math.sqrt(canvas.width ** 2 + canvas.height ** 2),
+			mini: Math.SQRT2 * Math.PI / Math.sqrt(canvas2.width ** 2 + canvas2.height ** 2)
+		}
 	};
 
+	resize();
+
+
+
+	document.body.onmouseenter = e => {
+		if (e.which === 1)
+			prevPos = {
+				x: e.clientX,
+				y: e.clientY
+			};
+		else
+			dragging = false;
+	}
+	document.body.onmouseup = e => {
+		dragging = false;
+	}
+
 	canvas.onmousedown = e => {
-		dragging = true;
+		dragging = "mainCube";
 		prevPos = {
 			x: e.clientX,
 			y: e.clientY
 		};
 	}
-	canvas.onmouseup = e => {
-		dragging = false;
+	canvas2.onmousedown = e => {
+		dragging = "miniCube";
+		prevPos = {
+			x: e.clientX,
+			y: e.clientY
+		};
 	}
-	canvas.onmouseenter = e => {
-		dragging = false;
-	}
 
-	canvas.onmousemove = e => {
-		if (dragging) {
-			const
-			deltaX = e.clientX - prevPos.x,
-			deltaY = e.clientY - prevPos.y;
+	document.body.onmousemove = e => {
+		if (!dragging) return;
 
-			rotation.yaw += deltaX * sensitivity;
-			rotation.pitch += deltaY * sensitivity;
+		const
+		deltaX = e.clientX - prevPos.x,
+		deltaY = e.clientY - prevPos.y;
 
-			rotation.pitch = clamp(rotation.pitch, -0.5*Math.PI, 0.5*Math.PI);
-
-			prevPos = {
-				x: e.clientX,
-				y: e.clientY
-			};
+		if (dragging === "mainCube") {
+			rotation.yaw += deltaX * sensitivity.main;
+			rotation.pitch += deltaY * sensitivity.main;
+		} else if (dragging === "miniCube") {
+			rotation.yaw += deltaX * sensitivity.mini;
+			rotation.pitch -= deltaY * sensitivity.mini;
 		}
-	}
 
-	let sArray = [];
-	for (let i = -cubeSize; i <= cubeSize; i += 2)
-		sArray.push(i / cubeSize);
-
-	let positions = []
-
-	for (const side of sides.all) {
-		const sign = cube2.layers[side] ? -1 : 1;
-		const index = [1, 2, 0][cube2.index[side]];
-
-		for (let i = 0; i < cubeSize; i++) {
-			const
-			i0 = sArray[i],
-			i1 = sArray[i + 1];
-			for (let j = 0; j < cubeSize; j++) {
-				const
-				j0 = sArray[j],
-				j1 = sArray[j + 1];
-
-				const jiArray = ["U", "F", "R"].includes(side) ?
-					[
-						[j0, i0],
-						[j0, i1],
-						[j1, i1],
-						[j1, i0]
-					] : [
-						[j0, i1],
-						[j1, i1],
-						[j1, i0],
-						[j0, i0]
-					];
-
-				jiArray.forEach(array => array.splice(index, 0, sign));
-				const columnated = jiArray.flat();
-				
-				positions.push(...columnated);
-			}
+		if (rotation.yaw > Math.QUARTER_PI) {
+			mainCube.turns("y'");
+			rotation.yaw = -Math.QUARTER_PI;
+		} else if (rotation.yaw < -Math.QUARTER_PI) {
+			mainCube.turns("y");
+			rotation.yaw = Math.QUARTER_PI;
 		}
+
+		rotation.pitch = clamp(rotation.pitch, -Math.HALF_PI, Math.HALF_PI);
+
+		prevPos = {
+			x: e.clientX,
+			y: e.clientY
+		};
 	}
+
+
+
+
+
+	document.body.onresize = e => resize(e);
+
+	window.onkeydown = e => {
+		const face = e.key.toUpperCase();
+
+		if (faces.all.includes(face))
+			if (e.shiftKey)
+				mainCube.turns(`${face}2`);
+			else if (e.ctrlKey)
+				mainCube.turns(`${face}'`);
+			else
+				mainCube.turns(`${face}`);
+	}
+
+
 
 	main();
 	function main() {
@@ -179,8 +292,6 @@ function display3DSetup() {
 
 				float x = fract(TexCoord.x * ${halfSizePlusOffset}) - .5;
 				float y = fract(TexCoord.y * ${halfSizePlusOffset}) - .5;
-				bool CaseX = !(TexCoord.x < halfWidth - 1.) && !(TexCoord.x > -halfWidth + 1.);
-				bool CaseY = !(TexCoord.y < halfWidth - 1.) && !(TexCoord.y > -halfWidth + 1.);
 
 				if (pow(x, power) + pow(y, power) > pow(width, power))
 					gl_FragColor = vec4(0, 0, 0, 1);
@@ -204,6 +315,30 @@ function display3DSetup() {
 		};
 
 		const buffers = initBuffers(gl);
+
+
+
+
+		const shaderProgram2 = initShaderProgram(gl2, vsSource, fsSource);
+
+		const programInfo2 = {
+			program: shaderProgram2,
+			attribLocations: {
+				vertexPosition: gl2.getAttribLocation(shaderProgram2, 'aVertexPosition'),
+				vertexColor: gl2.getAttribLocation(shaderProgram2, 'aVertexColor'),
+			},
+			uniformLocations: {
+				projectionMatrix: gl2.getUniformLocation(shaderProgram2, 'uProjectionMatrix'),
+				modelViewMatrix: gl2.getUniformLocation(shaderProgram2, 'uModelViewMatrix'),
+			},
+		};
+
+		const buffers2 = initBuffers(gl2);
+
+
+
+
+
 
 		var then = 0;
 	
@@ -306,9 +441,21 @@ function display3DSetup() {
 
 			buffers.color = colorBuffer;
 
+			const colorBuffer2 = gl2.createBuffer();
+			gl2.bindBuffer(gl2.ARRAY_BUFFER, colorBuffer2);
+			gl2.bufferData(
+				gl2.ARRAY_BUFFER,
+				new Float32Array(colorsList),
+				gl2.STATIC_DRAW
+			);
+
+			buffers2.color = colorBuffer2;
+
 			
 
 			drawScene(gl, programInfo, buffers, deltaTime);
+
+			drawScene(gl2, programInfo2, buffers2, deltaTime, true);
 
 			requestAnimationFrame(render);
 		}
@@ -335,24 +482,6 @@ function display3DSetup() {
 	    }
 	    document.body.appendChild(scrambleAndSolveButton);
 
-	    addBreak();
-	    
-	    for (const face of faces.all.concat(["y", "z", "x"])) {
-	        const turnButton = document.createElement("button");
-	        turnButton.innerHTML = face;
-	        turnButton.onclick = e => {
-	            const turn = {face, amount: 1};
-	            console.log(turn);
-	            mainCube.turn(turn);
-	        }
-	        turnButton.oncontextmenu = e => {
-	            const turn = {face, amount: -1};
-	            console.log(turn);
-	            mainCube.turn(turn);
-	            return false;
-	        }
-	        document.body.appendChild(turnButton);
-	    }
 	    
 	    addBreak();
 	    
@@ -400,263 +529,193 @@ function display3DSetup() {
 	        mainCube.reset();
 	    }
 	    document.body.appendChild(resetButton);
-	}
-
-	//
-	// initBuffers
-	//
-	// Initialize the buffers we'll need. For this demo, we just
-	// have one object -- a simple three-dimensional cube.
-	//
-	function initBuffers(gl) {
-
-		// Create a buffer for the cube's vertex positions.
-
-		const positionBuffer = gl.createBuffer();
-
-		// Select the positionBuffer as the one to apply buffer
-		// operations to from here out.
-
-		gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-
-		// Now create an array of positions for the cube.
 
 
+	    const
+	    chevron = document.querySelector("#chevron"),
+	    sideNav = document.querySelector("#collapsible");
 
-		// Now pass the list of positions into WebGL to build the
-		// shape. We do this by creating a Float32Array from the
-		// JavaScript array, then use it to fill the current buffer.
+		let menuOpen = false;
+		chevron.onclick = toggleMenu;
 
-		gl.bufferData(
-			gl.ARRAY_BUFFER,
-			new Float32Array(positions),
-			gl.STATIC_DRAW
-		);
-
-		let faceColors = [];
-		for (let i = 0; i < positions.length / 12; i++)
-			faceColors.push([
-				Math.random(),
-				Math.random(),
-				Math.random(),
-				1
-			]);
-
-		// Convert the array of colors into a table for all the vertices.
-
-		var colors = [];
-
-		for (var j = 0; j < faceColors.length; ++j) {
-			const c = faceColors[j];
-
-			// Repeat each color four times for the four vertices of the face
-			colors = colors.concat(c, c, c, c);
-		}
-
-		const colorBuffer = gl.createBuffer();
-		gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-		gl.bufferData(
-			gl.ARRAY_BUFFER,
-			new Float32Array(colors),
-			gl.STATIC_DRAW
-		);
-
-		// Build the element array buffer; this specifies the indices
-		// into the vertex arrays for each face's vertices.
-
-		const indexBuffer = gl.createBuffer();
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-
-		// This array defines each face as two triangles, using the
-		// indices into the vertex array to specify each triangle's
-		// position.
-		let indices = [];
-		for (let i = 0; i < positions.length / 3; i += 4)
-			indices.push(i, i + 1, i + 2, i, i + 2, i + 3);
-
-		gl.bufferData(
-			gl.ELEMENT_ARRAY_BUFFER,
-			new Uint16Array(indices),
-			gl.STATIC_DRAW
-		);
-
-		return {
-			position: positionBuffer,
-			color: colorBuffer,
-			indices: indexBuffer
-		};
-	}
-
-	//
-	// Draw the scene.
-	//
-	function drawScene(gl, programInfo, buffers, deltaTime) {
-		gl.clearColor(1, 1, 1, 1);  // Clear to black, fully opaque
-		gl.clearDepth(1);                 // Clear everything
-		gl.enable(gl.DEPTH_TEST);           // Enable depth testing
-		gl.depthFunc(gl.LEQUAL);            // Near things obscure far things
-
-		// Clear the canvas before we start drawing on it.
-
-		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-		// Create a perspective matrix, a special matrix that is
-		// used to simulate the distortion of perspective in a camera.
-		// Our field of view is 45 degrees, with a width/height
-		// ratio that matches the display size of the canvas
-		// and we only want to see objects between 0.1 units
-		// and 100 units away from the camera.
-
-		const fieldOfView = Math.PI / 4;   // in radians
-		const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-		const zNear = 0.1;
-		const zFar = 100;
-		const projectionMatrix = mat4.create();
-
-		// note: glmatrix.js always has the first argument
-		// as the destination to receive the result.
-		mat4.perspective(
-			projectionMatrix,
-			fieldOfView,
-			aspect,
-			zNear,
-			zFar
-		);
-
-		// Set the drawing position to the "identity" point, which is
-		// the center of the scene.
-		const modelViewMatrix = mat4.create();
-
-		// Now move the drawing position a bit to where we want to
-		// start drawing the square.
-
-		mat4.translate(
-			modelViewMatrix,
-			modelViewMatrix,
-			[0, 0, -6]
-		);
-		mat4.rotate(
-			modelViewMatrix,
-			modelViewMatrix,
-			rotation.pitch,
-			[1, 0, 0]
-		);
-		mat4.rotate(
-			modelViewMatrix,
-			modelViewMatrix,
-			rotation.yaw,
-			[0, 1, 0]
-		);
-
-		// Tell WebGL how to pull out the positions from the position
-		// buffer into the vertexPosition attribute
-		{
-			const numComponents = 3;
-			const type = gl.FLOAT;
-			const normalize = false;
-			const stride = 0;
-			const offset = 0;
-			gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
-			gl.vertexAttribPointer(
-				programInfo.attribLocations.vertexPosition,
-				numComponents,
-				type,
-				normalize,
-				stride,
-				offset);
-			gl.enableVertexAttribArray(
-				programInfo.attribLocations.vertexPosition
-			);
-		}
-
-		// Tell WebGL how to pull out the colors from the color buffer
-		// into the vertexColor attribute.
-		{
-			const numComponents = 4;
-			const type = gl.FLOAT;
-			const normalize = false;
-			const stride = 0;
-			const offset = 0;
-			gl.bindBuffer(gl.ARRAY_BUFFER, buffers.color);
-			gl.vertexAttribPointer(
-				programInfo.attribLocations.vertexColor,
-				numComponents,
-				type,
-				normalize,
-				stride,
-				offset
-			);
-			gl.enableVertexAttribArray(
-				programInfo.attribLocations.vertexColor
-			);
-		}
-
-		// Tell WebGL which indices to use to index the vertices
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices);
-
-		// Tell WebGL to use our program when drawing
-
-		gl.useProgram(programInfo.program);
-
-		// Set the shader uniforms
-
-		gl.uniformMatrix4fv(
-			programInfo.uniformLocations.projectionMatrix,
-			false,
-			projectionMatrix
-		);
-		gl.uniformMatrix4fv(
-			programInfo.uniformLocations.modelViewMatrix,
-			false,
-			modelViewMatrix
-		);
-
-		{
-			const vertexCount = positions.length / 2;
-			const type = gl.UNSIGNED_SHORT;
-			const offset = 0;
-			gl.drawElements(gl.TRIANGLES, vertexCount, type, offset);
+		function toggleMenu() {
+			if (menuOpen) {
+				chevron.style.setProperty("--angle", "12deg");
+				sideNav.style.height = "0";
+				menuOpen = false;
+			} else {
+				chevron.style.setProperty("--angle", "-12deg");
+				sideNav.style.height = "250px";
+				menuOpen = true;
+			}
 		}
 	}
+}
 
-	//
-	// Initialize a shader program, so WebGL knows how to draw our data
-	//
-	function initShaderProgram(gl, vsSource, fsSource) {
-		const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource);
-		const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
+function initBuffers(gl) {
+	const positionBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 
-		// Create the shader program
+	gl.bufferData(
+		gl.ARRAY_BUFFER,
+		new Float32Array(positions),
+		gl.STATIC_DRAW
+	);
 
-		const shaderProgram = gl.createProgram();
-		gl.attachShader(shaderProgram, vertexShader);
-		gl.attachShader(shaderProgram, fragmentShader);
-		gl.linkProgram(shaderProgram);
+	const indexBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
 
-		// If creating the shader program failed, alert
+	let indices = [];
+	for (let i = 0; i < positions.length / 3; i += 4)
+		indices.push(i, i + 1, i + 2, i, i + 2, i + 3);
 
-		if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-			alert('Unable to initialize the shader program: ' + gl.getProgramInfoLog(shaderProgram));
-			return null;
-		}
+	gl.bufferData(
+		gl.ELEMENT_ARRAY_BUFFER,
+		new Uint16Array(indices),
+		gl.STATIC_DRAW
+	);
 
-		return shaderProgram;
+	return {
+		position: positionBuffer,
+		indices: indexBuffer
+	};
+}
+
+function drawScene(gl, programInfo, buffers, deltaTime, inverted = false) {
+	gl.clearColor(0, 0, 0, 0);
+	gl.clearDepth(1);
+	gl.enable(gl.DEPTH_TEST);
+	gl.depthFunc(gl.LEQUAL);
+
+
+	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+	const fieldOfView = Math.QUARTER_PI;
+	const aspect = 1;
+	const zNear = 0.1;
+	const zFar = 100;
+	const projectionMatrix = mat4.create();
+
+	mat4.perspective(
+		projectionMatrix,
+		fieldOfView,
+		aspect,
+		zNear,
+		zFar
+	);
+
+	const modelViewMatrix = mat4.create();
+
+	mat4.translate(
+		modelViewMatrix,
+		modelViewMatrix,
+		[0, 0, -4.6]
+	);
+	mat4.rotate(
+		modelViewMatrix,
+		modelViewMatrix,
+		(inverted ? -1 : 1) * rotation.pitch,
+		[1, 0, 0]
+	);
+	mat4.rotate(
+		modelViewMatrix,
+		modelViewMatrix,
+		(inverted ? Math.PI : 0) + rotation.yaw,
+		[0, 1, 0]
+	);
+
+	{
+		const numComponents = 3;
+		const type = gl.FLOAT;
+		const normalize = false;
+		const stride = 0;
+		const offset = 0;
+		gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
+		gl.vertexAttribPointer(
+			programInfo.attribLocations.vertexPosition,
+			numComponents,
+			type,
+			normalize,
+			stride,
+			offset);
+		gl.enableVertexAttribArray(
+			programInfo.attribLocations.vertexPosition
+		);
 	}
 
-	function loadShader(gl, type, source) {
-		const shader = gl.createShader(type);
-
-		gl.shaderSource(shader, source);
-		gl.compileShader(shader);
-
-		if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-			alert('An error occurred compiling the shaders: ' + gl.getShaderInfoLog(shader));
-			gl.deleteShader(shader);
-			return null;
-		}
-
-		return shader;
+	{
+		const numComponents = 4;
+		const type = gl.FLOAT;
+		const normalize = false;
+		const stride = 0;
+		const offset = 0;
+		gl.bindBuffer(gl.ARRAY_BUFFER, buffers.color);
+		gl.vertexAttribPointer(
+			programInfo.attribLocations.vertexColor,
+			numComponents,
+			type,
+			normalize,
+			stride,
+			offset
+		);
+		gl.enableVertexAttribArray(
+			programInfo.attribLocations.vertexColor
+		);
 	}
+
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices);
+
+	gl.useProgram(programInfo.program);
+
+	gl.uniformMatrix4fv(
+		programInfo.uniformLocations.projectionMatrix,
+		false,
+		projectionMatrix
+	);
+	gl.uniformMatrix4fv(
+		programInfo.uniformLocations.modelViewMatrix,
+		false,
+		modelViewMatrix
+	);
+
+	{
+		const vertexCount = positions.length / 2;
+		const type = gl.UNSIGNED_SHORT;
+		const offset = 0;
+		gl.drawElements(gl.TRIANGLES, vertexCount, type, offset);
+	}
+}
+
+function initShaderProgram(gl, vsSource, fsSource) {
+	const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource);
+	const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
+
+	const shaderProgram = gl.createProgram();
+	gl.attachShader(shaderProgram, vertexShader);
+	gl.attachShader(shaderProgram, fragmentShader);
+	gl.linkProgram(shaderProgram);
+
+	if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+		alert('Unable to initialize the shader program: ' + gl.getProgramInfoLog(shaderProgram));
+		return null;
+	}
+
+	return shaderProgram;
+}
+
+function loadShader(gl, type, source) {
+	const shader = gl.createShader(type);
+
+	gl.shaderSource(shader, source);
+	gl.compileShader(shader);
+
+	if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+		alert('An error occurred compiling the shaders: ' + gl.getShaderInfoLog(shader));
+		gl.deleteShader(shader);
+		return null;
+	}
+
+	return shader;
 }
 
 
@@ -668,12 +727,3 @@ function clamp(value, min, max) {
 	if (value > max) return max;
 	return value;
 }
-
-
-
-
-
-function display3D() {
-	
-}
-

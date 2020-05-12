@@ -28,9 +28,8 @@ window.onload = () => {
 
     // mainCube.scramble();
     // mainCube.beginnerSolve3(true);
-
-    display3D();
 }
+
 
 
 
