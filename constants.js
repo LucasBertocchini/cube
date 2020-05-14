@@ -116,11 +116,10 @@ class Turns {
     static get all() {return Turns.calc(faces.all);}
 
     turn(...turnList) {
-        for (const turn of turnList) {
-            const turnString = Turns.turnToTurns(turn);
-            if (this.string) this.string += " ";
-            this.string += turnString;
-        }
+        const turnString = Turns.turnToTurns(...turnList);
+        if (this.string) this.string += " ";
+        this.string += turnString;
+
         this.list.push(...turnList)
 
         if (this.cube) this.cube.turn(...turnList);
@@ -179,23 +178,32 @@ class Turns {
 
         return turnList;
     }
-    static turnToTurns(turn) {
-        let amountSymbol;
+    static turnToTurns(...turnList) {
+        let string = "";
+        for (const turn of turnList) {
+            const turnString = (turn => {
+                let amountSymbol;
 
-        switch(turn.amount) {
-            case 1:
-                return turn.face;
-            case -1:
-                amountSymbol = "'"
-                break;
-            case 2:
-                amountSymbol = "2"
-                break;
-            default:
-                throw "turn amount must be 1, -1, or 2: " + turn.amount;
+                switch(turn.amount) {
+                    case 1:
+                        return turn.face;
+                    case -1:
+                        amountSymbol = "'"
+                        break;
+                    case 2:
+                        amountSymbol = "2"
+                        break;
+                    default:
+                        throw "turn amount must be 1, -1, or 2: " + turn.amount;
+                }
+
+                return turn.face + amountSymbol;
+            })(turn);
+            if (string) string += " ";
+            string += turnString;
         }
 
-        return turn.face + amountSymbol;
+        return string;
     }
 }
 

@@ -1,5 +1,6 @@
 :root {
-    --angle: 12deg;
+    --angle: 15deg;
+    --size: calc(.3vw + .3vh);
 }
 
 html, body {
@@ -18,7 +19,6 @@ html, body {
 }
 
 #cube-area {
-    padding: 2%;
 }
 
 #cube-container {
@@ -43,14 +43,14 @@ html, body {
 }
 
 #button-container {
+    box-sizing: border-box;
     flex: 1;
     display: flex;
-    align-items: center;
     flex-flow: column;
     align-items: stretch;
 }
 
-.row {
+.rowcol {
     display: flex;
     justify-content: space-around;
     flex: 1;
@@ -58,65 +58,293 @@ html, body {
 
 button {
     flex: 1;
+    margin: var(--size);
 }
 
 
 
 
-#chevron {
-    position: relative;
-    text-align: center;
-    margin-bottom: 6px;
-    width: 40px;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
+.chevron {
+    height: 0;
+    background: lightgray;
+	margin: calc(5 * var(--size));
+	transition: transform .5s;
 }
 
-#chevron:before {
+.chevron:before {
     content: "";
     position: absolute;
     top: 0;
     left: 0;
     height: 100%;
-    width: 50%;
+    width: 51%;
     transform: skew(0deg, calc(-1 * var(--angle)));
 
     background: lightgray;
-    border-top: 3px solid lightgray;
-    border-bottom: 3px solid lightgray;
-    border-radius: 3px 0 0 3px;
+    border-top: var(--size) solid lightgray;
+    border-bottom: var(--size) solid lightgray;
+    border-radius: var(--size) 0 0 var(--size);
 }
 
-#chevron:after {
+.chevron:after {
     content: "";
     position: absolute;
     top: 0;
     right: 0;
     height: 100%;
-    width: 50%;
+    width: 51%;
     transform: skew(0deg, var(--angle));
 
     background: lightgray;
-    border-top: 3px solid lightgray;
-    border-bottom: 3px solid lightgray;
-    border-radius: 0 3px 3px 0;
+    border-top: var(--size) solid lightgray;
+    border-bottom: var(--size) solid lightgray;
+    border-radius: 0 var(--size) var(--size) 0;
 }
 
 #collapsible-container {
-    position: relative;
 }
 
 #collapsible {
-    width: 100%;
-    height: 0;
-    position: absolute;
+	display: flex;
+
     z-index: 1;
-    bottom: 0;
-    left: 0;
-    background-color: rgba();
+    background-color: rgba(1, 1, 1, 0.5);
     overflow-x: hidden;
-    transition: 0.5s;
-    padding-left: 60px;
+
+    transition: height .5s, width .5s, padding-top .5s, padding-bottom .5s;
+    transition-timing-function: ease-out;
+    align-items: stretch;
+    flex-flow: column;
 }
 
+#button-area {
+	display: flex;
+	flex: 1;
+    align-items: stretch;
+}
+
+.button-area {
+    display: flex;
+    justify-content: space-around;
+    flex: 1;
+}
+
+textarea {
+	flex: 1;
+	padding-left: 2%;
+	padding-right: 2%;
+}
+
+
+
+@media screen and (orientation: landscape) {
+	#cube-container, .rowcol {
+		flex-flow: row;
+	}
+	#mini-cube-container, #button-container, {
+		flex-flow: column;
+	}
+
+	@media screen and (min-aspect-ratio: 1618/1000) {
+		#cube-area {
+			width: 161.8vh;
+			height: 100vh;
+		}
+
+		.button-area {
+			flex-flow: row;
+		}
+		
+		#collapsible {
+			box-sizing: border-box;
+		    width: 0;
+		    height: 100vh;
+		    position: absolute;
+		    bottom: 0;
+		    right: 0;
+
+		    padding-top: 2%;
+		    padding-bottom: 2%;
+		}
+
+		#button-area {
+			flex-flow: column;
+		}
+
+		.chevron {
+	    	width: 7vw;
+
+		    display: block;
+		    margin-top: auto;
+		    margin-bottom: auto;
+		}
+		#bottom-or-right-chevron {
+			transform: translate(3vw) rotate(-90deg);
+
+			position: fixed;
+			right: 0;
+			top: 0;
+			bottom: 0;
+		}
+		#collapsible-chevron {
+			transform: translate(-3vw) rotate(-90deg);
+
+			position: absolute;
+			left: 0;
+			top: 0;
+			bottom: 0;
+		}
+	}
+	@media screen and (max-aspect-ratio: 1618/1000) {
+		#cube-area {
+			width: 100vw;
+			height: 61.8vw;
+		}
+
+		.button-area {
+			flex-flow: column;
+		}
+
+		#collapsible {
+			box-sizing: border-box;
+		    width: 100vw;
+		    height: 0;
+		    position: absolute;
+		    bottom: 0;
+		    left: 0;
+
+		    padding-left: 2%;
+		    padding-right: 2%;
+		}
+
+		#button-area {
+			flex-flow: row;
+		}
+
+		.chevron {
+	    	width: 7vw;
+
+		    display: block;
+		    margin-left: auto;
+		    margin-right: auto;
+		}
+		#bottom-or-right-chevron {
+			position: fixed;
+			bottom: 0;
+			left: 0;
+			right: 0;
+		}
+		#collapsible-chevron {
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+		}
+	}
+}
+
+@media screen and (orientation: portrait) {
+	#cube-container, .rowcol {
+		flex-flow: column;
+	}
+	#mini-cube-container, #button-container {
+		flex-flow: row;
+	}
+
+	@media screen and (min-aspect-ratio: 618/1000) {
+		#cube-area {
+			width: 61.8vh;
+			height: 100vh;
+		}
+
+		.button-area {
+			flex-flow: row;
+		}
+
+		#collapsible {
+			box-sizing: border-box;
+		    width: 0;
+		    height: 100vh;
+		    position: absolute;
+		    bottom: 0;
+		    right: 0;
+
+		    padding-top: 2%;
+		    padding-bottom: 2%;
+		}
+
+		#button-area {
+			flex-flow: column;
+		}
+
+		.chevron {
+	    	width: 7vw;
+
+		    display: block;
+		    margin-top: auto;
+		    margin-bottom: auto;
+		}
+		#bottom-or-right-chevron {
+			transform: translate(3vw) rotate(-90deg);
+
+			position: fixed;
+			right: 0;
+			top: 0;
+			bottom: 0;
+		}
+		#collapsible-chevron {
+			transform: translate(-3vw) rotate(-90deg);
+
+			position: absolute;
+			left: 0;
+			top: 0;
+			bottom: 0;
+		}
+	}
+	@media screen and (max-aspect-ratio: 618/1000) {
+		#cube-area {
+			width: 100vw;
+			height: 161.8vw;
+		}
+
+		.button-area {
+			flex-flow: column;
+		}
+
+		#collapsible {
+			box-sizing: border-box;
+		    width: 100vw;
+		    height: 0;
+		    position: absolute;
+		    bottom: 0;
+		    left: 0;
+
+		    padding-left: 2%;
+		    padding-right: 2%;
+		}
+
+		#button-area {
+			flex-flow: row;
+		}
+
+		.chevron {
+	    	width: 7vw;
+
+		    display: block;
+		    margin-left: auto;
+		    margin-right: auto;
+		}
+		#bottom-or-right-chevron {
+			position: fixed;
+			bottom: 0;
+			left: 0;
+			right: 0;
+		}
+		#collapsible-chevron {
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+		}
+	}
+}

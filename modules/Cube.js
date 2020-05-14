@@ -52,14 +52,18 @@ class Cube {
         return cube;
     }
     
-    bruteForce(order) {return cubeBruteForce(this.pieces, order);}
+    bruteForce(order) {
+        const bruteForce = cubeBruteForce(this.pieces, order);
+        if (bruteForce) this.turn(...bruteForce);
+        return bruteForce;
+    }
     
     reset(clear = true) {
         this.pieces = new Cube(cubeSize).pieces;
-        if (clear) console.clear();
+        //if (clear) console.clear();
     }
 
-    scramble(order = 100, log = false) {
+    scramble(order = 100, log = true) {
         let turnsList = [];
 
         for (let i = 0; i < order; i++) {
@@ -73,12 +77,18 @@ class Cube {
                     !faces.sameAxis(turn.face, prev.face) ||
                     (turn.amount === prev.amount && turn.face !== prev.face)
                     ) {
-                    if (log) console.log(turn);
+                    // if (log) console.log(turn);
                     this.turn(turn);
                     turnsList.push(turn);
                     found = true;
                 }
             }
+        }
+        if (log) {
+            const string = Turns.turnToTurns(...turnsList);
+            display(`scramble ${order}:`);
+            display(string);
+            display("");
         }
     }
 

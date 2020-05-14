@@ -8,7 +8,7 @@ function cubeBeginnerSolve3(cube, standard_U_w = false, update = true) {
     turns = new Turns(copy),
     start = Date.now();
 
-    const bruteForce = copy.bruteForce(standard_U_w ? 2 : 3);
+    const bruteForce = copy.bruteForce(2);
     if (bruteForce) {
         turns.turn(...bruteForce);
         return end();
@@ -24,13 +24,15 @@ function cubeBeginnerSolve3(cube, standard_U_w = false, update = true) {
 
         turns.turns(turnsInstance.string);
     } else {
-        for (const mainSide of sides.all) {
-            for (const mainColor of colors.all) {
-                //the notation may be confusing; the main color is
-                //actually solved onto the opposite face
-                const turnsInstance = solve(cube, mainSide, mainColor);
-                allTurns.push(turnsInstance);
-            }
+        for (const mainColor of colors.all) {
+            //the notation may be confusing; the main color is
+            //actually solved onto the opposite main side
+            for (const [side, indices] of Object.entries(cube3.centerIndices))
+                if (cube.indices(indices) === mainColor) {
+                    const turnsInstance = solve(cube, side, mainColor);
+                    allTurns.push(turnsInstance);
+                    break;
+                }
         }
 
         const shortestTurns = allTurns.reduce(
@@ -49,8 +51,8 @@ function cubeBeginnerSolve3(cube, standard_U_w = false, update = true) {
         if (update)
             cube.pieces = copy.pieces;
 
-        console.log(turns.string);
-        console.log(`${turns.list.length} turns in ${end - start} ms`);
+        // console.log(turns.string);
+        // console.log(`${turns.list.length} turns in ${end - start} ms`);
 
         return turns;
     }

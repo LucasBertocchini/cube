@@ -30,6 +30,17 @@ window.onload = () => {
     // mainCube.beginnerSolve3(true);
 }
 
+function display(text) {
+    const textarea = document.querySelector("textarea");
+    if (textarea.innerHTML) textarea.innerHTML += "\n";
+    textarea.innerHTML += text;
+    textarea.scrollTop = textarea.scrollHeight;
+}
+
+function clearDisplay() {
+    const textarea = document.querySelector("textarea");
+    textarea.innerHTML = "";
+}
 
 
 
