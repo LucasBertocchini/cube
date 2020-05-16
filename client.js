@@ -26,8 +26,7 @@ standard 3x3 cube: [
 window.onload = () => {
     display3DSetup();
 
-    // mainCube.scramble();
-    // mainCube.beginnerSolve3(true);
+    console.log(glMatrix.mat4)
 }
 
 function display(text) {

@@ -42,6 +42,7 @@ for (const side of sides.all) {
 
 
 const mat4 = glMatrix.mat4;
+console.log(glMatrix.mat4)
 
 Math.HALF_PI = Math.PI / 2;
 Math.QUARTER_PI = Math.PI / 4;
