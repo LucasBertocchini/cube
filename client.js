@@ -25,20 +25,18 @@ standard 3x3 cube: [
 
 window.onload = () => {
     display3DSetup();
-
-    console.log(glMatrix.mat4)
 }
 
 function display(text) {
     const textarea = document.querySelector("textarea");
-    if (textarea.innerHTML) textarea.innerHTML += "\n";
-    textarea.innerHTML += text;
+    if (textarea.value) textarea.value += "\n";
+    if (text) textarea.value += text;
     textarea.scrollTop = textarea.scrollHeight;
 }
 
 function clearDisplay() {
     const textarea = document.querySelector("textarea");
-    textarea.innerHTML = "";
+    textarea.value = "";
 }
 
 

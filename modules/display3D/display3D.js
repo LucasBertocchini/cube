@@ -42,7 +42,6 @@ for (const side of sides.all) {
 
 
 const mat4 = glMatrix.mat4;
-console.log(glMatrix.mat4)
 
 Math.HALF_PI = Math.PI / 2;
 Math.QUARTER_PI = Math.PI / 4;
@@ -57,7 +56,8 @@ prevPos = {
 	x: 0,
 	y: 0
 },
-menuOpen = false;
+menuOpen = false,
+enteringAlgorithm = false;
 
 
 function display3DSetup() {
@@ -108,16 +108,7 @@ function display3DSetup() {
 
 
 
-	document.body.onmouseenter = e => {
-		if (e.which === 1)
-			prevPos = {
-				x: e.clientX,
-				y: e.clientY
-			};
-		else
-			dragging = false;
-	}
-	document.body.onmouseup = e => {
+	document.onmouseup = e => {
 		dragging = false;
 	}
 
@@ -136,7 +127,7 @@ function display3DSetup() {
 		};
 	}
 
-	document.body.onmousemove = e => {
+	document.onmousemove = e => {
 		if (!dragging) return;
 
 		const
@@ -174,6 +165,7 @@ function display3DSetup() {
 	document.body.onresize = e => resize(e);
 
 	window.onkeydown = e => {
+		if (menuOpen) return;
 		const face = e.key.toUpperCase();
 
 		if (faces.all.includes(face))
@@ -503,6 +495,11 @@ function buttonHandler(buttonArea, collapsible) {
         const randomizeCubeButton = document.createElement("button");
         randomizeCubeButton.innerHTML = "scramble " + i;
         randomizeCubeButton.onclick = e => {
+        	if (enteringAlgorithm) {
+        		e.preventDefault();
+        		return;
+        	}
+        	
             mainCube.scramble(i, true);
         }
         randomizeCubeButtons.push(randomizeCubeButton);
@@ -514,6 +511,11 @@ function buttonHandler(buttonArea, collapsible) {
         const bruteForceSolveButton = document.createElement("button");
         bruteForceSolveButton.innerHTML = "brute force " + i;
         bruteForceSolveButton.onclick = e => {
+        	if (enteringAlgorithm) {
+        		e.preventDefault();
+        		return;
+        	}
+        	
             const solve = mainCube.bruteForce(i);
             if (!solve) {
             	display("brute force failed");
@@ -523,7 +525,7 @@ function buttonHandler(buttonArea, collapsible) {
             const bruteForce = Turns.turnToTurns(...solve);
             display("brute force: ");
             display(bruteForce);
-            display("");
+            display();
         }
         bruteForceSolveButtons.push(bruteForceSolveButton);
     }
@@ -532,15 +534,25 @@ function buttonHandler(buttonArea, collapsible) {
     const beginnerSolve3Button = document.createElement("button");
     beginnerSolve3Button.innerHTML = "beginner solve";
     beginnerSolve3Button.onclick = e => {
+    	if (enteringAlgorithm) {
+    		e.preventDefault();
+    		return;
+    	}
+    	
     	const solve = mainCube.beginnerSolve3();
     	display("beginner solve:");
     	display(solve.string);
-    	display("");
+    	display();
     }
     
     const resetButton = document.createElement("button");
     resetButton.innerHTML = "reset";
     resetButton.onclick = e => {
+    	if (enteringAlgorithm) {
+    		e.preventDefault();
+    		return;
+    	}
+    	
         mainCube.reset();
         clearDisplay();
     }
@@ -549,17 +561,50 @@ function buttonHandler(buttonArea, collapsible) {
     const enterAlgorithmButton = document.createElement("button");
     enterAlgorithmButton.innerHTML = "enter algorithm";
     enterAlgorithmButton.onclick = e => {
-        clearDisplay();
-        display("algorithm (press enter): ");
-    	const textarea = document.querySelector("textarea");
+    	const
+    	textarea = document.querySelector("textarea"),
+    	enterText = "algorithm (press enter):\n";
+
+        display(enterText);
+
+        const text = textarea.value;
+
+        textarea.removeAttribute("readonly");
     	textarea.focus();
     	textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+
+    	enteringAlgorithm = true;
+
+    	textarea.onkeydown = e => {
+    		if (e.key === "Enter") {
+    			const algorithm = textarea.value.slice(text.length);
+    			textarea.value = textarea.value.split(enterText)[0];
+    			try {
+    				mainCube.turns(algorithm);
+    				display("algorithm:");
+    				display(algorithm);
+    			}
+    			catch {
+    				display(`algorithm ${algorithm} failed`);
+    			}
+    			display();
+
+    			e.preventDefault();
+    			textarea.blur();
+    			textarea.setAttribute("readonly", true);
+    			textarea.onkeydown = undefined;
+
+    			enteringAlgorithm = false;
+    		}
+    		else if (
+    			textarea.selectionStart < text.length ||
+    			(textarea.selectionStart === text.length &&
+    			e.key === "Backspace")
+    		)
+    			e.preventDefault();
+    	}
     }
     addToRowcol(beginnerSolve3Button, enterAlgorithmButton);
-
-    const textarea = document.createElement("textarea");
-    collapsible.appendChild(textarea);
-
 
     const
     chevrons = document.querySelectorAll(".chevron"),

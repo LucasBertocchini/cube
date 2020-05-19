@@ -64,6 +64,7 @@ button {
 
 
 
+
 .chevron {
     height: 0;
     background: lightgray;
@@ -78,12 +79,15 @@ button {
     left: 0;
     height: 100%;
     width: 51%;
-    transform: skew(0deg, calc(-1 * var(--angle)));
+    transform: translateX(calc(-1 * var(--size))) translateY(calc(-1 * var(--size))) skew(0deg, calc(-1 * var(--angle)));
 
     background: lightgray;
-    border-top: var(--size) solid lightgray;
-    border-bottom: var(--size) solid lightgray;
-    border-radius: var(--size) 0 0 var(--size);
+    background-clip: padding-box;
+    padding-top: var(--size);
+    padding-bottom: var(--size);
+
+    border: var(--size) solid transparent;
+    border-radius: calc(2 * var(--size)) 0 0 calc(2 * var(--size));
 }
 
 .chevron:after {
@@ -93,12 +97,15 @@ button {
     right: 0;
     height: 100%;
     width: 51%;
-    transform: skew(0deg, var(--angle));
+    transform: translateX(var(--size)) translateY(calc(-1 * var(--size))) skew(0deg, var(--angle));
 
     background: lightgray;
-    border-top: var(--size) solid lightgray;
-    border-bottom: var(--size) solid lightgray;
-    border-radius: 0 var(--size) var(--size) 0;
+    background-clip: padding-box;
+    padding-top: var(--size);
+    padding-bottom: var(--size);
+
+    border: var(--size) solid transparent;
+    border-radius: 0 calc(2 * var(--size)) calc(2 * var(--size)) 0;
 }
 
 #collapsible-container {
